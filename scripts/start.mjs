@@ -17,6 +17,7 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 import { spawnSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -53,4 +54,6 @@ line('  ▸ actualizando el scraper…');
 process.env.RITMO_BOOTSTRAP = force ? 'force' : 'auto';
 
 // Importamos el servidor: él mismo arranca el temporizador automático.
-await import(path.join(ROOT, 'server', 'index.mjs'));
+// En Windows hay que pasar una URL file:// (no una ruta C:\…), o el cargador
+// ESM de Node la rechaza con ERR_UNSUPPORTED_ESM_URL_SCHEME.
+await import(pathToFileURL(path.join(ROOT, 'server', 'index.mjs')).href);
