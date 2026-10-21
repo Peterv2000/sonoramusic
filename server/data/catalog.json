@@ -1,5 +1,5 @@
 {
- "updatedAt": 1792540907106,
+ "updatedAt": 1792542178643,
  "count": 287,
  "tracks": [
   {
@@ -3932,5 +3932,6 @@
    "thumb": "https://i.ytimg.com/vi/CdxyAQ7AvCI/hq720.jpg?sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLB7qvN23UQAM7iX4RwNt8T6EheFpw",
    "external": true
   }
- ]
+ ],
+ "curated": 0
 }

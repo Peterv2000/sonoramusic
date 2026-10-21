@@ -2,6 +2,7 @@ import { useApp } from '../state/AppState.jsx';
 import { usePlayer } from '../player/PlayerContext.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
 import { useToast } from '../components/Toast.jsx';
+import { useNavigate } from 'react-router-dom';
 import Icon from '../components/Icon.jsx';
 import Logo from '../components/Logo.jsx';
 
@@ -40,6 +41,7 @@ export default function Settings() {
   const p = usePlayer();
   const { t } = useI18n();
   const toast = useToast();
+  const nav = useNavigate();
   const s = state.settings;
   const pro = state.pro.active;
   const set = (value) => dispatch({ type: 'patch-settings', value });
@@ -242,6 +244,13 @@ export default function Settings() {
           Demo no oficial al estilo YouTube Music. La reproducción usa el reproductor embebido de YouTube.
           Las funciones marcadas ✦ PRO son un simulacro listo para conectar pagos reales (Play Billing / Stripe).
         </p>
+        <button className="setting-row" onClick={() => nav('/admin')}>
+          <span className="set-label">
+            <strong>{t('adminTitle')}</strong>
+            <small>{t('adminSub')}</small>
+          </span>
+          <span>→</span>
+        </button>
       </section>
     </div>
   );

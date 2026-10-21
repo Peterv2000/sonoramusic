@@ -20,6 +20,7 @@ import Profile from './pages/Profile.jsx';
 import Artist from './pages/Artist.jsx';
 import Album from './pages/Album.jsx';
 import Charts from './pages/Charts.jsx';
+import Admin from './pages/Admin.jsx';
 import { I18nCtx } from './i18n/useI18n.jsx';
 
 export default function App() {
@@ -46,6 +47,7 @@ export default function App() {
                 <Route path="/pro" element={<Pro />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/charts" element={<Charts />} />
+                <Route path="/admin" element={<Admin />} />
                 <Route path="/artist/:name" element={<Artist />} />
                 <Route path="/album/:id" element={<Album />} />
                 <Route path="*" element={<Navigate to="/" replace />} />

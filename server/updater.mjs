@@ -110,6 +110,19 @@ export const status = {
   counts: { catalog: 0, charts: 0, warm: 0 },
 };
 
+/* ── Selección manual del administrador ─────────────────────────────────────
+   Lo que el administrador elige desde la página /admin se guarda aparte
+   (`curated.json`) y se MEZCLA al principio del catálogo y de los gráficos: así
+   sobrevive a cada pasada automática, que solo añade canciones nuevas. */
+function readCurated() {
+  const c = readJson('curated.json') || { updatedAt: 0, catalog: [], charts: {} };
+  return {
+    updatedAt: c.updatedAt || 0,
+    catalog: Array.isArray(c.catalog) ? c.catalog : [],
+    charts: c.charts && typeof c.charts === 'object' ? c.charts : {},
+  };
+}
+
 /* ── Utilidades de disco ────────────────────────────────────────────────── */
 function ensureDir() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -121,6 +134,12 @@ function writeJson(name, obj) {
   fs.writeFileSync(file, JSON.stringify(obj, null, 1), 'utf8');
   return file;
 }
+
+/* Lista de pestañas de gráficos disponible para el panel de administración. */
+export const CHART_TABS = CONFIG.chartTabs.map((t) => ({ id: t.id, label: t.label }));
+
+/* Las funciones de clasificación se reutilizan desde el API de administración. */
+export { writeJson, guessGenre, guessMoods };
 
 export function readJson(name) {
   try {
@@ -236,10 +255,16 @@ async function updateCatalog(log) {
   }
   // Ordena por reproducciones y recorta
   tracks.sort((a, b) => (b.views || 0) - (a.views || 0));
-  const final = tracks.slice(0, CONFIG.maxCatalog);
+  // Las elecciones manuales del administrador van SIEMPRE al principio y no
+  // se recortan, así no desaparecen en la siguiente pasada automática.
+  const curated = readCurated().catalog;
+  const curatedIds = new Set(curated.map((t) => t.yt || t.id));
+  const merged = [...curated, ...tracks.filter((t) => !curatedIds.has(t.yt || t.id))];
+  const final = merged.slice(0, CONFIG.maxCatalog + curated.length);
   writeJson('catalog.json', {
     updatedAt: Date.now(),
     count: final.length,
+    curated: curated.length,
     tracks: final,
   });
   return final.length;
@@ -272,6 +297,17 @@ async function updateCharts(log) {
       tabs.push({ id: tab.id, label: tab.label, tracks: list });
       log(`  · gráficos «${tab.label}» → ${list.length} pistas`);
     }
+  }
+  // Mezcla las elecciones manuales del administrador por pestaña: van al
+  // principio del ranking y sobreviven a las pasadas automáticas.
+  const curatedCharts = readCurated().charts || {};
+  for (const tab of tabs) {
+    const picks = curatedCharts[tab.label] || curatedCharts[tab.id];
+    if (!Array.isArray(picks) || !picks.length) continue;
+    const ids = new Set(picks.map((t) => t.yt || t.id));
+    tab.tracks = [...picks, ...tab.tracks.filter((t) => !ids.has(t.yt || t.id))]
+      .slice(0, 50)
+      .map((tr, i) => ({ ...tr, rank: i + 1 }));
   }
   writeJson('charts.json', { updatedAt: Date.now(), tabs });
   return tabs.reduce((n, t) => n + t.tracks.length, 0);

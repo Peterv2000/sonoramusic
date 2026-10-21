@@ -121,6 +121,30 @@ con el catálogo curado y los rankings locales.
 
 ---
 
+## 🛠️ Panel de administración del scraper (`#/admin`)
+
+Página para el administrador: busca en YouTube por **categoría o canción**, marca las que
+quieras y elige **a dónde subirlas** (al catálogo o a un ranking concreto). Abre
+`http://localhost:4173/#/admin` (también desde el menú lateral, bajo *Administración*, o desde
+*Ajustes → Administración del scraper*).
+
+```
+GET  /api/admin/categories →  categorías y pestañas disponibles
+GET  /api/admin/search?q=… →  búsqueda real de YouTube (sin caché)
+GET  /api/admin/picks      →  lo subido a mano + contadores
+POST /api/admin/picks      →  { add: { catalog: [...], charts: { Pop: [...] } },
+                                remove: { catalog: [yt], charts: { Pop: [yt] } } }
+```
+
+Lo que subes se guarda en `server/data/curated.json` y **va siempre primero**: el actualizador
+automático lo respeta y no lo borra (solo añade canciones nuevas por debajo). Los cambios se
+reflejan **al instante** en `/api/catalog` y `/api/charts`, sin reiniciar el servidor.
+
+> El panel necesita el servidor encendido (`npm start`). Si abres solo el `dist` como fichero,
+> la página lo avisa y muestra el comando para arrancarlo.
+
+---
+
 ## 📱 APK Android (Capacitor)
 
 El proyecto **ya tiene la carpeta `android/` generada** y sincronizada.

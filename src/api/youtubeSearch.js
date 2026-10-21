@@ -93,3 +93,51 @@ export function trackFromYouTubeId(id, title, artist, thumb) {
     external: true,
   };
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Cliente del PANEL DE ADMINISTRACIÓN (`/api/admin/*`).
+
+   Sirve para que el administrador busque en YouTube (por categoría o canción),
+   vea los resultados y elija cuáles subir al catálogo o a los gráficos. Nada
+   de esto se cachea: el admin siempre quiere datos frescos.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+async function adminJSON(path, opts = {}) {
+  const res = await fetch(path, {
+    headers: { Accept: 'application/json', ...(opts.body ? { 'Content-Type': 'application/json' } : {}) },
+    ...opts,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+  return data;
+}
+
+/** ¿El servidor tiene el panel de administración disponible? */
+export async function adminAvailable() {
+  try {
+    await adminJSON('/api/admin/categories');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Categorías, géneros y pestañas de gráficos disponibles para elegir. */
+export function adminCategories() {
+  return adminJSON('/api/admin/categories');
+}
+
+/** Búsqueda real para el panel (sin caché). */
+export function adminSearch(query, limit = 25) {
+  return adminJSON(`/api/admin/search?q=${encodeURIComponent(query)}&limit=${limit}`);
+}
+
+/** Lo elegido hasta ahora + contadores. */
+export function adminPicks() {
+  return adminJSON('/api/admin/picks');
+}
+
+/** Guarda altas/bajas. `payload = { add, remove }`. */
+export function adminSave(payload) {
+  return adminJSON('/api/admin/picks', { method: 'POST', body: JSON.stringify(payload) });
+}
