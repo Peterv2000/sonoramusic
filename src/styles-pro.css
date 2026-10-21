@@ -598,3 +598,135 @@ button.setting-row:hover { background: var(--bg-3); }
 /* Evita desbordes horizontales por títulos largos en cualquier ancho */
 .chart-meta strong, .tr-meta strong, .card-title, .admin-meta strong { max-width: 100%; }
 
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DJ RITMO — locutor virtual interactivo (estilo Spotify DJ)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Retrato animado del DJ ── */
+.dj-avatar {
+  position: relative; display: grid; place-items: center; flex: none;
+}
+.dj-avatar .dj-disc {
+  position: relative; z-index: 2; display: grid; place-items: center;
+  width: 68%; height: 68%; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #2a2d36, #0c0d11 70%);
+  border: 2px solid color-mix(in srgb, var(--red) 55%, transparent);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.55), 0 0 0 4px rgba(255, 0, 51, 0.08);
+}
+.dj-avatar .dj-face { font-size: 60%; line-height: 1; }
+.dj-avatar .dj-ring {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 2px solid var(--red); opacity: 0;
+}
+.dj-avatar.speaking .dj-ring { animation: djPulse 1.6s ease-out infinite; }
+.dj-avatar.speaking .dj-ring.r2 { animation-delay: 0.8s; }
+@keyframes djPulse {
+  0% { transform: scale(0.65); opacity: 0.7; }
+  100% { transform: scale(1.15); opacity: 0; }
+}
+.dj-avatar.speaking .dj-disc { animation: djBounce 0.9s ease-in-out infinite; }
+@keyframes djBounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+
+/* ── Barras de ecualizador ── */
+.dj-bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; }
+.dj-bars i {
+  display: block; width: 3px; border-radius: 2px; background: var(--red);
+  animation: djBars 0.9s ease-in-out infinite;
+}
+.dj-bars i:nth-child(1) { height: 40%; }
+.dj-bars i:nth-child(2) { height: 90%; }
+.dj-bars i:nth-child(3) { height: 60%; }
+.dj-bars i:nth-child(4) { height: 100%; }
+@keyframes djBars { 0%,100% { transform: scaleY(0.45); } 50% { transform: scaleY(1); } }
+
+/* ── Aviso flotante (aparece entre canciones) ── */
+.dj-drop {
+  position: fixed; left: 50%; bottom: 104px; transform: translate(-50%, 20px);
+  z-index: 240; display: flex; align-items: flex-start; gap: 12px;
+  width: min(92vw, 520px); padding: 14px 16px;
+  border-radius: 18px; border: 1px solid color-mix(in srgb, var(--red) 40%, var(--line));
+  background: linear-gradient(160deg, rgba(30, 6, 14, 0.96), rgba(10, 10, 14, 0.97));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  backdrop-filter: blur(14px); opacity: 0; pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.dj-drop.in { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.dj-drop-body { flex: 1; min-width: 0; }
+.dj-drop-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.dj-drop-head strong { font-size: 14px; letter-spacing: 0.2px; }
+.dj-drop-tag {
+  margin-left: auto; font-size: 10.5px; font-weight: 700; letter-spacing: 0.8px;
+  text-transform: uppercase; color: var(--red);
+  padding: 2px 8px; border-radius: 999px;
+  background: rgba(255, 0, 51, 0.12); border: 1px solid rgba(255, 0, 51, 0.3);
+}
+.dj-drop p { margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--fg); }
+.dj-drop-actions { margin-top: 8px; }
+.dj-mini-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11.5px; font-weight: 600; color: var(--fg-2);
+  background: rgba(255, 255, 255, 0.06); border: 1px solid var(--line);
+  border-radius: 999px; padding: 4px 10px; cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+.dj-mini-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.14); }
+.dj-drop-close {
+  display: grid; place-items: center; width: 28px; height: 28px; flex: none;
+  border-radius: 50%; background: rgba(255, 255, 255, 0.06);
+  border: 0; color: var(--fg-2); cursor: pointer;
+}
+.dj-drop-close:hover { color: #fff; background: rgba(255, 255, 255, 0.14); }
+
+/* ── Franja del DJ dentro del reproductor ── */
+.dj-strip {
+  display: flex; align-items: center; gap: 12px;
+  margin: 14px 0 4px; padding: 12px 14px; border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--red) 30%, var(--line));
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--red) 14%, transparent), transparent 60%),
+    var(--bg-2);
+}
+.dj-strip-body { flex: 1; min-width: 0; }
+.dj-strip-head { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.dj-strip-head strong { font-size: 13px; }
+.dj-live {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
+  color: #fff; background: var(--red); border-radius: 999px; padding: 2px 7px;
+  animation: djLive 1.4s ease-in-out infinite;
+}
+@keyframes djLive { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.dj-strip-body p {
+  margin: 0; font-size: 12.5px; color: var(--fg-2); line-height: 1.4;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* ── Ajustes: tarjeta del DJ ── */
+.dj-settings .dj-card {
+  display: flex; align-items: center; gap: 16px;
+  margin: 10px 14px 12px; padding: 16px; border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--red) 28%, var(--line));
+  background:
+    radial-gradient(120% 100% at 0% 0%, color-mix(in srgb, var(--red) 20%, transparent), transparent 60%),
+    var(--bg-2);
+}
+.dj-card-text { flex: 1; min-width: 0; }
+.dj-card-text strong { display: block; font-size: 17px; }
+.dj-card-text small { display: block; margin-top: 3px; color: var(--fg-2); font-size: 12.5px; line-height: 1.4; }
+.dj-settings .dj-card .btn { flex: none; }
+.dj-settings input[type='range'] { width: 130px; accent-color: var(--red); }
+
+/* ── Responsive del DJ ── */
+@media (max-width: 600px) {
+  .dj-drop { bottom: 92px; width: calc(100vw - 20px); padding: 12px; gap: 10px; border-radius: 16px; }
+  .dj-drop p { font-size: 13px; }
+  .dj-strip { gap: 10px; padding: 10px; }
+  .dj-settings .dj-card { flex-wrap: wrap; gap: 12px; padding: 14px; }
+  .dj-settings .dj-card .btn { width: 100%; justify-content: center; }
+  .dj-settings input[type='range'] { width: 100px; }
+}
+
+/* En modo reducido de movimiento, quieto */
+@media (prefers-reduced-motion: reduce) {
+  .dj-bars i, .dj-avatar.speaking .dj-ring, .dj-avatar.speaking .dj-disc, .dj-live { animation: none; }
+}

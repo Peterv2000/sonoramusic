@@ -4,6 +4,7 @@ import { useApp } from '../state/AppState.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
 import { fetchLyrics, activeLineIndex } from '../api/lyrics.js';
 import Icon from './Icon.jsx';
+import { DJAvatar, Bars } from './DJ.jsx';
 
 const SLEEP_OPTS = [10, 15, 30, 45, 60];
 
@@ -56,6 +57,12 @@ export default function FullPlayer() {
           <Icon name="chevronDown" />
         </button>
         <div className="full-head-title">{t('nowPlaying')}</div>
+        <button
+          className={`icon-btn ${p.djOn ? 'on' : ''}`}
+          onClick={() => dispatch({ type: 'patch-settings', value: { dj: !p.djOn } })}
+          title={p.djOn ? t('dj') : t('djOn')}
+          aria-label={t('dj')}
+        ><Icon name="micVocal" /></button>
         <button
           className={`icon-btn ${p.videoMode ? 'on' : ''}`}
           onClick={p.toggleVideo}
@@ -120,6 +127,23 @@ export default function FullPlayer() {
               aria-label={t('repeat')}
             ><Icon name={p.repeat === 'one' ? 'repeatOne' : 'repeat'} /></button>
           </div>
+
+          {p.djOn && (
+            <div className="dj-strip">
+              <DJAvatar speaking={p.djSpeaking} size={52} />
+              <div className="dj-strip-body">
+                <div className="dj-strip-head">
+                  <Bars />
+                  <strong>{t('dj')}</strong>
+                  {p.djSpeaking && <span className="dj-live">{t('djTagFiller')}</span>}
+                </div>
+                <p>{p.djText || t('djDesc')}</p>
+              </div>
+              <button className="icon-btn" onClick={p.djGreet} title={t('djGreet')} aria-label={t('djGreet')}>
+                <Icon name="volume" size={18} />
+              </button>
+            </div>
+          )}
 
           <div className="full-extra">
             <div className="vol-row">

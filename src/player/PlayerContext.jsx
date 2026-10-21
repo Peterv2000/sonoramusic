@@ -1,7 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../state/AppState.jsx';
 import { radioFrom, relatedTracks, shuffle as shuffleArr } from '../data/catalog.js';
+import { djLine as makeDjLine, djGreeting } from './dj.js';
 import VideoStage from './VideoStage.jsx';
+import { DJDrop } from '../components/DJ.jsx';
 
 const PlayerCtx = createContext(null);
 
@@ -43,6 +45,13 @@ export function PlayerProvider({ children }) {
   const [error, setError] = useState(null);
   const [sleepEndsAt, setSleepEndsAt] = useState(null);
   const [videoMode, setVideoMode] = useState(false); // YT Music: mostrar vídeo
+
+  /* ── DJ Ritmo ── */
+  const [djText, setDjText] = useState(null);     // frase actual (o null)
+  const [djTag, setDjTag] = useState('');
+  const [djSpeaking, setDjSpeaking] = useState(false);
+  const prevTrackRef = useRef(null);
+  const seenGenresRef = useRef(new Set());
 
   const seekingRef = useRef(false);
   const visitedRef = useRef(new Set()); // para aleatorio inteligente
@@ -115,10 +124,55 @@ export function PlayerProvider({ children }) {
     try { p.setVolume(v); } catch { /* noop */ }
   }, [volume, settings.volumeNorm, settings.normalizeEQ, pro.active, ready]);
 
+  /* ---------- DJ Ritmo: locución y frases ---------- */
+  const speak = useCallback((text) => {
+    if (!settings.dj || !settings.djVoice) return;
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = settings.lang === 'en' ? 'en-US' : 'es-ES';
+      u.rate = settings.djRate || 1;
+      u.pitch = 1.02;
+      u.onstart = () => setDjSpeaking(true);
+      u.onend = () => setDjSpeaking(false);
+      u.onerror = () => setDjSpeaking(false);
+      // Preferimos una voz del idioma configurado, si existe.
+      const voices = window.speechSynthesis.getVoices?.() || [];
+      const match = voices.find((v) => v.lang?.toLowerCase().startsWith(settings.lang === 'en' ? 'en' : 'es'));
+      if (match) u.voice = match;
+      window.speechSynthesis.speak(u);
+    } catch { /* voz no disponible */ }
+  }, [settings.dj, settings.djVoice, settings.djRate, settings.lang]);
+
+  /* Emite una frase del DJ (y la locuta si la voz está activada). */
+  const emitDj = useCallback((opts = {}) => {
+    const tk = opts.track || track;
+    if (!settings.dj || !tk) return;
+    const line = makeDjLine({
+      track: tk,
+      prevTrack: opts.prevTrack ?? prevTrackRef.current,
+      seenGenres: seenGenresRef.current,
+      lang: settings.lang,
+      kind: opts.kind || 'intro',
+    });
+    if (!line.text) return;
+    if (tk.genre) seenGenresRef.current.add(tk.genre);
+    setDjText(line.text);
+    setDjTag(line.tag);
+    speak(line.text);
+  }, [settings.dj, settings.lang, track, speak]);
+
+  const stopDjSpeech = useCallback(() => {
+    try { window.speechSynthesis?.cancel(); } catch { /* noop */ }
+    setDjSpeaking(false);
+  }, []);
+
   /* ---------- Motor de reproducción ---------- */
   const playNow = useCallback((tk, list, idx, extraQueue = []) => {
     const p = ytRef.current;
     if (!p?.loadVideoById) return;
+    const prev = prevTrackRef.current;
     setTrack(tk);
     setContextList(list);
     setIndex(idx);
@@ -128,6 +182,9 @@ export function PlayerProvider({ children }) {
     visitedRef.current.add(tk.id);
     try { p.loadVideoById({ videoId: tk.yt, startSeconds: 0 }); } catch { /* noop */ }
     dispatch({ type: 'add-history', id: tk.id });
+    /* DJ Ritmo: comenta la nueva canción (usa el tema anterior para la transición) */
+    if (tk.id !== prev?.id) emitDj({ track: tk, prevTrack: prev });
+    prevTrackRef.current = tk;
     if ('mediaSession' in navigator) {
       try {
         navigator.mediaSession.metadata = new window.MediaMetadata({
@@ -136,7 +193,7 @@ export function PlayerProvider({ children }) {
         });
       } catch { /* noop */ }
     }
-  }, [dispatch]);
+  }, [dispatch, emitDj]);
 
   const advance = useCallback((dir, opts = {}) => {
     // La cola "a continuación" tiene prioridad (también al terminar la canción)
@@ -270,7 +327,17 @@ export function PlayerProvider({ children }) {
     toggleVideo() { setVideoMode((v) => !v); },
     setSleep(minutes) { setSleepEndsAt(minutes ? Date.now() + minutes * 60000 : null); },
     dismissError() { setError(null); },
-  }), [track, playing, position, duration, advance, playNow]);
+
+    /* ── DJ Ritmo ── */
+    djRepeat() { if (djText) speak(djText); },
+    djDismiss() { setDjText(null); stopDjSpeech(); },
+    djGreet() {
+      const g = djGreeting(settings.lang);
+      setDjText(g);
+      setDjTag('djTagHello');
+      speak(g);
+    },
+  }), [track, playing, position, duration, advance, playNow, djText, speak, stopDjSpeech, settings.lang]);
 
   /* Acciones de MediaSession */
   useEffect(() => {
@@ -285,13 +352,35 @@ export function PlayerProvider({ children }) {
     set('seekforward', () => api.nudge(10));
   }, [advance, api]);
 
+  /* ---------- DJ: reacciona al activar/desactivar ---------- */
+  useEffect(() => {
+    if (!settings.dj) { setDjText(null); stopDjSpeech(); }
+  }, [settings.dj, stopDjSpeech]);
+
+  /* La tarjeta del DJ se retira sola unos segundos después de aparecer */
+  useEffect(() => {
+    if (!djText) return;
+    const id = setTimeout(() => setDjText(null), 11000);
+    return () => clearTimeout(id);
+  }, [djText]);
+
+  /* Voz: precargamos la lista (algunos navegadores la cargan async) */
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    const load = () => window.speechSynthesis.getVoices?.();
+    load();
+    window.speechSynthesis.addEventListener?.('voiceschanged', load);
+    return () => window.speechSynthesis.removeEventListener?.('voiceschanged', load);
+  }, []);
+
   const value = useMemo(() => ({
     ...api, track, queue, contextList, index, playing, position, duration,
     shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode,
+    djText, djTag, djSpeaking, djOn: settings.dj,
     related: track ? relatedTracks(track, 6) : [],
     // Lo que sonará después, cuando la cola se vacíe (resto de la lista en curso)
     upcoming: (index >= 0 && contextList.length > index + 1) ? contextList.slice(index + 1) : [],
-  }), [api, track, queue, contextList, index, playing, position, duration, shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode]);
+  }), [api, track, queue, contextList, index, playing, position, duration, shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode, djText, djTag, djSpeaking, settings.dj]);
 
   return (
     <PlayerCtx.Provider value={value}>
@@ -301,6 +390,14 @@ export function PlayerProvider({ children }) {
           para que la pantalla completa incluya el vídeo sin mover el nodo
           (mover un iframe de vídeo reinicia la reproducción). */}
       <VideoStage hostRef={hostRef} videoMode={videoMode} />
+      {settings.dj && (
+        <DJDrop
+          text={djText}
+          tag={djTag}
+          onClose={api.djDismiss}
+          onRepeat={api.djRepeat}
+        />
+      )}
     </PlayerCtx.Provider>
   );
 }

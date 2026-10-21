@@ -267,6 +267,20 @@ export const DICT = {
     seek: 'Progreso del vídeo',
     rew10: 'Retroceder 10 s',
     fwd10: 'Adelantar 10 s',
+
+    /* ── DJ Ritmo ── */
+    dj: 'DJ Ritmo',
+    djTagIntro: 'Presentando',
+    djTagHello: 'Saludo',
+    djTagFiller: 'Al aire',
+    djReplay: 'Repetir',
+    djGreet: 'Saludar',
+    djDesc: 'Un locutor virtual que presenta cada canción, cuenta datos del artista y pone ambiente. Puede hablar en voz alta.',
+    djOn: 'Activar DJ Ritmo',
+    djVoiceOn: 'Voz del DJ',
+    djVoiceDesc: 'El DJ lee sus frases en voz alta entre canciones.',
+    djRate: 'Velocidad de la voz',
+    djProNote: 'El DJ Ritmo forma parte de la experiencia de Ritmo.',
   },
   en: {
     appName: 'Ritmo Music',
@@ -532,5 +546,19 @@ export const DICT = {
     seek: 'Video progress',
     rew10: 'Rewind 10s',
     fwd10: 'Forward 10s',
+
+    /* ── DJ Ritmo ── */
+    dj: 'DJ Ritmo',
+    djTagIntro: 'Now presenting',
+    djTagHello: 'Say hi',
+    djTagFiller: 'On air',
+    djReplay: 'Replay',
+    djGreet: 'Say hello',
+    djDesc: 'A virtual host who introduces every song, shares artist facts and sets the mood. Can speak out loud.',
+    djOn: 'Turn on DJ Ritmo',
+    djVoiceOn: 'DJ voice',
+    djVoiceDesc: 'The DJ reads the lines out loud between songs.',
+    djRate: 'Voice speed',
+    djProNote: 'DJ Ritmo is part of the Ritmo experience.',
   },
 };

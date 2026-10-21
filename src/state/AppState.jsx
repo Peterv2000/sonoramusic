@@ -29,6 +29,10 @@ const DEFAULT_STATE = {
     normalizeEQ: 'flat',      // ecualizador: flat | bass | vocal | treble | loud
     dataSaverVideo: true,     // no vídeo en datos móviles
     crossDevice: true,        // continuidad entre dispositivos
+    // ── DJ Ritmo (locutor virtual tipo Spotify DJ) ──
+    dj: false,                // activar DJ interactivo
+    djVoice: true,            // locutar las frases en voz alta
+    djRate: 1,                // velocidad de la voz (0.6–1.6)
   },
   library: {
     liked: [],                // ids de track

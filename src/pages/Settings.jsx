@@ -5,6 +5,7 @@ import { useToast } from '../components/Toast.jsx';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../components/Icon.jsx';
 import Logo from '../components/Logo.jsx';
+import { DJAvatar } from '../components/DJ.jsx';
 
 /* Fila de interruptor (toggle) */
 function Toggle({ on, onChange, label, sub, pro }) {
@@ -160,10 +161,43 @@ export default function Settings() {
           onChange={proGate(() => set({ wifiOnlyHigh: !s.wifiOnlyHigh }))} />
       </section>
 
+      {/* ── DJ Ritmo (locutor virtual interactivo) ── */}
+      <section className="set-group dj-settings">
+        <h2><Icon name="micVocal" size={16} /> {t('dj')}</h2>
+        <div className="dj-card">
+          <DJAvatar speaking={p.djSpeaking} size={88} />
+          <div className="dj-card-text">
+            <strong>{t('dj')}</strong>
+            <small>{t('djDesc')}</small>
+          </div>
+          <button
+            className={`btn ${s.dj ? '' : 'primary'}`}
+            onClick={() => {
+              const next = !s.dj;
+              set({ dj: next });
+              if (next) { setTimeout(() => p.djGreet(), 120); toast(t('dj')); }
+            }}
+          ><Icon name={s.dj ? 'check' : 'mic'} size={15} /> {s.dj ? t('djOn') : t('djOn')}</button>
+        </div>
+        <Toggle on={s.dj} label={t('djOn')} sub={t('djDesc')} onChange={(v) => { set({ dj: v }); if (v) setTimeout(() => p.djGreet(), 120); }} />
+        <Toggle on={s.dj && s.djVoice} label={t('djVoiceOn')} sub={t('djVoiceDesc')} onChange={(v) => set({ djVoice: v, dj: v ? true : s.dj })} />
+        <label className="setting-row">
+          <span className="set-label">
+            <strong>{t('djRate')}</strong>
+            <small>{Number(s.djRate || 1).toFixed(1)}×</small>
+          </span>
+          <input
+            type="range" min="0.6" max="1.6" step="0.1"
+            value={s.djRate || 1}
+            onChange={(e) => set({ djRate: Number(e.target.value) })}
+            aria-label={t('djRate')}
+          />
+        </label>
+      </section>
+
       {/* ── Vídeo y experiencia (YouTube Music / Spotify) ── */}
       <section className="set-group">
-        <h2><Icon name="video" size={16} /> {t('videoExperience')}</h2>
-        <Toggle on={s.autoVideo} label={t('autoVideo')} sub={t('autoVideoHint')} onChange={(v) => set({ autoVideo: v })} />
+        <h2><Icon name="video" size={16} /> {t('videoExperience')}</h2>        <Toggle on={s.autoVideo} label={t('autoVideo')} sub={t('autoVideoHint')} onChange={(v) => set({ autoVideo: v })} />
         <Toggle on={s.canvas} label={t('canvas')} sub={t('canvasHint')} onChange={(v) => set({ canvas: v })} />
         <Toggle on={s.crossDevice} label={t('crossDevice')} sub={t('crossDeviceHint')} onChange={(v) => set({ crossDevice: v })} />
         <button
