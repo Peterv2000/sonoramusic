@@ -1,0 +1,12 @@
+{
+  "appId": "com.ritmomusic.app",
+  "appName": "Ritmo Music",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": true,
+    "backgroundColor": "#030303"
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

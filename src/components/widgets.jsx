@@ -1,0 +1,101 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { usePlayer, fmt } from '../player/PlayerContext.jsx';
+import { useApp } from '../state/AppState.jsx';
+import { useI18n } from '../i18n/useI18n.jsx';
+import { useToast } from './Toast.jsx';
+import Icon from './Icon.jsx';
+
+/* Tarjeta cuadrada estilo YouTube Music: carátula + título + subtítulo */
+export function Card({ item, onPlay, onOpen, sub, round, badge }) {
+  return (
+    <div className={`card ${round ? 'round' : ''}`} onClick={onOpen}>
+      <div className="card-art">
+        <img src={item.thumb || item.cover} alt="" loading="lazy" />
+        {badge && <span className="card-badge">{badge}</span>}
+        {onPlay && (
+          <button
+            className="card-play"
+            aria-label="Reproducir"
+            onClick={(e) => { e.stopPropagation(); onPlay(); }}
+          ><Icon name="play" size={22} /></button>
+        )}
+      </div>
+      <strong className="card-title">{item.title || item.name}</strong>
+      <small className="card-sub">{sub || item.desc || item.artist}</small>
+    </div>
+  );
+}
+
+/* Fila de canción con acciones: reproducir, like, menú completo */
+export function TrackRow({ track, list, index, onPlay, showAlbum }) {
+  const p = usePlayer();
+  const { state, dispatch } = useApp();
+  const { t } = useI18n();
+  const toast = useToast();
+  const nav = useNavigate();
+  const [menu, setMenu] = useState(false);
+  const liked = state.library.liked.includes(track.id);
+  const isCurrent = p.track?.id === track.id;
+  const downloaded = state.library.downloads.includes(track.id);
+
+  const goArtist = () => { setMenu(false); nav(`/artist/${encodeURIComponent(track.artist)}`); };
+  const goAlbum = () => { setMenu(false); nav(`/album/${encodeURIComponent(track.album)}`); };
+
+  return (
+    <div className={`track-row ${isCurrent ? 'current' : ''}`}>
+      <div className="tr-left" onClick={() => (onPlay ? onPlay() : p.playList(list, track.id))}>
+        <span className="tr-index">{isCurrent && p.playing ? '♪' : index != null ? index + 1 : '▶'}</span>
+        <img src={track.thumb} alt="" loading="lazy" />
+        <div className="tr-meta">
+          <strong>{track.title}</strong>
+          <small>
+            {track.artist}
+            {showAlbum && <> · {track.album}</>}
+            {track.explicit && <> · <span className="explicit-badge">E</span></>}
+            {track.live && <> · <span className="live-pill">EN VIVO</span></>}
+            {downloaded && <> · <span className="dl-badge">⬇ {t('downloadedFlag')}</span></>}
+          </small>
+        </div>
+      </div>
+      <div className="tr-right">
+        <span className="tr-dur">{track.live ? '—' : fmt(track.dur)}</span>
+        <button className={`icon-btn ${liked ? 'on' : ''}`} onClick={() => dispatch({ type: 'toggle-like', id: track.id })} aria-label={t('liked')}>
+          <Icon name="heart" />
+        </button>
+        <button className="icon-btn" onClick={() => setMenu(!menu)} aria-label="Más"><Icon name="more" /></button>
+      </div>
+      {menu && (
+        <div className="tr-menu" onMouseLeave={() => setMenu(false)}>
+          <button onClick={() => { p.playNext(track); setMenu(false); toast(t('playNext')); }}><Icon name="next" size={16} /> {t('playNext')}</button>
+          <button onClick={() => { p.enqueue(track); setMenu(false); toast(t('addToQueue')); }}><Icon name="plus" size={16} /> {t('addToQueue')}</button>
+          <button onClick={goArtist}><Icon name="artist" size={16} /> {t('goToArtist')}</button>
+          <button onClick={goAlbum}><Icon name="album" size={16} /> {t('goToAlbum')}</button>
+          <button onClick={() => { p.playRadio(track); setMenu(false); }}><Icon name="radio" size={16} /> {t('stations')}</button>
+          <button
+            onClick={() => {
+              setMenu(false);
+              if (!state.pro.active) { toast(t('proNeeded')); nav('/pro'); return; }
+              dispatch({ type: 'toggle-download', id: track.id });
+              toast(downloaded ? t('clear') : t('downloadedFlag'));
+            }}
+          ><Icon name={downloaded ? 'check' : 'download'} size={16} /> {downloaded ? t('clear') : t('download')}</button>
+          <button onClick={() => { navigator.clipboard?.writeText(`https://music.youtube.com/watch?v=${track.yt}`).catch(() => {}); setMenu(false); toast(t('copiedLink')); }}><Icon name="share" size={16} /> {t('share')}</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Fila horizontal de tarjetas con título de sección */
+export function Shelf({ title, children, action }) {
+  return (
+    <section className="shelf">
+      <div className="shelf-head">
+        <h2>{title}</h2>
+        {action}
+      </div>
+      <div className="shelf-row">{children}</div>
+    </section>
+  );
+}

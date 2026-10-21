@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+# Los datos del scraper SÍ se versionan: así la app tiene catálogo/gráficos
+# frescos sin depender de que el servidor local esté encendido.
+android/.gradle/
+android/app/build/
+android/build/
+android/capacitor.build.gradle
+android/local.properties
+android/.idea/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
