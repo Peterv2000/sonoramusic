@@ -258,6 +258,9 @@ export const DICT = {
     loadMore: 'Cargar más',
     resultCount: 'resultados',
     suggestions: 'Sugerencias',
+    /* ── Reproductor de vídeo nativo ── */
+    videoTitle: 'Vídeo',
+    closeVideo: 'Cerrar vídeo',
   },
   en: {
     appName: 'Ritmo Music',
@@ -514,5 +517,8 @@ export const DICT = {
     loadMore: 'Load more',
     resultCount: 'results',
     suggestions: 'Suggestions',
+    /* ── Native video player ── */
+    videoTitle: 'Video',
+    closeVideo: 'Close video',
   },
 };

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../state/AppState.jsx';
 import { radioFrom, relatedTracks, shuffle as shuffleArr } from '../data/catalog.js';
+import VideoStage from './VideoStage.jsx';
 
 const PlayerCtx = createContext(null);
 
@@ -296,14 +297,12 @@ export function PlayerProvider({ children }) {
     <PlayerCtx.Provider value={value}>
       {children}
       {/* El iframe se crea dentro de .yt-host (YouTube reemplaza el div interno),
-          por eso los controles de vídeo se renderizan FUERA de ese contenedor. */}
-      {videoMode && <div className="video-backdrop show" onClick={() => setVideoMode(false)} />}
+          por eso los controles de vídeo se renderizan FUERA de ese contenedor.
+          VideoStage dibuja la carcasa nativa alrededor del iframe. */}
+      <VideoStage />
       <div className={`yt-host ${videoMode ? 'video-on' : ''}`} aria-hidden={!videoMode}>
         <div ref={hostRef} />
       </div>
-      {videoMode && (
-        <button className="video-close show" onClick={() => setVideoMode(false)} aria-label="Cerrar vídeo">✕</button>
-      )}
     </PlayerCtx.Provider>
   );
 }
