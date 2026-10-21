@@ -296,13 +296,11 @@ export function PlayerProvider({ children }) {
   return (
     <PlayerCtx.Provider value={value}>
       {children}
-      {/* El iframe se crea dentro de .yt-host (YouTube reemplaza el div interno),
-          por eso los controles de vídeo se renderizan FUERA de ese contenedor.
-          VideoStage dibuja la carcasa nativa alrededor del iframe. */}
-      <VideoStage />
-      <div className={`yt-host ${videoMode ? 'video-on' : ''}`} aria-hidden={!videoMode}>
-        <div ref={hostRef} />
-      </div>
+      {/* El iframe se crea dentro de .yt-host (YouTube reemplaza el div interno).
+          VideoStage monta la carcasa nativa y coloca el iframe DENTRO de ella,
+          para que la pantalla completa incluya el vídeo sin mover el nodo
+          (mover un iframe de vídeo reinicia la reproducción). */}
+      <VideoStage hostRef={hostRef} videoMode={videoMode} />
     </PlayerCtx.Provider>
   );
 }

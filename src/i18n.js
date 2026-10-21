@@ -261,6 +261,11 @@ export const DICT = {
     /* ── Reproductor de vídeo nativo ── */
     videoTitle: 'Vídeo',
     closeVideo: 'Cerrar vídeo',
+    fullscreen: 'Pantalla completa',
+    exitFullscreen: 'Salir de pantalla completa',
+    seek: 'Progreso del vídeo',
+    rew10: 'Retroceder 10 s',
+    fwd10: 'Adelantar 10 s',
   },
   en: {
     appName: 'Ritmo Music',
@@ -520,5 +525,10 @@ export const DICT = {
     /* ── Native video player ── */
     videoTitle: 'Video',
     closeVideo: 'Close video',
+    fullscreen: 'Full screen',
+    exitFullscreen: 'Exit full screen',
+    seek: 'Video progress',
+    rew10: 'Rewind 10s',
+    fwd10: 'Forward 10s',
   },
 };

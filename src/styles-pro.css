@@ -155,7 +155,7 @@ button.link:hover, .link:hover { text-decoration: underline; }
 .lyrics-pane.muted { display: grid; place-items: center; min-height: 200px; font-size: 15px; }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   Reproductor de vídeo NATIVO (carcasa propia alrededor del iframe)
+   Reproductor de vídeo NATIVO (carcasa propia con el iframe dentro)
    ══════════════════════════════════════════════════════════════════════════ */
 .vstage-backdrop {
   position: fixed; inset: 0; z-index: 249;
@@ -163,23 +163,19 @@ button.link:hover, .link:hover { text-decoration: underline; }
   backdrop-filter: blur(14px);
 }
 
+/* La carcasa se mantiene montada siempre, pero oculta si no está abierta.
+   Así el iframe no se recrea y la reproducción no se reinicia. */
 .vstage {
   position: fixed; inset: 0; z-index: 251;
-  display: flex; align-items: center; justify-content: center;
-  padding: 16px; pointer-events: none; /* solo la carcasa captura clics */
+  display: none; align-items: center; justify-content: center;
+  padding: 16px;
 }
+.vstage.open { display: flex; }
 .vstage.idle { cursor: none; }
 
-/* Geometría compartida: la carcasa y el iframe la usan para alinearse.
-   Así el vídeo "encaja" exactamente en el hueco de la pantalla. */
-:root {
-  --vstage-w: min(96vw, 960px);
-  --vstage-head-h: 56px;
-  --vstage-ctrl-h: 91px;
-}
+:root { --vstage-w: min(96vw, 960px); }
 
 .vstage-frame {
-  pointer-events: auto;
   position: relative;
   width: var(--vstage-w);
   background: linear-gradient(180deg, #14161a, #0b0c0f);
@@ -189,12 +185,38 @@ button.link:hover, .link:hover { text-decoration: underline; }
   display: flex; flex-direction: column;
 }
 
+/* ── Pantalla completa real (Fullscreen API). El marco ocupa todo el viewport
+   y el vídeo se centra; el resto se ve negro, sin nada del proveedor. ── */
+.vstage-frame:fullscreen,
+.vstage-frame:-webkit-full-screen {
+  width: 100vw; height: 100vh; max-width: none; max-height: none;
+  border: 0; border-radius: 0; background: #000;
+  justify-content: center;
+}
+.vstage-frame:fullscreen .vstage-screen,
+.vstage-frame:-webkit-full-screen .vstage-screen {
+  aspect-ratio: auto; flex: 1 1 auto;
+}
+.vstage-frame:fullscreen .vstage-head,
+.vstage-frame:-webkit-full-screen .vstage-head {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+  background: linear-gradient(180deg, rgba(0,0,0,0.75), transparent);
+  border-bottom: 0;
+}
+.vstage-frame:fullscreen .vstage-controls,
+.vstage-frame:-webkit-full-screen .vstage-controls {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 5;
+  background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent);
+  border-top: 0;
+}
+
 /* Cabecera de marca (sustituye a la del proveedor) */
 .vstage-head {
   display: flex; align-items: center; gap: 10px;
-  height: var(--vstage-head-h); box-sizing: border-box;
+  height: 56px; box-sizing: border-box;
   padding: 0 14px; background: rgba(0, 0, 0, 0.55);
   border-bottom: 1px solid var(--line);
+  transition: opacity 0.25s ease;
 }
 .vstage-brand { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
 .vstage-dot {
@@ -217,59 +239,68 @@ button.link:hover, .link:hover { text-decoration: underline; }
 }
 .vstage-icon:hover { background: rgba(255, 255, 255, 0.14); color: #fff; }
 
-/* ── La "pantalla": el iframe real se superpone aquí, recortado ──
-   El iframe vive en .yt-host (posicionado en absoluto más abajo). Aquí solo
-   reservamos el hueco con la proporción correcta y recortamos con overflow. */
+/* ── La "pantalla": aloja el iframe, recortado para ocultar sus marcas.
+   Es interactiva: 1 toque = play/pausa, 2 toques = ±10 s, arrastrar = buscar. ── */
 .vstage-screen {
   position: relative;
   width: 100%; aspect-ratio: 16 / 9; background: #000;
-  overflow: hidden;
+  overflow: hidden; cursor: pointer; touch-action: pan-y;
 }
 
-/* ── Posicionamiento del iframe dentro de la carcasa ──
-   El iframe se coloca EXACTAMENTE sobre el hueco de la pantalla usando la
-   misma geometría que la carcasa (--vstage-w y las alturas de cabecera y
-   controles). Se agranda al 135% y se desplaza para empujar FUERA de la vista
-   la barra superior con el título/logo del proveedor y el logo inferior.
-   El contenedor recorta con overflow: hidden. */
-.yt-host { transition: none; }
-.yt-host.video-on {
-  position: fixed;
-  left: 50%; transform: translateX(-50%);
-  width: var(--vstage-w);
-  /* top = centro de pantalla − (altura total carcasa)/2 + (borde 1px + cabecera).
-     Altura total = cabecera + pantalla 16:9 + controles + 2px de bordes. */
-  top: calc(
-    50%
-    - (var(--vstage-head-h) + (var(--vstage-w) * 9 / 16) + var(--vstage-ctrl-h) + 2px) / 2
-    + 1px + var(--vstage-head-h)
-  );
-  height: calc(var(--vstage-w) * 9 / 16);
-  z-index: 252; opacity: 1; pointer-events: none;
-  background: #000; border-radius: 0;
-  box-shadow: none; border: 0;
-  overflow: hidden;
+/* El iframe llena la pantalla y se agranda/recorta para sacar de la vista
+   la barra de título y los logos/enlaces del proveedor. */
+.vstage .yt-host {
+  position: absolute; inset: 0;
+  width: 100% !important; height: 100% !important;
+  opacity: 1; overflow: hidden; border-radius: 0;
 }
-.yt-host.video-on iframe {
-  /* Recorte generoso: escalamos al 145% y desplazamos en negativo para sacar
-     de la vista la barra de título superior y los logos/enlaces del proveedor.
-     Lo que sobra queda fuera del contenedor (overflow: hidden). */
+.vstage .yt-host iframe {
   width: 145% !important; height: 145% !important;
   position: absolute; top: -22.5%; left: -22.5%;
   border: 0;
 }
 
+/* Feedback de doble toque (±10 s) */
+.vstage-dbl {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  display: grid; place-items: center; gap: 2px;
+  width: 84px; height: 84px; border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45); color: #fff;
+  opacity: 0; transition: opacity 0.2s ease; pointer-events: none;
+}
+.vstage-dbl.left { left: 8%; }
+.vstage-dbl.right { right: 8%; }
+.vstage-dbl em { font-style: normal; font-size: 12px; font-weight: 700; }
+/* Se ilumina la zona correspondiente al saltar ±10 s */
+.vstage-dbl.show { opacity: 1; }
+.vstage-flash {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  padding: 10px 18px; border-radius: 999px; background: rgba(0, 0, 0, 0.7);
+  color: #fff; font-size: 15px; font-weight: 700; pointer-events: none;
+  animation: vflash 0.65s ease forwards;
+}
+@keyframes vflash { from { opacity: 0.2; } 30% { opacity: 1; } to { opacity: 0; } }
+
+/* Botón grande de reproducción cuando el vídeo está en pausa */
+.vstage-screen-play {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  display: grid; place-items: center;
+  width: 92px; height: 92px; border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5); color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  pointer-events: none; backdrop-filter: blur(2px);
+}
+
 /* ── Controles propios ── */
 .vstage-controls {
-  height: var(--vstage-ctrl-h); box-sizing: border-box;
+  height: 91px; box-sizing: border-box;
   padding: 12px 16px 14px;
   background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.75));
   border-top: 1px solid var(--line);
-  opacity: 1; transition: opacity 0.25s ease;
+  transition: opacity 0.25s ease;
 }
 .vstage.idle .vstage-head,
-.vstage.idle .vstage-controls { opacity: 0.0; }
-.vstage-head { transition: opacity 0.25s ease; }
+.vstage.idle .vstage-controls { opacity: 0; }
 
 .vstage-progress {
   position: relative; height: 6px; border-radius: 999px;
@@ -311,14 +342,10 @@ button.link:hover, .link:hover { text-decoration: underline; }
 /* Responsive: en pantallas estrechas la carcasa ocupa todo el ancho */
 @media (max-width: 600px) {
   .vstage { padding: 8px; }
-  .vstage-frame, .yt-host.video-on { width: 100%; }
+  .vstage-frame { width: 100%; }
   .vstage-meta { display: none; } /* prioriza los controles de transporte */
   .vstage-row { gap: 8px; }
 }
-
-/* ══════════════════════════════════════════════════════════════════════════
-   Reproductor de vídeo NATIVO (carcasa propia alrededor del iframe)
-   ══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Página de artista ── */
 .artist-hero {
@@ -431,7 +458,6 @@ button.link:hover, .link:hover { text-decoration: underline; }
   .lyrics-pane p { font-size: 17px; }
   .chart-dur { display: none; }
   .move { width: 24px; }
-  .yt-host.video-on { width: 96vw; height: 54vw; max-height: 46vh; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -568,9 +594,6 @@ button.setting-row:hover { background: var(--bg-3); }
   .wrapped-hero img { width: 48px; height: 48px; }
   .feature-list li { padding: 11px 13px; }
 }
-
-/* Vídeo (YT Music) siempre dentro de la pantalla */
-.yt-host.video-on { max-width: calc(100vw - 16px); }
 
 /* Evita desbordes horizontales por títulos largos en cualquier ancho */
 .chart-meta strong, .tr-meta strong, .card-title, .admin-meta strong { max-width: 100%; }
