@@ -108,3 +108,43 @@ export function Shelf({ title, children, action }) {
     </section>
   );
 }
+
+/* Rejilla gráfica de categorías (géneros) con arte, icono y contador.
+   `onPick` navega/selecciona; `onPlay` reproduce la categoría al instante. */
+export function GenreGrid({ genres, countOf, onPick, onPlay, selected }) {
+  const { t } = useI18n();
+  return (
+    <div className="genre-grid">
+      {genres.map((g) => {
+        const sel = selected === g.id;
+        return (
+          <div
+            key={g.id}
+            className={`genre-card ${sel ? 'sel' : ''}`}
+            style={{ '--g': g.color }}
+            onClick={() => onPick(g.id)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPick(g.id); } }}
+          >
+            <img className="genre-art" src={g.cover} alt="" loading="lazy" />
+            <span className="genre-shade" />
+            <span className="genre-icon"><Icon name={g.icon} size={18} /></span>
+            {countOf && <span className="genre-count">{countOf(g.id)} {t('songs')}</span>}
+            <div className="genre-text">
+              <strong>{g.id}</strong>
+              <small>{g.tag}</small>
+            </div>
+            {onPlay && (
+              <button
+                className="genre-play"
+                aria-label={`${t('playAll')} ${g.id}`}
+                onClick={(e) => { e.stopPropagation(); onPlay(g.id); }}
+              ><Icon name="play" size={22} /></button>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}

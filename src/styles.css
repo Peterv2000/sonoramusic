@@ -303,15 +303,105 @@ a { color: inherit; text-decoration: none; }
 .btn.big-btn { width: 100%; justify-content: center; padding: 14px; font-size: 16px; margin-top: 16px; }
 .btn:disabled { opacity: 0.6; cursor: default; }
 
-/* ── Explore ────────────────────────────────────────────────── */
-.genre-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin: 8px 0 20px; }
-.genre-tile {
-  height: 86px; border-radius: 10px; background: linear-gradient(135deg, var(--g), color-mix(in srgb, var(--g) 55%, #000));
-  color: #fff; font-size: 17px; font-weight: 700; text-align: left; padding: 14px;
-  transition: transform 0.15s, outline-color 0.15s; outline: 2px solid transparent;
+/* ── Explore · categorías ───────────────────────────────────── */
+.genre-grid {
+  display: grid; gap: 16px; margin: 10px 0 24px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
-.genre-tile:hover { transform: translateY(-2px); }
-.genre-tile.sel { outline-color: #fff; }
+.genre-card {
+  position: relative; overflow: hidden; cursor: pointer;
+  border-radius: 16px; aspect-ratio: 16 / 10; min-height: 172px;
+  background: #101014;
+  border: 1px solid var(--line);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  isolation: isolate;
+}
+.genre-card:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--g) 55%, transparent); box-shadow: 0 18px 42px rgba(0,0,0,0.5); }
+.genre-card.sel { border-color: var(--g); box-shadow: 0 0 0 2px color-mix(in srgb, var(--g) 65%, transparent), 0 18px 42px rgba(0,0,0,0.5); }
+
+.genre-art {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; transition: transform 0.5s ease, filter 0.3s ease;
+  filter: saturate(1.05);
+}
+.genre-card:hover .genre-art { transform: scale(1.08); }
+
+/* Tinte de marca + degradado para legibilidad del texto */
+.genre-shade {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--g) 62%, transparent) 0%, transparent 42%),
+    linear-gradient(0deg, rgba(0,0,0,0.92) 6%, rgba(0,0,0,0.35) 52%, transparent 100%);
+}
+
+/* Insignia con icono del género */
+.genre-icon {
+  position: absolute; top: 14px; left: 14px;
+  display: grid; place-items: center; width: 38px; height: 38px;
+  border-radius: 12px; color: #fff;
+  background: color-mix(in srgb, var(--g) 78%, #000);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+}
+/* Contador de canciones */
+.genre-count {
+  position: absolute; top: 14px; right: 14px;
+  padding: 5px 11px; border-radius: 999px;
+  font-size: 11.5px; font-weight: 700; color: #fff;
+  background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.16);
+  backdrop-filter: blur(6px);
+}
+.genre-text { position: absolute; left: 16px; right: 16px; bottom: 15px; }
+.genre-text strong {
+  display: block; font-size: 26px; line-height: 1.05; letter-spacing: -0.4px;
+  text-shadow: 0 2px 14px rgba(0,0,0,0.7);
+}
+.genre-text small {
+  display: block; margin-top: 3px; font-size: 12.5px; color: rgba(255,255,255,0.82);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.7);
+}
+/* Botón de reproducción que aparece al pasar el ratón */
+.genre-play {
+  position: absolute; right: 15px; bottom: 14px;
+  display: grid; place-items: center; width: 50px; height: 50px; border-radius: 50%;
+  background: var(--g); color: #fff; border: 0; cursor: pointer;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.55);
+  opacity: 0; transform: translateY(8px) scale(0.9);
+  transition: opacity 0.2s ease, transform 0.2s ease, filter 0.15s ease;
+}
+.genre-card:hover .genre-play,
+.genre-card.sel .genre-play { opacity: 1; transform: translateY(0) scale(1); }
+.genre-play:hover { filter: brightness(1.12); }
+.genre-text { padding-right: 62px; }
+
+/* ── Cabecera del género seleccionado ───────────────────────── */
+.genre-hero {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  padding: 18px; margin: 4px 0 18px; border-radius: 16px;
+  border: 1px solid var(--line); position: relative; overflow: hidden;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--g) 32%, transparent), transparent 68%),
+    var(--bg-2);
+}
+.genre-hero::after {
+  content: ''; position: absolute; right: -40px; top: -40px;
+  width: 180px; height: 180px; border-radius: 50%;
+  background: color-mix(in srgb, var(--g) 40%, transparent); filter: blur(60px);
+  pointer-events: none;
+}
+.genre-hero img {
+  width: 96px; height: 96px; border-radius: 14px; object-fit: cover; flex: none;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.08);
+}
+.genre-hero-text { flex: 1; min-width: 160px; position: relative; z-index: 1; }
+.genre-hero-kicker {
+  font-size: 11.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--g);
+}
+.genre-hero-text h2 { margin: 2px 0 4px; font-size: 30px; letter-spacing: -0.5px; }
+.genre-hero-text small { color: var(--fg-2); font-size: 13.5px; }
+.genre-hero .head-actions { position: relative; z-index: 1; }
 
 /* ── Library ────────────────────────────────────────────────── */
 .lib-shortcuts { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin: 6px 0 22px; }
@@ -606,8 +696,7 @@ html[data-theme='light'] .pro-hero h1 { background: linear-gradient(90deg, #0303
   .shelf-head h1, .shelf-head h2 { font-size: 18px; }
   .shelf-row { grid-auto-columns: 132px; gap: 10px; }
   .shelf-row.album-grid { grid-auto-columns: 150px; }
-  .genre-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
-  .genre-tile { height: 74px; font-size: 15px; }
+  .genre-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
   .lib-shortcuts { grid-template-columns: 1fr; gap: 10px; }
   .stats-grid { grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; padding: 0 12px 14px; }
   .stat strong { font-size: 20px; }
@@ -637,7 +726,13 @@ html[data-theme='light'] .pro-hero h1 { background: linear-gradient(90deg, #0303
   .greeting { font-size: 18px; }
   .search-pill { padding: 8px 12px; }
   .shelf-row { grid-auto-columns: 116px; }
-  .genre-grid { grid-template-columns: 1fr 1fr; }
+  .genre-grid { grid-template-columns: 1fr; gap: 12px; }
+  .genre-card { aspect-ratio: 16 / 8; min-height: 132px; }
+  .genre-text strong { font-size: 22px; }
+  .genre-play { opacity: 1; transform: none; width: 44px; height: 44px; }
+  .genre-hero { padding: 14px; gap: 12px; }
+  .genre-hero img { width: 72px; height: 72px; }
+  .genre-hero-text h2 { font-size: 24px; }
   .lib-ico { width: 40px; height: 40px; }
   .bottom-nav a { font-size: 10px; }
   .bottom-nav a span { font-size: 18px; }

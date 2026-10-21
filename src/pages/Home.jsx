@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../state/AppState.jsx';
 import { usePlayer } from '../player/PlayerContext.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
-import { Card, Shelf, TrackRow } from '../components/widgets.jsx';
+import { Card, Shelf, TrackRow, GenreGrid } from '../components/widgets.jsx';
 import Icon from '../components/Icon.jsx';
 import {
-  TRACKS, MIXES, STATIONS, MOODS, tracksByMood, trackById,
+  TRACKS, MIXES, STATIONS, MOODS, GENRES, tracksByMood, tracksByGenre, trackById,
   weeklyDiscovery, dailyMixes, newReleases, topCharts, ARTISTS, formatViews,
 } from '../data/catalog.js';
 
@@ -72,6 +72,20 @@ export default function Home() {
           >{m}</button>
         ))}
       </div>
+
+      {/* Categorías por género */}
+      <section className="shelf">
+        <div className="shelf-head">
+          <h2>{t('genres')}</h2>
+          <button className="btn small" onClick={() => nav('/explore')}>{t('seeAll')}</button>
+        </div>
+        <GenreGrid
+          genres={GENRES.slice(0, 4)}
+          countOf={(id) => tracksByGenre(id).length}
+          onPick={() => nav('/explore')}
+          onPlay={(id) => { const l = tracksByGenre(id); if (l.length) p.playList(l); }}
+        />
+      </section>
 
       {/* Descubrimiento semanal (Spotify) — renueva cada lunes */}
       <section className="spotlight" onClick={() => p.playList(discovery)}>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePlayer } from '../player/PlayerContext.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
-import { Card, Shelf, TrackRow } from '../components/widgets.jsx';
+import { Card, Shelf, TrackRow, GenreGrid } from '../components/widgets.jsx';
 import Icon from '../components/Icon.jsx';
 import {
   GENRES, MIXES, STATIONS, tracksByGenre,
@@ -24,27 +24,31 @@ export default function Explore() {
     <div className="page">
       <h1>{t('explore')}</h1>
 
-      <div className="genre-grid">
-        {GENRES.map((g) => (
-          <button
-            key={g.id}
-            className={`genre-tile ${genre === g.id ? 'sel' : ''}`}
-            style={{ '--g': g.color }}
-            onClick={() => setGenre(genre === g.id ? null : g.id)}
-          >{g.id}</button>
-        ))}
-      </div>
+      <GenreGrid
+        genres={GENRES}
+        selected={genre}
+        countOf={(id) => tracksByGenre(id).length}
+        onPick={(id) => setGenre(genre === id ? null : id)}
+        onPlay={(id) => { const l = tracksByGenre(id); if (l.length) p.playList(l); }}
+      />
 
       {genre && (
         <section className="list-section">
-          <div className="shelf-head">
-            <h2>{genre} · {list.length} {t('songs')}</h2>
-            {list.length > 0 && (
-              <div className="head-actions">
-                <button className="btn primary" onClick={() => p.playList(list)}><Icon name="play" size={15} /> {t('playAll')}</button>
-                <button className="btn" onClick={() => p.playList([...list].sort(() => Math.random() - 0.5))}><Icon name="shuffle" size={15} /> {t('shuffle')}</button>
-              </div>
-            )}
+          <div className="genre-hero" style={{ '--g': GENRES.find((x) => x.id === genre)?.color || 'var(--red)' }}>
+            <img src={GENRES.find((x) => x.id === genre)?.cover} alt="" />
+            <div className="genre-hero-text">
+              <span className="genre-hero-kicker">{t('explore')}</span>
+              <h2>{genre}</h2>
+              <small>{GENRES.find((x) => x.id === genre)?.tag} · {list.length} {t('songs')}</small>
+            </div>
+            <div className="head-actions">
+              {list.length > 0 && (
+                <>
+                  <button className="btn primary" onClick={() => p.playList(list)}><Icon name="play" size={15} /> {t('playAll')}</button>
+                  <button className="btn" onClick={() => p.playList([...list].sort(() => Math.random() - 0.5))}><Icon name="shuffle" size={15} /> {t('shuffle')}</button>
+                </>
+              )}
+            </div>
           </div>
           {list.map((tr, i) => <TrackRow key={tr.id} track={tr} index={i} list={list} showAlbum />)}
         </section>

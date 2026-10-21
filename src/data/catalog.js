@@ -96,12 +96,48 @@ export const STATIONS = [
 ];
 
 export const GENRES = [
-  { id: 'Pop', color: '#e91e63' },
-  { id: 'Rock', color: '#f44336' },
-  { id: 'Latino', color: '#ff9800' },
-  { id: 'Electrónica', color: '#9c27b0' },
-  { id: 'Hip-Hop', color: '#795548' },
-  { id: 'Lo-Fi', color: '#4caf50' },
+  {
+    id: 'Pop',
+    color: '#e91e63',
+    icon: 'sparkles',
+    tag: 'Hits que no dejan de sonar',
+    cover: trackById('JGwWNGJdvx8').thumb,
+  },
+  {
+    id: 'Rock',
+    color: '#f44336',
+    icon: 'lightning',
+    tag: 'Guitarras e himnos eternos',
+    cover: trackById('fJ9rUzIMcZQ').thumb,
+  },
+  {
+    id: 'Latino',
+    color: '#ff9800',
+    icon: 'fire',
+    tag: 'Ritmo y sabor de fiesta',
+    cover: trackById('kJQP7kiw5Fk').thumb,
+  },
+  {
+    id: 'Electrónica',
+    color: '#9c27b0',
+    icon: 'wave',
+    tag: 'Beats, luces y sintetizadores',
+    cover: trackById('60ItHLz5WEA').thumb,
+  },
+  {
+    id: 'Hip-Hop',
+    color: '#8d6e63',
+    icon: 'mic',
+    tag: 'Flow, rimas y actitud',
+    cover: trackById('QK8mJJJvaes').thumb,
+  },
+  {
+    id: 'Lo-Fi',
+    color: '#4caf50',
+    icon: 'headphones',
+    tag: 'Calma para estudiar y crear',
+    cover: trackById('5qap5aO4i9A').thumb,
+  },
 ];
 
 export const MOODS = ['Fiesta', 'Relajado', 'Energía', 'Romántico', 'Triste', 'Concentración', 'Fiesta latina', 'Workout', 'Noche', 'Clásico'];
