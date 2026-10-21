@@ -326,13 +326,64 @@ a { color: inherit; text-decoration: none; }
 .pl-info h1 { margin: 0 0 6px; }
 
 /* ── Search ─────────────────────────────────────────────────── */
-.search-input-wrap { position: relative; max-width: 560px; margin-bottom: 10px; }
+.search-page h1 { margin-bottom: 12px; }
+
+/* Barra de búsqueda: pegajosa arriba y responsive.
+   En móvil se apila (input arriba, botón profundo abajo) para que NUNCA
+   quede tapada por ningún panel ni se salga de la pantalla. */
+.search-bar {
+  position: sticky; top: var(--top-h); z-index: 30;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 8px 0 12px; margin-bottom: 4px;
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  backdrop-filter: blur(10px);
+}
+@media (max-width: 900px) { .search-bar { top: calc(var(--top-h) + env(safe-area-inset-top)); } }
+
+.search-input-wrap { position: relative; flex: 1 1 280px; min-width: 0; max-width: 640px; }
 .search-input {
   width: 100%; background: var(--bg-3); border: 1px solid transparent; color: var(--fg);
-  border-radius: 999px; padding: 13px 46px 13px 20px; font-size: 15px; outline: none;
+  border-radius: 999px; padding: 13px 46px 13px 44px; font-size: 15px; outline: none;
 }
 .search-input:focus { border-color: var(--red); background: var(--bg-2); }
+.search-lead {
+  position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+  color: var(--fg-2); pointer-events: none;
+}
 .clear-x { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); }
+
+/* Botón de búsqueda profunda */
+.deep-toggle { white-space: nowrap; flex: none; }
+.deep-toggle.on { background: var(--red); border-color: var(--red); color: #fff; }
+.deep-hint {
+  display: flex; align-items: center; gap: 6px;
+  color: var(--fg-2); font-size: 12.5px; margin: 0 0 10px;
+}
+
+/* Desplegable de sugerencias en vivo */
+.sugg-list {
+  position: absolute; left: 0; right: 0; top: calc(100% - 6px);
+  background: var(--bg-2); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: var(--shadow); overflow: hidden; z-index: 40;
+  max-width: 640px;
+}
+.sugg-item {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 11px 16px; text-align: left; color: var(--fg); font-size: 14.5px;
+  background: none; border: 0; cursor: pointer;
+}
+.sugg-item:hover, .sugg-item:focus { background: var(--bg-3); }
+.sugg-item .icon { color: var(--fg-2); flex: none; }
+.sugg-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Contador junto al título de resultados */
+.count-badge {
+  display: inline-grid; place-items: center; min-width: 22px; height: 22px;
+  padding: 0 7px; margin-left: 8px; border-radius: 999px;
+  background: var(--bg-4); color: var(--fg); font-size: 12px; font-weight: 700;
+}
+.live-badge.deep { background: rgba(255, 0, 51, 0.16); color: var(--red); }
+
 .paste-box { background: var(--bg-2); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin: 14px 0; }
 .paste-box h3 { margin: 0 0 4px; }
 .paste-row { display: flex; gap: 8px; margin-top: 10px; }

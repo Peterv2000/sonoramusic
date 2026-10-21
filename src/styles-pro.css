@@ -164,8 +164,12 @@ button.link:hover, .link:hover { text-decoration: underline; }
   box-shadow: 0 20px 70px rgba(0, 0, 0, 0.85); border: 1px solid var(--line);
 }
 .yt-host.video-on iframe {
-  width: 100% !important; height: 100% !important;
-  position: absolute; inset: 0; border: 0;
+  /* Se agranda un poco y se recorta (overflow hidden del contenedor) para
+     dejar fuera de vista la barra de título/logo de YouTube: así el vídeo se
+     ve "limpio", como contenido propio. */
+  width: 128% !important; height: 128% !important;
+  position: absolute; top: -14%; left: -14%;
+  border: 0;
 }
 .video-close {
   position: fixed; top: 14px; right: 14px; z-index: 270;
@@ -397,6 +401,14 @@ button.setting-row:hover { background: var(--bg-3); }
   .chip-row { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
   .chip-row::-webkit-scrollbar { display: none; }
   .chip-row > * { flex: 0 0 auto; }
+}
+
+/* Barra de búsqueda en pantallas estrechas: input a lo ancho y botón debajo */
+@media (max-width: 600px) {
+  .search-bar { flex-wrap: wrap; gap: 8px; }
+  .search-input-wrap { flex: 1 1 100%; max-width: none; }
+  .deep-toggle { flex: 1 1 100%; justify-content: center; }
+  .sugg-list { max-width: none; }
 }
 
 /* Rejilla de álbumes/artistas (Library) fluida */

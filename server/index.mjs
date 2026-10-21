@@ -2,7 +2,8 @@
    Servidor de Ritmo Music.
 
    Sirve la app (carpeta `dist`) y expone un mini-API:
-     GET /api/search?q=…      → búsqueda real en YouTube (scraper, sin key)
+     GET /api/search?q=…      → búsqueda real en YouTube (scraper profundo, sin key)
+     GET /api/suggest?q=…     → sugerencias de búsqueda (autocompletado en vivo)
      GET /api/lyrics?t=…&a=…  → letra vía LRCLIB (evita CORS en la web)
      GET /api/catalog         → catálogo ampliado (actualizado solo)
      GET /api/charts          → gráficos Top 50 (actualizados solos)
@@ -25,7 +26,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { searchYouTube } from './youtube.mjs';
+import { searchYouTube, searchSuggestions } from './youtube.mjs';
 import {
   startAutoUpdater, runUpdate, status as updaterStatus, readJson, writeJson, CONFIG,
   guessGenre, guessMoods, CHART_TABS,
@@ -66,30 +67,50 @@ function sendJson(res, code, obj) {
   res.end(body);
 }
 
-async function apiSearch(res, query) {
-  const q = (query || '').trim();
+async function apiSearch(res, url) {
+  const q = (url.searchParams.get('q') || '').trim();
   if (!q) return sendJson(res, 400, { error: 'falta el parámetro q' });
 
-  const hit = cache.get(q);
+  // Búsqueda PROFUNDA: más resultados y más páginas. `deep=1` amplía sola.
+  const deep = url.searchParams.get('deep') === '1' || url.searchParams.get('deep') === 'true';
+  const limit = Math.min(120, Number(url.searchParams.get('limit')) || (deep ? 60 : 30));
+  const pages = Math.min(10, Number(url.searchParams.get('pages')) || (deep ? 4 : undefined));
+  const key = `${q}|${limit}|${pages || ''}`;
+
+  const hit = cache.get(key);
   if (hit && Date.now() - hit.t < TTL) {
-    return sendJson(res, 200, { query: q, cached: true, results: hit.v });
+    return sendJson(res, 200, { query: q, cached: true, count: hit.v.length, results: hit.v });
   }
 
-  // Caché caliente del actualizador (búsquedas populares pre-descargadas)
-  const warm = readJson('warm.json');
-  const warmHit = warm?.cache?.[q];
-  if (warmHit?.v?.length) {
-    cache.set(q, { t: warmHit.t, v: warmHit.v });
-    return sendJson(res, 200, { query: q, cached: true, warm: true, results: warmHit.v });
+  // Caché caliente del actualizador (solo para búsquedas normales)
+  if (!deep) {
+    const warm = readJson('warm.json');
+    const warmHit = warm?.cache?.[q];
+    if (warmHit?.v?.length) {
+      cache.set(key, { t: warmHit.t, v: warmHit.v });
+      return sendJson(res, 200, { query: q, cached: true, warm: true, count: warmHit.v.length, results: warmHit.v });
+    }
   }
 
   try {
-    const results = await searchYouTube(q);
-    cache.set(q, { t: Date.now(), v: results });
-    if (cache.size > 100) cache.delete(cache.keys().next().value);
-    sendJson(res, 200, { query: q, count: results.length, results });
+    const results = await searchYouTube(q, { limit, pages, music: true });
+    cache.set(key, { t: Date.now(), v: results });
+    if (cache.size > 150) cache.delete(cache.keys().next().value);
+    sendJson(res, 200, { query: q, deep, count: results.length, results });
   } catch (err) {
     sendJson(res, 502, { error: 'no se pudo consultar YouTube', detail: String(err.message || err) });
+  }
+}
+
+/* GET /api/suggest?q=… → sugerencias de búsqueda (autocompletado en vivo) */
+async function apiSuggest(res, url) {
+  const q = (url.searchParams.get('q') || '').trim();
+  if (q.length < 2) return sendJson(res, 200, { query: q, suggestions: [] });
+  try {
+    const suggestions = await searchSuggestions(q);
+    sendJson(res, 200, { query: q, suggestions });
+  } catch (err) {
+    sendJson(res, 200, { query: q, suggestions: [] });
   }
 }
 
@@ -300,13 +321,14 @@ async function apiAdminPicksWrite(req, res) {
   });
 }
 
-/* GET /api/admin/search?q=…&limit=… → búsqueda real para el panel */
+/* GET /api/admin/search?q=…&limit=…&deep=1 → búsqueda profunda para el panel */
 async function apiAdminSearch(res, url) {
   const q = (url.searchParams.get('q') || '').trim();
-  const limit = Math.min(50, Number(url.searchParams.get('limit')) || 25);
+  const deep = url.searchParams.get('deep') !== '0';
+  const limit = Math.min(120, Number(url.searchParams.get('limit')) || (deep ? 60 : 25));
   if (!q) return sendJson(res, 400, { error: 'falta el parámetro q' });
   try {
-    const results = await searchYouTube(q, { limit });
+    const results = await searchYouTube(q, { limit, pages: deep ? 4 : undefined, music: true });
     sendJson(res, 200, { query: q, count: results.length, results });
   } catch (err) {
     sendJson(res, 502, { error: 'no se pudo consultar YouTube', detail: String(err.message || err) });
@@ -355,7 +377,8 @@ const server = http.createServer((req, res) => {
     return res.end();
   }
 
-  if (pathname === '/api/search') return apiSearch(res, url.searchParams.get('q'));
+  if (pathname === '/api/search') return apiSearch(res, url);
+  if (pathname === '/api/suggest') return apiSuggest(res, url);
   if (pathname === '/api/lyrics') return apiLyrics(res, url);
   if (pathname === '/api/admin/search') return apiAdminSearch(res, url);
   if (pathname === '/api/admin/categories') return apiAdminCategories(res);

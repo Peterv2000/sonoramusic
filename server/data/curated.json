@@ -1,5 +1,40 @@
 {
- "updatedAt": 0,
- "catalog": [],
- "charts": {}
+ "updatedAt": 1792544699260,
+ "catalog": [
+  {
+   "yt": "qWr0r2dkc9s",
+   "id": "yt-qWr0r2dkc9s",
+   "title": "Top 50 Global | Mejores Canciones Octubre 2026 (Semana 43)",
+   "artist": "TopLauMusic",
+   "album": "YouTube",
+   "genre": "YouTube",
+   "moods": [
+    "Fiesta"
+   ],
+   "dur": 573,
+   "views": 6000,
+   "thumb": "https://i.ytimg.com/vi/qWr0r2dkc9s/hq720.jpg?sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDP86qI7qq4ZS55N0tfUL3G4bUVcg",
+   "external": true,
+   "curated": true
+  },
+  {
+   "yt": "JGpQwM9fYnQ",
+   "id": "yt-JGpQwM9fYnQ",
+   "title": "Best Pop Hits Mix 2026 Vol. 3 🔥 Bruno Mars, The Weeknd, Ariana Grande, Justin Bieber, Ed Sheeran",
+   "artist": "ZJ Liquid Music",
+   "album": "YouTube",
+   "genre": "YouTube",
+   "moods": [
+    "Fiesta"
+   ],
+   "dur": 2561,
+   "views": 373000,
+   "thumb": "https://i.ytimg.com/vi/JGpQwM9fYnQ/hq720.jpg?sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLC8MBERJXIvlsaXPldTdX5J9GL7aQ",
+   "external": true,
+   "curated": true
+  }
+ ],
+ "charts": {
+  "Global": []
+ }
 }

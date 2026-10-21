@@ -53,7 +53,7 @@ export default function Sidebar() {
           <span className="pro-star"><Icon name="star" size={16} /></span>
           <span>
             <strong>{t('upgrade')}</strong>
-            <small>{state.pro.active ? t('subActive') : 'YouTube Music-like · Demo'}</small>
+            <small>{state.pro.active ? t('subActive') : 'Ritmo · Demo'}</small>
           </span>
         </NavLink>
       </div>

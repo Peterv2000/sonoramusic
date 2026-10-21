@@ -6,7 +6,9 @@ import { useI18n } from '../i18n/useI18n.jsx';
 import { useToast } from '../components/Toast.jsx';
 import { Card, Shelf, TrackRow } from '../components/widgets.jsx';
 import { TRACKS, MIXES, STATIONS, ALBUMS, ARTISTS, trackById, nf } from '../data/catalog.js';
-import { searchYouTube, parseYouTubeId, trackFromYouTubeId } from '../api/youtubeSearch.js';
+import {
+  searchYouTube, suggestYouTube, parseYouTubeId, trackFromYouTubeId,
+} from '../api/youtubeSearch.js';
 import { getCatalog, warmLookup } from '../api/liveData.js';
 import Icon from '../components/Icon.jsx';
 
@@ -14,9 +16,9 @@ export { parseYouTubeId };
 
 const FILTERS = ['all', 'songs', 'videos', 'albums', 'artists', 'playlists', 'stations'];
 
-/* Sección «Resultados de YouTube»: busca en TODO YouTube (no solo el catálogo).
+/* Resultados en vivo del catálogo global (búsqueda real, profunda).
    Si el servidor ya tiene esa búsqueda en caché caliente, aparece al instante. */
-function YouTubeResults({ query, onPlay, onPlayAll }) {
+function LiveResults({ query, deep, onPlay, onPlayAll }) {
   const { t } = useI18n();
   const [items, setItems] = useState(null); // null = cargando
   const [instant, setInstant] = useState(false);
@@ -28,24 +30,28 @@ function YouTubeResults({ query, onPlay, onPlayAll }) {
     setInstant(false);
     let alive = true;
     (async () => {
-      // 1) caché caliente del servidor → respuesta inmediata
-      const warm = await warmLookup(query);
-      if (alive && id === reqRef.current && warm) {
-        setItems(warm);
-        setInstant(true);
-        return;
+      // 1) caché caliente del servidor → respuesta inmediata (solo búsqueda normal)
+      if (!deep) {
+        const warm = await warmLookup(query);
+        if (alive && id === reqRef.current && warm) {
+          setItems(warm);
+          setInstant(true);
+          return;
+        }
       }
-      // 2) si no, búsqueda real en YouTube
-      const list = await searchYouTube(query);
+      // 2) búsqueda real (profunda si se pidió)
+      const list = await searchYouTube(query, { deep });
       if (alive && id === reqRef.current) setItems(list);
     })();
     return () => { alive = false; };
-  }, [query]);
+  }, [query, deep]);
 
   if (items === null) {
     return (
       <section className="list-section">
-        <div className="shelf-head"><h2><Icon name="play" size={15} /> YouTube</h2></div>
+        <div className="shelf-head">
+          <h2><Icon name="lightning" size={15} /> {t('searchYouTube')}</h2>
+        </div>
         <div className="yt-skel">
           {Array.from({ length: 5 }).map((_, i) => <div key={i} className="yt-skel-row" />)}
         </div>
@@ -55,16 +61,59 @@ function YouTubeResults({ query, onPlay, onPlayAll }) {
 
   if (items.length === 0) return null;
 
+  // Separa canales y playlists de las canciones para mostrarlos aparte.
+  const songs = items.filter((x) => (x.kind || 'video') === 'video');
+  const channels = items.filter((x) => x.kind === 'channel');
+  const lists = items.filter((x) => x.kind === 'playlist');
+
   return (
-    <section className="list-section">
-      <div className="shelf-head">
-        <h2><Icon name="play" size={15} /> YouTube · {items.length} {t('songs')}{instant && <span className="live-badge"><Icon name="lightning" size={12} /> {t('instant')}</span>}</h2>
-        <button className="btn primary" onClick={() => onPlayAll(items)}><Icon name="play" size={15} /> {t('playAll')}</button>
-      </div>
-      {items.map((tr, i) => (
-        <TrackRow key={tr.id} track={tr} index={i} list={items} onPlay={() => onPlay(items, tr.id)} />
-      ))}
-    </section>
+    <>
+      {songs.length > 0 && (
+        <section className="list-section">
+          <div className="shelf-head">
+            <h2>
+              <Icon name="lightning" size={15} /> {t('searchYouTube')}
+              <span className="count-badge">{songs.length}</span>
+              {deep && <span className="live-badge deep"><Icon name="globe" size={12} /> {t('deepSearchOn')}</span>}
+              {instant && !deep && <span className="live-badge"><Icon name="lightning" size={12} /> {t('instant')}</span>}
+            </h2>
+            <button className="btn primary" onClick={() => onPlayAll(items)}><Icon name="play" size={15} /> {t('playAll')}</button>
+          </div>
+          {songs.map((tr, i) => (
+            <TrackRow key={tr.id} track={tr} index={i} list={items} onPlay={() => onPlay(items, tr.id)} />
+          ))}
+        </section>
+      )}
+
+      {channels.length > 0 && (
+        <Shelf title={t('artists')}>
+          {channels.map((ch) => (
+            <Card
+              key={ch.id}
+              item={ch}
+              round
+              onOpen={() => onPlay([ch], ch.id)}
+              onPlay={() => onPlay([ch], ch.id)}
+              sub={t('officialVideo')}
+            />
+          ))}
+        </Shelf>
+      )}
+
+      {lists.length > 0 && (
+        <Shelf title={t('playlists')}>
+          {lists.map((pl) => (
+            <Card
+              key={pl.id}
+              item={pl}
+              onOpen={() => onPlay([pl], pl.id)}
+              onPlay={() => onPlay([pl], pl.id)}
+              sub={pl.artist && pl.artist !== 'Lista' ? pl.artist : t('playlists')}
+            />
+          ))}
+        </Shelf>
+      )}
+    </>
   );
 }
 
@@ -78,7 +127,12 @@ export default function Search() {
   const [url, setUrl] = useState('');
   const [filter, setFilter] = useState('all');
   const [debounced, setDebounced] = useState('');
+  const [deep, setDeep] = useState(false);
   const [liveTracks, setLiveTracks] = useState([]);
+  const [sugg, setSugg] = useState([]);
+  const [suggOpen, setSuggOpen] = useState(false);
+  const suggReq = useRef(0);
+  const boxRef = useRef(null);
 
   const query = q.trim().toLowerCase();
 
@@ -89,13 +143,32 @@ export default function Search() {
     return () => { alive = false; };
   }, []);
 
-  /* Retardo de 400 ms: evita buscar en YouTube con cada tecla */
+  /* Retardo de 400 ms: evita buscar con cada tecla */
   useEffect(() => {
     const term = q.trim();
     if (term.length < 3) { setDebounced(''); return; }
     const id = setTimeout(() => setDebounced(term), 400);
     return () => clearTimeout(id);
   }, [q]);
+
+  /* Sugerencias en vivo (autocompletado) mientras se escribe */
+  useEffect(() => {
+    const term = q.trim();
+    if (term.length < 2) { setSugg([]); return; }
+    const id = ++suggReq.current;
+    const timer = setTimeout(async () => {
+      const list = await suggestYouTube(term);
+      if (id === suggReq.current) { setSugg(list); }
+    }, 180);
+    return () => clearTimeout(timer);
+  }, [q]);
+
+  /* Cierra el desplegable al tocar fuera */
+  useEffect(() => {
+    const onDoc = (e) => { if (boxRef.current && !boxRef.current.contains(e.target)) setSuggOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, []);
 
   const results = useMemo(() => {
     const empty = { songs: [], videos: [], mixes: [], albums: [], artists: [], playlists: [], stations: [] };
@@ -122,32 +195,70 @@ export default function Search() {
 
   const onSearch = (value) => {
     setQ(value);
+    setSuggOpen(true);
     if (value.trim().length > 2) dispatch({ type: 'add-search', q: value.trim() });
+  };
+
+  const pickSuggestion = (s) => {
+    setQ(s);
+    setSuggOpen(false);
+    setDebounced(s.trim());
+    dispatch({ type: 'add-search', q: s.trim() });
   };
 
   const playPasted = () => {
     const id = parseYouTubeId(url);
     if (!id) { toast(t('urlHint')); return; }
-    const tk = trackFromYouTubeId(id, `YouTube · ${id}`, 'Enlace pegado');
+    const tk = trackFromYouTubeId(id, `${id}`, t('searchYouTube'));
     p.playList([tk], tk.id);
     setUrl('');
     toast('▶ ' + tk.title);
   };
 
   return (
-    <div className="page">
+    <div className="page search-page">
       <h1>{t('search')}</h1>
-      <div className="search-input-wrap">
-        <input
-          className="search-input"
-          value={q}
-          onChange={(e) => onSearch(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') setDebounced(q.trim()); }}
-          placeholder={t('searchPlaceholder')}
-          autoFocus
-        />
-        {q && <button className="icon-btn clear-x" onClick={() => setQ('')}><Icon name="close" size={16} /></button>}
+
+      <div className="search-bar" ref={boxRef}>
+        <div className="search-input-wrap">
+          <Icon name="search" size={17} className="search-lead" />
+          <input
+            className="search-input"
+            value={q}
+            onChange={(e) => onSearch(e.target.value)}
+            onFocus={() => setSuggOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') { setDebounced(q.trim()); setSuggOpen(false); }
+              if (e.key === 'Escape') setSuggOpen(false);
+            }}
+            placeholder={t('searchPlaceholder')}
+            autoFocus
+          />
+          {q && <button className="icon-btn clear-x" onClick={() => { setQ(''); setSugg([]); }}><Icon name="close" size={16} /></button>}
+        </div>
+
+        <button
+          className={`btn deep-toggle ${deep ? 'on' : ''}`}
+          onClick={() => setDeep((v) => !v)}
+          title={t('deepSearchHint')}
+        >
+          <Icon name="globe" size={15} /> {t('deepSearch')}
+        </button>
+
+        {suggOpen && sugg.length > 0 && (
+          <div className="sugg-list">
+            {sugg.map((s) => (
+              <button key={s} className="sugg-item" onClick={() => pickSuggestion(s)}>
+                <Icon name="search" size={14} /> <span>{s}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
+
+      {deep && (
+        <p className="deep-hint"><Icon name="globe" size={13} /> {t('deepSearchHint')}</p>
+      )}
 
       {!query && (
         <>
@@ -171,7 +282,7 @@ export default function Search() {
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') playPasted(); }}
-                placeholder="https://youtube.com/watch?v=…"
+                placeholder="https://…"
               />
               <button className="btn primary" onClick={playPasted}><Icon name="play" size={15} /></button>
             </div>
@@ -236,7 +347,7 @@ export default function Search() {
                   badge="▶"
                   onPlay={() => p.playList(results.videos, tr.id)}
                   onOpen={() => p.playList(results.videos, tr.id)}
-                  sub={`${tr.artist} · ${t('officialVideo')}`}
+                  sub={tr.artist}
                 />
               ))}
             </Shelf>
@@ -299,10 +410,11 @@ export default function Search() {
             </Shelf>
           )}
 
-          {/* ── Búsqueda REAL en YouTube (cualquier canción/artista) ── */}
+          {/* ── Búsqueda REAL en el catálogo global (cualquier canción/artista) ── */}
           {debounced && (filter === 'all' || filter === 'songs' || filter === 'videos') && (
-            <YouTubeResults
+            <LiveResults
               query={debounced}
+              deep={deep}
               onPlay={(list, id) => p.playList(list, id)}
               onPlayAll={(list) => p.playList(list)}
             />

@@ -50,21 +50,41 @@ function writeCache(q, v) {
   } catch { /* cuota */ }
 }
 
-/** Busca en YouTube a través de nuestro servidor. */
-export async function searchYouTube(query) {
+/** Busca a través de nuestro servidor.
+ *  `deep` pide una búsqueda profunda (varias páginas → muchos más resultados). */
+export async function searchYouTube(query, { deep = false, limit } = {}) {
   const q = (query || '').trim();
   if (!q) return [];
 
-  const cached = readCache(q);
+  const key = deep ? q + '::deep' : q;
+  const cached = readCache(key);
   if (cached) return cached;
 
+  const params = new URLSearchParams({ q });
+  if (deep) params.set('deep', '1');
+  if (limit) params.set('limit', String(limit));
+
   try {
-    const res = await fetch(`${API}?q=${encodeURIComponent(q)}`, { headers: { Accept: 'application/json' } });
+    const res = await fetch(`${API}?${params}`, { headers: { Accept: 'application/json' } });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const list = Array.isArray(data.results) ? data.results : [];
-    if (list.length) writeCache(q, list);
+    if (list.length) writeCache(key, list);
     return list;
+  } catch {
+    return [];
+  }
+}
+
+/** Sugerencias de búsqueda (autocompletado en vivo). */
+export async function suggestYouTube(query) {
+  const q = (query || '').trim();
+  if (q.length < 2) return [];
+  try {
+    const res = await fetch(`/api/suggest?q=${encodeURIComponent(q)}`, { headers: { Accept: 'application/json' } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data.suggestions) ? data.suggestions : [];
   } catch {
     return [];
   }
@@ -83,10 +103,10 @@ export function trackFromYouTubeId(id, title, artist, thumb) {
   return {
     yt: id,
     id: 'yt-' + id,
-    title: title || `YouTube · ${id}`,
-    artist: artist || 'YouTube',
-    album: 'YouTube',
-    genre: 'YouTube',
+    title: title || `Audio · ${id}`,
+    artist: artist || 'Ritmo',
+    album: 'Ritmo',
+    genre: 'Ritmo',
     moods: [],
     dur: 0,
     thumb: thumb || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,

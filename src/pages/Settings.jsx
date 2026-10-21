@@ -241,8 +241,8 @@ export default function Settings() {
           <span className="brand-logo small"><Logo size={24} /></span>
         </div>
         <p className="muted pad">
-          Demo no oficial al estilo YouTube Music. La reproducción usa el reproductor embebido de YouTube.
-          Las funciones marcadas ✦ PRO son un simulacro listo para conectar pagos reales (Play Billing / Stripe).
+          Demo no oficial de música en streaming. Las funciones marcadas ✦ PRO son un simulacro
+          listo para conectar pagos reales (Play Billing / Stripe).
         </p>
         <button className="setting-row" onClick={() => nav('/admin')}>
           <span className="set-label">

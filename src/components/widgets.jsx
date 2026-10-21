@@ -51,7 +51,7 @@ export function TrackRow({ track, list, index, onPlay, showAlbum }) {
           <strong>{track.title}</strong>
           <small>
             {track.artist}
-            {showAlbum && <> · {track.album}</>}
+            {showAlbum && track.album && track.album !== 'Ritmo' && <> · {track.album}</>}
             {track.explicit && <> · <span className="explicit-badge">E</span></>}
             {track.live && <> · <span className="live-pill">EN VIVO</span></>}
             {downloaded && <> · <span className="dl-badge">⬇ {t('downloadedFlag')}</span></>}
@@ -80,7 +80,16 @@ export function TrackRow({ track, list, index, onPlay, showAlbum }) {
               toast(downloaded ? t('clear') : t('downloadedFlag'));
             }}
           ><Icon name={downloaded ? 'check' : 'download'} size={16} /> {downloaded ? t('clear') : t('download')}</button>
-          <button onClick={() => { navigator.clipboard?.writeText(`https://music.youtube.com/watch?v=${track.yt}`).catch(() => {}); setMenu(false); toast(t('copiedLink')); }}><Icon name="share" size={16} /> {t('share')}</button>
+          <button onClick={() => {
+            setMenu(false);
+            const shareUrl = `${location.origin}/#/search?t=${encodeURIComponent(track.title)}`;
+            if (navigator.share) {
+              navigator.share({ title: track.title, text: `${track.title} — ${track.artist}`, url: shareUrl }).catch(() => {});
+            } else {
+              navigator.clipboard?.writeText(shareUrl).catch(() => {});
+              toast(t('copiedLink'));
+            }
+          }}><Icon name="share" size={16} /> {t('share')}</button>
         </div>
       )}
     </div>

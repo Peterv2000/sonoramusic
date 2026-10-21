@@ -221,7 +221,10 @@ const BLOQUEO_LIMITE = 5;
 
 async function consultar(query, limit, log) {
   try {
-    const found = await searchYouTube(query, { limit });
+    // Búsqueda profunda: varias páginas por consulta (más catálogo), pero
+    // acotada para no saturar YouTube (pool de paginación con pausa).
+    const pages = Math.max(1, Math.min(Math.ceil(limit / 20), 3));
+    const found = await searchYouTube(query, { limit, pages, music: false });
     fallosSeguidos = 0;
     return found;
   } catch (err) {

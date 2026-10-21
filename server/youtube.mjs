@@ -1,29 +1,80 @@
 /* ══════════════════════════════════════════════════════════════════════════
    Scraper de búsqueda de YouTube (sin API key, sin dependencias externas).
 
-   Extrae `ytInitialData` de la página de resultados de YouTube y construye
-   una lista de canciones con título, canal, duración, ID y miniatura.
+   Estrategia "profunda y en vivo":
+
+     1. Se usa la API interna `youtubei` (la misma que usa la web de YouTube).
+        Devuelve resultados ricos y, sobre todo, un `continuation` para pedir
+        MÁS páginas → búsquedas profundas (no solo los primeros 20).
+     2. Si la API interna falla (bloqueo, cambio de formato), se cae a raspar
+        el HTML de `youtube.com/results` + `ytInitialData` (compatibilidad).
+     3. Se pagina hasta cubrir `pages` páginas o llegar a `limit` pistas.
+     4. Se busca tanto en YouTube normal COMO en YouTube Music (canciones),
+        para cubrir "todo lo que aparece en YouTube".
 
    Se ejecuta SOLO en el servidor (Node) porque el navegador no puede leer
-   youtube.com por CORS. El cliente llama a `/api/search?q=…`.
+   youtube.com por CORS. El cliente llama a `/api/search?q=…&deep=…`.
    ══════════════════════════════════════════════════════════════════════════ */
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
   '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
+/* Clave pública de la API interna de YouTube (la usa la propia web/app).
+   No es un secreto: viaja en el JS público de youtube.com. */
+const INNERTUBE_KEY = 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8';
+
+/* Un cliente "WEB" estable. Se fija la versión que YouTube acepta hoy. */
+const WEB_CONTEXT = {
+  client: {
+    clientName: 'WEB',
+    clientVersion: '2.20240401.00.00',
+    hl: 'es',
+    gl: 'ES',
+    userAgent: UA,
+  },
+};
+
+const MUSIC_CONTEXT = {
+  client: {
+    clientName: 'WEB_REMIX',
+    clientVersion: '1.20240401.01.00',
+    hl: 'es',
+    gl: 'ES',
+    userAgent: UA,
+  },
+};
+
 /** Busca en YouTube y devuelve una lista de pistas.
- *  Reintenta con espera creciente ante fallos transitorios (bloqueos suaves). */
-export async function searchYouTube(query, { limit = 30, timeout = 12000, retries = 2 } = {}) {
+ *
+ *  @param {string} query
+ *  @param {object} [opts]
+ *  @param {number} [opts.limit]   máximo de pistas a devolver (por defecto 40)
+ *  @param {number} [opts.pages]   páginas a recorrer (búsqueda profunda). Por
+ *                                 defecto se calcula desde `limit`.
+ *  @param {boolean} [opts.music]  además, buscar en YouTube Music (canciones)
+ *  @param {number} [opts.timeout] ms por petición
+ *  @param {number} [opts.retries] reintentos con espera creciente
+ */
+export async function searchYouTube(query, {
+  limit = 40, pages, music = true, timeout = 12000, retries = 2,
+} = {}) {
   const q = (query || '').trim();
   if (!q) return [];
+
+  // Nº de páginas: ~20 resultados por página.
+  const wantPages = Math.max(1, Math.min(pages || Math.ceil(limit / 20) || 1, 10));
 
   let lastErr;
   for (let intento = 0; intento <= retries; intento++) {
     try {
-      return await fetchSearch(q, { limit, timeout });
+      const tracks = await deepSearch(q, { limit, pages: wantPages, music, timeout });
+      if (tracks.length) return tracks;
+      // Sin resultados válidos: probamos el raspado HTML como respaldo.
+      const html = await fetchSearchHtml(q, { limit, timeout });
+      if (html.length) return html;
+      return [];
     } catch (err) {
       lastErr = err;
-      // Espera creciente antes de reintentar (700ms, 1400ms, …)
       if (intento < retries) await sleep(700 * (intento + 1) + Math.random() * 400);
     }
   }
@@ -34,9 +85,100 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-async function fetchSearch(q, { limit, timeout }) {
-  const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}&hl=es&gl=ES`;
+/* ══════════════════════════════════════════════════════════════════════════
+   Búsqueda profunda con la API interna (paginada)
+   ══════════════════════════════════════════════════════════════════════════ */
 
+async function deepSearch(query, { limit, pages, music, timeout }) {
+  const seen = new Set();
+  const out = [];
+
+  // 1) YouTube normal (varios tipos de renderer: vídeos, playlists, canales)
+  await paginate({
+    query, pages, limit, timeout, seen, out,
+    endpoint: 'https://www.youtube.com/youtubei/v1/search?key=' + INNERTUBE_KEY,
+    context: WEB_CONTEXT,
+    includeChannels: true,
+  });
+
+  // 2) YouTube Music (mejores coincidencias de "canción" para el mismo texto)
+  if (music && out.length < limit) {
+    await paginate({
+      query, pages: Math.min(pages, 2), limit, timeout, seen, out,
+      endpoint: 'https://music.youtube.com/youtubei/v1/search?key=' + INNERTUBE_KEY,
+      context: MUSIC_CONTEXT,
+      includeChannels: false,
+    });
+  }
+
+  return out.slice(0, limit);
+}
+
+/** Recorre varias páginas de la API interna usando `continuation`. */
+async function paginate({ query, pages, limit, timeout, seen, out, endpoint, context, includeChannels }) {
+  const DEBUG = process.env.RITMO_DEBUG_SCRAPER === '1';
+  let token;
+  for (let page = 0; page < pages && out.length < limit; page++) {
+    let data;
+    try {
+      data = await callInnerTube(endpoint, context, token, query, timeout);
+    } catch (e) {
+      if (DEBUG) console.log('[scraper] página', page, 'error:', e.message);
+      break; // sin más páginas (o bloqueo suave): se corta y se devuelve lo que haya
+    }
+    if (!data) break;
+
+    const { items, next } = parseSearchResults(data, { includeChannels });
+    let nuevos = 0;
+    for (const tr of items) {
+      if (seen.has(tr.yt)) continue;
+      seen.add(tr.yt);
+      out.push(tr);
+      nuevos++;
+      if (out.length >= limit) break;
+    }
+    if (DEBUG) console.log('[scraper] página', page, '→', items.length, 'items,', nuevos, 'nuevos, next=', !!next);
+
+    if (!next || nuevos === 0) break; // no hay más (o página repetida)
+    token = next;
+    await sleep(120 + Math.random() * 120); // cortesía entre páginas
+  }
+}
+
+async function callInnerTube(endpoint, context, continuation, query, timeout) {
+  const body = continuation
+    ? { context, continuation }
+    : { context, query, params: 'EgIQAQ%3D%3D' /* filtro: solo vídeos/canciones */ };
+
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeout);
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      signal: ctrl.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': UA,
+        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+        'X-YouTube-Client-Name': '1',
+        'X-YouTube-Client-Version': context.client.clientVersion,
+        Origin: 'https://www.youtube.com',
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Respaldo: raspado del HTML con ytInitialData
+   ══════════════════════════════════════════════════════════════════════════ */
+
+async function fetchSearchHtml(q, { limit, timeout }) {
+  const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}&hl=es&gl=ES`;
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeout);
   let html;
@@ -57,7 +199,7 @@ async function fetchSearch(q, { limit, timeout }) {
 
   const data = extractInitialData(html);
   if (!data) throw new Error('sin ytInitialData (posible bloqueo temporal)');
-  return parseVideoRenderers(data).slice(0, limit);
+  return parseSearchResults(data, { includeChannels: true }).items.slice(0, limit);
 }
 
 /* ---------- extracción del JSON embebido ---------- */
@@ -69,7 +211,6 @@ function extractInitialData(html) {
   const braceStart = html.indexOf('{', at);
   if (braceStart < 0) return null;
 
-  // Recorrido contando llaves, respetando cadenas y escapes.
   let depth = 0;
   let inStr = false;
   let esc = false;
@@ -93,17 +234,25 @@ function extractInitialData(html) {
   return null;
 }
 
-/* ---------- recorrido del árbol de renderers ---------- */
-function collectVideoRenderers(node, out = []) {
-  if (!node || typeof node !== 'object') return out;
+/* ══════════════════════════════════════════════════════════════════════════
+   Recorrido del árbol de renderers + parsing
+   ══════════════════════════════════════════════════════════════════════════ */
+
+function collectRenderers(node, out = [], depth = 0) {
+  if (!node || typeof node !== 'object' || depth > 30) return out;
   if (Array.isArray(node)) {
-    for (const item of node) collectVideoRenderers(item, out);
+    for (const item of node) collectRenderers(item, out, depth + 1);
     return out;
   }
-  if (node.videoRenderer) out.push(node.videoRenderer);
+  for (const key of ['videoRenderer', 'compactVideoRenderer', 'playlistRenderer',
+    'compactPlaylistRenderer', 'channelRenderer', 'gridVideoRenderer', 'reelItemRenderer']) {
+    if (node[key]) out.push([key, node[key]]);
+  }
+  // Se recorre TODO el árbol (no solo claves `…Renderer`): YouTube anida los
+  // resultados bajo `primaryContents`, `sectionListRenderer`, etc.
   for (const key of Object.keys(node)) {
     if (key === 'videoRenderer') continue;
-    collectVideoRenderers(node[key], out);
+    collectRenderers(node[key], out, depth + 1);
   }
   return out;
 }
@@ -117,6 +266,17 @@ function runsText(node) {
   return '';
 }
 
+/** Texto "de la derecha" de un byline (el canal), ignorando el "· " y la fecha. */
+function bylineChannel(node) {
+  if (!node) return '';
+  if (node.simpleText) return node.simpleText.split('·')[0].trim();
+  if (Array.isArray(node.runs)) {
+    const t = node.runs.map((r) => r.text || '').join('');
+    return t.split('·')[0].trim();
+  }
+  return '';
+}
+
 function parseDuration(text) {
   if (!text) return 0;
   const p = String(text).split(':').map((n) => parseInt(n, 10) || 0);
@@ -126,7 +286,7 @@ function parseDuration(text) {
 }
 
 function parseViews(text) {
-  const t = String(text || '').toLowerCase().replace(/\u00a0/g, ' ');
+  const t = String(text || '').toLowerCase().replace(/\u00a0/g, ' ').replace(/\s+/g, ' ');
   const m = t.match(/([\d.,]+)\s*(mil|millones?|mill|k|m|b)?/);
   if (!m) return 0;
   let n = parseFloat(m[1].replace(/\./g, '').replace(',', '.'));
@@ -142,83 +302,193 @@ function parseViews(text) {
 function cleanTitle(title, artist) {
   const esc = (t) => String(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   let s = String(title);
-  // Sufijos entre paréntesis/corchetes: (Official Video), [Official Music Video], (Lyric Video)…
-  s = s.replace(/\s*[([{][^)\]}]*\b(?:official|oficial|music\s*video|video|vídeo|visualizer|audio|lyric[s]?|hd|4k|remaster(?:ed)?|en\s*vivo|live)\b[^)\]}]*[)\]}]/gi, '');
-  // Sufijos con barra: "… | Official Music Video"
+  s = s.replace(/\s*[([{][^)\]}]*\b(?:official|oficial|music\s*video|video|vídeo|visualizer|audio|lyric[s]?|letra[s]?|hd|4k|remaster(?:ed)?|en\s*vivo|live)\b[^)\]}]*[)\]}]/gi, '');
   s = s.replace(/\s*\|\s*.*\b(?:official|oficial|music\s*video|lyric[s]?)\b.*$/gi, '');
-  // Sufijo suelto al final: "Song Official Video"
+  // Sufijo de álbum tipo "Canción | Nombre del álbum" (típico de los canales
+  // oficiales). Se quita solo si la derecha NO parece otra canción/artista.
+  s = s.replace(/\s*\|\s*(.{2,60})$/u, (m, right) =>
+    (/[-–—:]|\bfeat\b|\bft\b/i.test(right) ? m : ''));
   s = s.replace(/\s*[-–—]?\s*(?:official\s*)?(?:music\s*)?(?:video|vídeo|audio|lyric[s]?\s*video)\s*$/gi, '');
-  // Prefijo "Artista - " cuando coincide con el canal/artista
   const a = String(artist || '').trim();
   if (a) {
     const e = esc(a);
     s = s.replace(new RegExp(`^\\s*${e}\\s*[-–—]\\s*`, 'i'), '');
-    // Variante con dos puntos: "Metallica: Whiskey in the Jar" (canal = Metallica)
     s = s.replace(new RegExp(`^\\s*${e}\\s*:\\s*`, 'i'), '');
-    // Variante "Metallica – " ya cubierta arriba; también "Metallica | "
     s = s.replace(new RegExp(`^\\s*${e}\\s*\\|\\s*`, 'i'), '');
   }
-  // Prefijo genérico "Artista1 x Artista2 - Canción" / "Artista & Otro - Canción".
-  // Solo si lo que queda a la derecha parece el título real (evita cortar
-  // canciones que legítimamente llevan guion, p. ej. "Love - Remastered").
   s = s.replace(/^\s*([^\-–—|]{2,60}?)\s*[-–—]\s*(.{2,})$/u, (m, left, right) => {
     const lw = left.split(/\s+/).length;
     const featLike = /[x&×]|\bfeat\b|\bft\b/i.test(left);
-    // Cortamos si: parece lista de artistas (feat/x/&), o la izquierda tiene
-    // pinta de nombre de artista (1-3 palabras). Con 4 palabras solo si no
-    // parece ya el propio título (evita "Love - Remastered" y similares).
     if (featLike) return right;
-    // Forma inversa "Canción - Artista": si la derecha es el artista, sobra ella.
     if (a && new RegExp(esc(a), 'i').test(right) && right.split(/\s+/).length <= 3) return left;
     if (lw <= 3) return right;
     return m;
   });
-  // Prefijo genérico "Artista: Canción" (canales oficiales usan mucho los dos
-  // puntos). Solo si la izquierda es corta (1-4 palabras) y sin dos puntos ya.
   s = s.replace(/^\s*([^:]{2,40}?)\s*:\s*(.{2,})$/u, (m, left, right) => {
     if (left.split(/\s+/).length <= 4 && !/[:]/.test(left)) return right;
     return m;
   });
-  // "ft. X ft. X" duplicado → "ft. X"
   s = s.replace(/\b(ft\.?|feat\.?)\s+([^,()|]+?)(?:\s+\1\s+\2)+/gi, '$1 $2');
   return s.replace(/\s+/g, ' ').trim();
 }
 
-function parseVideoRenderers(data) {
-  const renderers = collectVideoRenderers(data);
+/* ---------- parseo unificado de resultados ---------- */
+
+/** Devuelve { items: [pista], next: continuationToken|null }. */
+function parseSearchResults(data, { includeChannels = true } = {}) {
+  const renderers = collectRenderers(data);
   const seen = new Set();
   const out = [];
 
-  for (const v of renderers) {
-    const id = v.videoId;
-    if (!id || seen.has(id)) continue;
-    seen.add(id);
+  for (const [type, node] of renderers) {
+    if (type === 'channelRenderer') {
+      if (!includeChannels) continue;
+      const id = node.channelId;
+      if (!id) continue;
+      const name = runsText(node.title);
+      if (!name) continue;
+      const tr = {
+        yt: 'ch-' + id,
+        id: 'yt-ch-' + id,
+        kind: 'channel',
+        title: name,
+        artist: 'Canal',
+        album: 'Ritmo',
+        genre: 'Ritmo',
+        moods: [],
+        dur: 0,
+        views: parseViews(runsText(node.videoCountText)),
+        thumb: pickThumb(node.thumbnail) || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+        external: true,
+      };
+      if (seen.has(tr.yt)) continue;
+      seen.add(tr.yt);
+      out.push(tr);
+      continue;
+    }
 
-    const rawTitle = runsText(v.title);
+    if (type === 'playlistRenderer' || type === 'compactPlaylistRenderer') {
+      const listId = node.playlistId;
+      if (!listId) continue;
+      if (seen.has('pl-' + listId)) continue;
+      const title = runsText(node.title);
+      if (!title) continue;
+      seen.add('pl-' + listId);
+      out.push({
+        yt: 'pl-' + listId,
+        id: 'yt-pl-' + listId,
+        kind: 'playlist',
+        playlistId: listId,
+        title,
+        artist: runsText(node.shortBylineText) || bylineChannel(node.longBylineText) || 'Lista',
+        album: 'Ritmo',
+        genre: 'Ritmo',
+        moods: [],
+        dur: 0,
+        views: parseViews(runsText(node.videoCountText)),
+        thumb: pickThumb(node.thumbnail) || `https://i.ytimg.com/vi/${pickThumbId(node)}/hqdefault.jpg`,
+        external: true,
+      });
+      continue;
+    }
+
+    // Vídeos (varios formatos)
+    const id = node.videoId;
+    if (!id || seen.has(id)) continue;
+    const rawTitle = runsText(node.title);
     if (!rawTitle) continue;
 
-    const dur = parseDuration(runsText(v.lengthText));
-    // Fuera directos/estrenos y vídeos gigantes (recopilaciones de horas)
-    if (dur === 0 || dur > 3600) continue;
+    const dur = parseDuration(runsText(node.lengthText));
+    if (dur === 0 || dur > 3600) continue; // fuera directos/estrenos y recopilaciones gigantes
 
-    const thumbs = v.thumbnail?.thumbnails || [];
-    const best = thumbs.length ? thumbs[thumbs.length - 1].url : null;
-    const artist = runsText(v.ownerText) || runsText(v.longBylineText) || 'YouTube';
+    seen.add(id);
+    const artist = bylineChannel(node.ownerText) || bylineChannel(node.longBylineText) ||
+      runsText(node.shortBylineText) || 'Ritmo';
 
     out.push({
       yt: id,
       id: 'yt-' + id,
+      kind: 'video',
       title: cleanTitle(rawTitle, artist) || rawTitle,
       artist,
-      album: 'YouTube',
-      genre: 'YouTube',
+      album: 'Ritmo',
+      genre: 'Ritmo',
       moods: [],
       dur,
-      views: parseViews(runsText(v.shortViewCountText) || runsText(v.viewCountText)),
-      thumb: best || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+      views: parseViews(runsText(node.shortViewCountText) || runsText(node.viewCountText)),
+      thumb: pickThumb(node.thumbnail) || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
       external: true,
     });
   }
 
-  return out;
+  return { items: out, next: findContinuation(data) };
 }
+
+function pickThumb(node) {
+  const thumbs = node?.thumbnail?.thumbnails || [];
+  return thumbs.length ? thumbs[thumbs.length - 1].url : null;
+}
+
+function pickThumbId(node) {
+  return node?.videoId || 'default';
+}
+
+/** Busca el token de «cargar más» del árbol (para la página 2+).
+ *
+ *  Importante: NO sirve cualquier `continuationCommand`. La respuesta trae
+ *  varios (los filtros de «Shorts», «Canales», «Playlists»…). El bueno es el
+ *  que cuelga de un `continuationItemRenderer` (el botón «mostrar más»).
+ */
+function findContinuation(node, depth = 0) {
+  if (!node || typeof node !== 'object' || depth > 20) return null;
+
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      const t = findContinuation(item, depth + 1);
+      if (t) return t;
+    }
+    return null;
+  }
+
+  // Token correcto: continuationItemRenderer → continuationEndpoint → token
+  const itemTok = node.continuationItemRenderer
+    ?.continuationEndpoint?.continuationCommand?.token;
+  if (itemTok) return itemTok;
+
+  for (const key of Object.keys(node)) {
+    const t = findContinuation(node[key], depth + 1);
+    if (t) return t;
+  }
+  return null;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Sugerencias (autocompletado en vivo)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/** Devuelve una lista de sugerencias de búsqueda de YouTube. */
+export async function searchSuggestions(query, { timeout = 6000 } = {}) {
+  const q = (query || '').trim();
+  if (q.length < 2) return [];
+  const url = 'https://suggestqueries-clients6.youtube.com/complete/search' +
+    `?client=youtube&ds=yt&hl=es&gl=ES&q=${encodeURIComponent(q)}`;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeout);
+  try {
+    const res = await fetch(url, { signal: ctrl.signal, headers: { 'User-Agent': UA } });
+    if (!res.ok) return [];
+    const text = await res.text();
+    // Respuesta JSONP: window.google.ac.h([...])
+    const at = text.indexOf('(');
+    const body = at >= 0 ? text.slice(at + 1, text.lastIndexOf(')')) : text;
+    const json = JSON.parse(body);
+    const list = json?.[1] || [];
+    return list.map((x) => (Array.isArray(x) ? x[0] : x)).filter(Boolean).slice(0, 10);
+  } catch {
+    return [];
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export { cleanTitle, parseViews, parseDuration };
