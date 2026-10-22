@@ -133,8 +133,8 @@ export function PlayerProvider({ children }) {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = settings.lang === 'en' ? 'en-US' : 'es-CO';
-      u.rate = settings.djRate || 1;
-      u.pitch = 0.95; // más cálido, menos robótico
+      u.rate = settings.djRate || 0.95; // más natural, menos apresurado
+      u.pitch = 0.9; // más cálido y humano
       u.volume = 1;
       u.onstart = () => setDjSpeaking(true);
       u.onend = () => setDjSpeaking(false);
@@ -143,10 +143,10 @@ export function PlayerProvider({ children }) {
       let match = null;
       if (djVoiceURI) match = voices.find((v) => v.voiceURI === djVoiceURI);
       if (!match) {
-        // Preferir voces en español colombiano/castellano; evitar voces "compact" robóticas.
         const esVoices = voices.filter((v) => v.lang?.toLowerCase().startsWith('es'));
-        match = esVoices.find((v) => /colombia|es-co/i.test(v.lang + ' ' + v.name)) ||
-                esVoices.find((v) => !/compact|google/i.test(v.name)) ||
+        match = esVoices.find((v) => /colombia|es-co|latam/i.test((v.lang + ' ' + v.name).toLowerCase())) ||
+                esVoices.find((v) => /male|hombre|juan|carlos|andres|diego/i.test(v.name.toLowerCase())) ||
+                esVoices.find((v) => !/google|microsoft|compact|robot/i.test(v.name.toLowerCase())) ||
                 esVoices[0];
       }
       if (match) u.voice = match;

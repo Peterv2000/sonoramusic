@@ -31,7 +31,8 @@ const DATA_DIR = path.join(__dirname, 'data');
 /* ── Qué se actualiza y cada cuánto ─────────────────────────────────────── */
 export const CONFIG = {
   // Cada cuánto corre el ciclo completo (por defecto 6 h)
-  intervalMs: Number(process.env.UPDATE_INTERVAL_MS || 6 * 60 * 60 * 1000),
+  // Actualización cada 10 min para máxima frescura
+  intervalMs: Number(process.env.UPDATE_INTERVAL_MS || 10 * 60 * 1000),
   // Cuántas canciones se piden por cada consulta
   perQuery: 25,
   // Pausa entre consultas para no saturar YouTube (ms)
@@ -375,7 +376,8 @@ export async function runUpdate({ log = console.log, force = false } = {}) {
       runs: status.runs,
       durationMs: status.lastDurationMs,
       counts: status.counts,
-      nextRunAt: Date.now() + CONFIG.intervalMs,
+      // Actualización cada 10 min para máxima frescura automática
+    nextRunAt: Date.now() + CONFIG.intervalMs,
     });
 
     log(`  ✅ listo en ${(status.lastDurationMs / 1000).toFixed(1)} s ` +
