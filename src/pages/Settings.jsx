@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../components/Icon.jsx';
 import Logo from '../components/Logo.jsx';
 import { DJAvatar } from '../components/DJ.jsx';
+import { GENRES, ARTISTS } from '../data/catalog.js';
 
 /* Fila de interruptor (toggle) */
 function Toggle({ on, onChange, label, sub, pro }) {
@@ -196,6 +197,40 @@ export default function Settings() {
       </section>
 
       {/* ── Vídeo y experiencia (YouTube Music / Spotify) ── */}
+      {/* ── Gustos musicales (Fase A) ── */}
+      <section className="set-group">
+        <h2><Icon name="sparkles" size={16} /> {t('favoriteGenres')}</h2>
+        <p className="muted pad small">{t('favoriteGenresHint')}</p>
+        <div className="taste-grid">
+          {GENRES.map((g) => {
+            const on = (state.library.favoriteGenres || []).includes(g.id);
+            return (
+              <button
+                key={g.id}
+                className={`taste-chip ${on ? 'on' : ''}`}
+                style={{ '--g': g.color }}
+                onClick={() => dispatch({ type: 'toggle-favorite-genre', genre: g.id })}
+              >{g.id}</button>
+            );
+          })}
+        </div>
+        <div className="taste-artists">
+          {ARTISTS.slice(0, 16).map((a) => {
+            const on = (state.library.favoriteArtists || []).includes(a.name);
+            return (
+              <button
+                key={a.name}
+                className={`taste-artist ${on ? 'on' : ''}`}
+                onClick={() => dispatch({ type: 'toggle-favorite-artist', name: a.name })}
+              >
+                <img src={a.thumb} alt="" />
+                {a.name}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
       <section className="set-group">
         <h2><Icon name="video" size={16} /> {t('videoExperience')}</h2>        <Toggle on={s.autoVideo} label={t('autoVideo')} sub={t('autoVideoHint')} onChange={(v) => set({ autoVideo: v })} />
         <Toggle on={s.canvas} label={t('canvas')} sub={t('canvasHint')} onChange={(v) => set({ canvas: v })} />

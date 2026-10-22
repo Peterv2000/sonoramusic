@@ -730,3 +730,88 @@ button.setting-row:hover { background: var(--bg-3); }
 @media (prefers-reduced-motion: reduce) {
   .dj-bars i, .dj-avatar.speaking .dj-ring, .dj-avatar.speaking .dj-disc, .dj-live { animation: none; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   REACCIONES Y COMENTARIOS POR CANCIÓN
+   ══════════════════════════════════════════════════════════════════════════ */
+.react-row {
+  display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 6px;
+}
+.react-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border-radius: 999px;
+  background: var(--bg-2); border: 1px solid var(--line);
+  color: var(--fg); font-size: 15px; cursor: pointer;
+  transition: transform 0.15s, background 0.15s, border-color 0.15s;
+}
+.react-chip:hover { transform: translateY(-2px); background: var(--bg-3); }
+.react-chip.on {
+  background: color-mix(in srgb, var(--red) 18%, var(--bg-2));
+  border-color: var(--red);
+}
+.react-count { font-size: 12px; font-weight: 700; color: var(--fg-2); }
+.react-chip.on .react-count { color: var(--red); }
+
+.react-comments-block { margin: 12px 0 4px; }
+
+.comments-block { margin: 14px 0 6px; }
+.comments-head h3 { display: flex; align-items: center; gap: 8px; font-size: 16px; margin: 0 0 10px; }
+.comment-form {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.comment-avatar {
+  width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--bg-3); border: 1px solid var(--line); font-size: 16px; flex: none;
+}
+.comment-input {
+  flex: 1; min-width: 0; padding: 9px 12px; border-radius: 999px;
+  background: var(--bg-2); border: 1px solid var(--line); color: var(--fg);
+  font-size: 13.5px;
+}
+.comment-input:focus { outline: none; border-color: var(--red); }
+.comment-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.comment {
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.comment-body { flex: 1; min-width: 0; }
+.comment-meta { display: flex; align-items: baseline; gap: 8px; }
+.comment-meta strong { font-size: 13.5px; }
+.comment-meta small { color: var(--fg-2); font-size: 11.5px; }
+.comment-body p { margin: 3px 0 5px; font-size: 13.5px; line-height: 1.4; word-break: break-word; }
+.comment-actions { display: flex; gap: 10px; }
+.comment-like, .comment-del {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11.5px; color: var(--fg-2); background: none; border: 0; cursor: pointer;
+  padding: 2px 6px; border-radius: 6px;
+}
+.comment-like:hover, .comment-del:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
+.comment-like.on { color: var(--red); }
+
+/* ── Gustos musicales (Settings) ── */
+.taste-grid { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 14px; }
+.taste-chip {
+  padding: 7px 13px; border-radius: 999px; font-size: 13px; font-weight: 600;
+  background: var(--bg-2); border: 1px solid var(--line); color: var(--fg);
+  cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.taste-chip:hover { background: var(--bg-3); }
+.taste-chip.on {
+  background: color-mix(in srgb, var(--red) 20%, var(--bg-2));
+  border-color: var(--red); color: #fff;
+}
+.taste-artists { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 14px; }
+.taste-artist {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 999px; font-size: 12.5px;
+  background: var(--bg-2); border: 1px solid var(--line); cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.taste-artist:hover { background: var(--bg-3); }
+.taste-artist.on { background: color-mix(in srgb, var(--red) 20%, var(--bg-2)); border-color: var(--red); }
+.taste-artist img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
+
+@media (max-width: 600px) {
+  .comment-form { flex-wrap: wrap; }
+  .comment-form .btn { width: 100%; justify-content: center; }
+  .react-chip { padding: 5px 9px; font-size: 14px; }
+}

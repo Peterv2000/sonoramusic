@@ -5,6 +5,7 @@ import { useI18n } from '../i18n/useI18n.jsx';
 import { fetchLyrics, activeLineIndex } from '../api/lyrics.js';
 import Icon from './Icon.jsx';
 import { DJAvatar, Bars } from './DJ.jsx';
+import { Reactions, Comments } from './Reactions.jsx';
 
 const SLEEP_OPTS = [10, 15, 30, 45, 60];
 
@@ -144,6 +145,11 @@ export default function FullPlayer() {
               </button>
             </div>
           )}
+
+          <div className="react-comments-block">
+            <Reactions trackId={track.id} />
+            <Comments trackId={track.id} />
+          </div>
 
           <div className="full-extra">
             <div className="vol-row">

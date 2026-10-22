@@ -5,9 +5,9 @@ import { useToast } from '../components/Toast.jsx';
 import Icon from '../components/Icon.jsx';
 
 const PLANS = [
-  { id: 'monthly', price: '4,99 €', per: 'perMonth', tag: null, months: 1 },
-  { id: 'annual', price: '49,99 €', per: 'perYear', tag: 'save2Months', months: 12, popular: true },
-  { id: 'family', price: '7,99 €', per: 'perMonth', tag: 'upTo6', months: 1 },
+  { id: 'monthly', price: '$14.900', per: 'perMonth', tag: null, months: 1 },
+  { id: 'annual', price: '$129.900', per: 'perYear', tag: 'save2Months', months: 12, popular: true },
+  { id: 'family', price: '$22.900', per: 'perMonth', tag: 'upTo6', months: 1 },
 ];
 
 const FEATURES = ['f1', 'f2', 'f3', 'f4', 'f5', 'f6'];
@@ -90,7 +90,7 @@ export default function Pro() {
           <button className="btn primary big-btn" disabled={paying} onClick={subscribe}>
             {paying ? '⏳…' : `✦ ${t('subscribeNow')} · ${PLANS.find((x) => x.id === sel).price}`}
           </button>
-          <p className="muted center">{t('simulated')} — sin cargo real</p>
+          <p className="muted center">{t('priceCopNote')}</p>
         </>
       )}
 

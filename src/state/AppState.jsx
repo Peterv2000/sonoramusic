@@ -44,6 +44,12 @@ const DEFAULT_STATE = {
     downloads: [],            // ids de track "descargados" (simulado)
     playCounts: {},           // { trackId: n }
     radioHistory: [],         // emisoras/recientes de contexto
+    // ── Experiencia (Fase A) ──
+    reactions: {},            // { trackId: { '❤️': n, '🔥': n, ... } } contadores globales simulados
+    myReactions: {},           // { trackId: ['❤️', ...] } lo que el usuario reaccionó
+    comments: {},             // { trackId: [ { id, user, text, at, likes } ] }
+    favoriteGenres: [],       // géneros preferidos
+    favoriteArtists: [],      // artistas preferidos
   },
 };
 
@@ -152,6 +158,50 @@ function reducer(state, action) {
     }
     case 'clear-downloads':
       return { ...state, library: { ...state.library, downloads: [] } };
+    /* ── Reacciones y comentarios (Fase A) ── */
+    case 'react-track': {
+      const { id, emoji } = action;
+      const prev = state.library.myReactions[id] || [];
+      const has = prev.includes(emoji);
+      const myReactions = { ...state.library.myReactions, [id]: has ? prev.filter((e) => e !== emoji) : [...prev, emoji] };
+      const counts = { ...(state.library.reactions[id] || {}) };
+      counts[emoji] = Math.max(0, (counts[emoji] || 0) + (has ? -1 : 1));
+      const reactions = { ...state.library.reactions, [id]: counts };
+      return { ...state, library: { ...state.library, myReactions, reactions } };
+    }
+    case 'add-comment': {
+      const { trackId, text, user } = action;
+      const c = { id: 'c-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6), user: user || 'Tú', text: String(text).trim(), at: Date.now(), likes: 0, likedByMe: false };
+      const list = [c, ...(state.library.comments[trackId] || [])];
+      return { ...state, library: { ...state.library, comments: { ...state.library.comments, [trackId]: list } } };
+    }
+    case 'delete-comment': {
+      const { trackId, commentId } = action;
+      const list = (state.library.comments[trackId] || []).filter((c) => c.id !== commentId);
+      return { ...state, library: { ...state.library, comments: { ...state.library.comments, [trackId]: list } } };
+    }
+    case 'like-comment': {
+      const { trackId, commentId } = action;
+      const list = (state.library.comments[trackId] || []).map((c) => {
+        if (c.id !== commentId) return c;
+        const likedByMe = !c.likedByMe;
+        return { ...c, likedByMe, likes: Math.max(0, (c.likes || 0) + (likedByMe ? 1 : -1)) };
+      });
+      return { ...state, library: { ...state.library, comments: { ...state.library.comments, [trackId]: list } } };
+    }
+    /* ── Gustos musicales (Fase A) ── */
+    case 'toggle-favorite-genre': {
+      const g = action.genre;
+      const set = new Set(state.library.favoriteGenres || []);
+      if (set.has(g)) set.delete(g); else set.add(g);
+      return { ...state, library: { ...state.library, favoriteGenres: [...set] } };
+    }
+    case 'toggle-favorite-artist': {
+      const a = action.name;
+      const set = new Set(state.library.favoriteArtists || []);
+      if (set.has(a)) set.delete(a); else set.add(a);
+      return { ...state, library: { ...state.library, favoriteArtists: [...set] } };
+    }
     /* ── Suscripción PRO ── */
     case 'activate-pro':
       return { ...state, pro: { active: true, plan: action.plan, since: Date.now(), expires: action.expires } };
