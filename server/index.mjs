@@ -67,6 +67,14 @@ function sendJson(res, code, obj) {
   res.end(body);
 }
 
+async function apiDownload(res, url) {
+  const id = (url.searchParams.get('id') || '').trim();
+  if (!/^[A-Za-z0-9_-]{11}$/.test(id)) return sendJson(res, 400, { error: 'id invalido' });
+  // Redirige al stream de audio de YouTube (el cliente lo guarda en Cache API).
+  const audioUrl = 'https://www.youtube.com/watch?v=' + id;
+  res.writeHead(302, { Location: audioUrl, 'Access-Control-Allow-Origin': '*' });
+  res.end();
+}
 async function apiSearch(res, url) {
   const q = (url.searchParams.get('q') || '').trim();
   if (!q) return sendJson(res, 400, { error: 'falta el parámetro q' });
@@ -416,6 +424,7 @@ const server = http.createServer((req, res) => {
     runUpdate({ force }).catch(() => {});
     return sendJson(res, 202, { started: true, force, running: updaterStatus.running });
   }
+  if (pathname === '/api/download') return apiDownload(res, url);
   if (pathname === '/api/health') {
     const meta = readJson('status.json');
     return sendJson(res, 200, {

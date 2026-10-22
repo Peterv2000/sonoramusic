@@ -22,6 +22,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { searchYouTube } from './youtube.mjs';
+import { curateBatch } from './ai-curator.mjs';
+import { guessGenre as aiGenre, guessMoods as aiMoods } from './ai-curator.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, 'data');
@@ -31,11 +33,11 @@ export const CONFIG = {
   // Cada cuánto corre el ciclo completo (por defecto 6 h)
   intervalMs: Number(process.env.UPDATE_INTERVAL_MS || 6 * 60 * 60 * 1000),
   // Cuántas canciones se piden por cada consulta
-  perQuery: 15,
+  perQuery: 25,
   // Pausa entre consultas para no saturar YouTube (ms)
   pauseMs: Number(process.env.UPDATE_PAUSE_MS || 900),
   // Cuántas canciones como máximo guarda el catálogo ampliado
-  maxCatalog: 600,
+  maxCatalog: 2000,
   // Consultas del catálogo ampliado: géneros + artistas populares
   catalogQueries: [
     'top canciones pop 2026', 'top canciones rock clasico', 'top canciones latinas 2026',
@@ -196,17 +198,7 @@ function guessGenre(text) {
 }
 
 /* ── Etiqueta de estado de ánimo aproximada ─────────────────────────────── */
-function guessMoods(text, genre) {
-  const moods = [];
-  if (/party|fiesta|dance|bailar|hit|hits|top/i.test(text)) moods.push('Fiesta');
-  if (/rock|energy|workout|gym|motivaci/i.test(text)) moods.push('Energía');
-  if (/chill|relax|lofi|sleep|study|calm|piano/i.test(text)) moods.push('Relajado');
-  if (/love|amor|romant|heart/i.test(text)) moods.push('Romántico');
-  if (/sad|triste|llorar|desamor/i.test(text)) moods.push('Triste');
-  if (genre === 'Lo-Fi') moods.push('Concentración');
-  if (genre === 'Latino') moods.push('Fiesta latina');
-  return [...new Set(moods)].slice(0, 3);
-}
+async function guessMoods(text, genre) { try { return await aiMoods(text, genre); } catch { return []; } }
 
 /* ══════════════════════════════════════════════════════════════════════════
    TAREAS
@@ -285,7 +277,8 @@ async function updateCharts(log) {
 
     for (const q of tab.queries || []) {
       const list = await consultar(q, 30, log);
-      found.push(...dedupe(list, seen, true));
+      const { accepted: _a } = curateBatch(list, seen);
+      found.push(..._a);
     }
     for (const artist of tab.artists || []) {
       const list = await consultar(artist, 12, log);
