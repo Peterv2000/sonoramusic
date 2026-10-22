@@ -293,6 +293,9 @@ export const DICT = {
     djVoiceOn: 'Voz del DJ',
     djVoiceDesc: 'El DJ lee sus frases en voz alta entre canciones.',
     djRate: 'Velocidad de la voz',
+    djVoiceSelect: 'Tipo de voz',
+    djVoiceAuto: 'Automática (colombiana)',
+    djVoiceOn: 'Voz del DJ',
     djProNote: 'El DJ Ritmo forma parte de la experiencia de Ritmo.',
   },
   en: {
@@ -585,6 +588,9 @@ export const DICT = {
     djVoiceOn: 'DJ voice',
     djVoiceDesc: 'The DJ reads the lines out loud between songs.',
     djRate: 'Voice speed',
+    djVoiceSelect: 'Voice type',
+    djVoiceAuto: 'Automatic (Colombian)',
+    djVoiceOn: 'DJ voice',
     djProNote: 'DJ Ritmo is part of the Ritmo experience.',
   },
 };

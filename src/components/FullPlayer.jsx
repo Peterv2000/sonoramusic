@@ -140,6 +140,17 @@ export default function FullPlayer() {
                 </div>
                 <p>{p.djText || t('djDesc')}</p>
               </div>
+              <div className="dj-voice-controls">
+                <button className={`icon-btn ${state.settings.djVoice ? "" : "off"}`} onClick={() => dispatch({ type: "patch-settings", value: { djVoice: !state.settings.djVoice } })} title={t("djVoiceOn")} aria-label={t("djVoiceOn")}>
+                  <Icon name={state.settings.djVoice ? "volume" : "mute"} size={16} />
+                </button>
+                <select className="dj-voice-select" value={p.djVoiceURI || ""} onChange={(e) => p.djSetVoice(e.target.value)} aria-label={t("djVoiceSelect")}>
+                  <option value="">{t("djVoiceAuto")}</option>
+                  {p.djVoices().map((v) => (
+                    <option key={v.voiceURI} value={v.voiceURI}>{v.name} ({v.lang})</option>
+                  ))}
+                </select>
+              </div>
               <button className="icon-btn" onClick={p.djGreet} title={t('djGreet')} aria-label={t('djGreet')}>
                 <Icon name="volume" size={18} />
               </button>

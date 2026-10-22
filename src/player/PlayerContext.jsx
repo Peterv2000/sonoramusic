@@ -50,6 +50,7 @@ export function PlayerProvider({ children }) {
   const [djText, setDjText] = useState(null);     // frase actual (o null)
   const [djTag, setDjTag] = useState('');
   const [djSpeaking, setDjSpeaking] = useState(false);
+  const [djVoiceURI, setDjVoiceURI] = useState(''); // voz elegida por el usuario
   const prevTrackRef = useRef(null);
   const seenGenresRef = useRef(new Set());
 
@@ -131,19 +132,27 @@ export function PlayerProvider({ children }) {
     try {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = settings.lang === 'en' ? 'en-US' : 'es-ES';
+      u.lang = settings.lang === 'en' ? 'en-US' : 'es-CO';
       u.rate = settings.djRate || 1;
-      u.pitch = 1.02;
+      u.pitch = 0.95; // más cálido, menos robótico
+      u.volume = 1;
       u.onstart = () => setDjSpeaking(true);
       u.onend = () => setDjSpeaking(false);
       u.onerror = () => setDjSpeaking(false);
-      // Preferimos una voz del idioma configurado, si existe.
       const voices = window.speechSynthesis.getVoices?.() || [];
-      const match = voices.find((v) => v.lang?.toLowerCase().startsWith(settings.lang === 'en' ? 'en' : 'es'));
+      let match = null;
+      if (djVoiceURI) match = voices.find((v) => v.voiceURI === djVoiceURI);
+      if (!match) {
+        // Preferir voces en español colombiano/castellano; evitar voces "compact" robóticas.
+        const esVoices = voices.filter((v) => v.lang?.toLowerCase().startsWith('es'));
+        match = esVoices.find((v) => /colombia|es-co/i.test(v.lang + ' ' + v.name)) ||
+                esVoices.find((v) => !/compact|google/i.test(v.name)) ||
+                esVoices[0];
+      }
       if (match) u.voice = match;
       window.speechSynthesis.speak(u);
     } catch { /* voz no disponible */ }
-  }, [settings.dj, settings.djVoice, settings.djRate, settings.lang]);
+  }, [settings.dj, settings.djVoice, settings.djRate, settings.lang, djVoiceURI]);
 
   /* Emite una frase del DJ (y la locuta si la voz está activada). */
   const emitDj = useCallback((opts = {}) => {
@@ -337,7 +346,12 @@ export function PlayerProvider({ children }) {
       setDjTag('djTagHello');
       speak(g);
     },
-  }), [track, playing, position, duration, advance, playNow, djText, speak, stopDjSpeech, settings.lang]);
+    djSetVoice(uri) { setDjVoiceURI(uri); },
+    djVoices() {
+      if (typeof window === 'undefined' || !window.speechSynthesis) return [];
+      return window.speechSynthesis.getVoices?.() || [];
+    },
+  }), [track, playing, position, duration, advance, playNow, djText, speak, stopDjSpeech, settings.lang, djVoiceURI]);
 
   /* Acciones de MediaSession */
   useEffect(() => {
@@ -376,11 +390,11 @@ export function PlayerProvider({ children }) {
   const value = useMemo(() => ({
     ...api, track, queue, contextList, index, playing, position, duration,
     shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode,
-    djText, djTag, djSpeaking, djOn: settings.dj,
+    djText, djTag, djSpeaking, djOn: settings.dj, djVoiceURI,
     related: track ? relatedTracks(track, 6) : [],
     // Lo que sonará después, cuando la cola se vacíe (resto de la lista en curso)
     upcoming: (index >= 0 && contextList.length > index + 1) ? contextList.slice(index + 1) : [],
-  }), [api, track, queue, contextList, index, playing, position, duration, shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode, djText, djTag, djSpeaking, settings.dj]);
+  }), [api, track, queue, contextList, index, playing, position, duration, shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode, djText, djTag, djSpeaking, settings.dj, djVoiceURI]);
 
   return (
     <PlayerCtx.Provider value={value}>

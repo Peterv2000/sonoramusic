@@ -1,26 +1,20 @@
 /* ══════════════════════════════════════════════════════════════════════════
-   DJ RITMO — locutor virtual interactivo.
+   DJ RITMO — locutor virtual interactivo (Fase C: voz colombiana).
 
    Genera comentarios contextuales entre canciones, al estilo del DJ de
-   Spotify: presenta el tema, cuenta algo del artista, marca las transiciones
-   y pone ambiente según la hora, el género y el ánimo.
+   Spotify, pero con un tono casual, cercano y "parce" colombiano.
 
-   Funciona 100% en local (sin red): combina plantillas con los datos del
-   catálogo para que cada intervención suene natural y variada. La voz es
-   opcional y usa la Web Speech API del navegador.
+   Funciona 100% en local: combina plantillas con los datos del catálogo. La
+   voz es opcional y usa la Web Speech API; el usuario elige el tipo de voz
+   (lista real del navegador) y activa/desactiva la locución con un botón.
    ══════════════════════════════════════════════════════════════════════════ */
 
-import { GENRES } from '../data/catalog.js';
+import { trackById } from '../data/catalog.js';
 
-/* Elige un elemento al azar de una lista. */
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
-/* Rellena una plantilla: "Suena {title}, de {artist}" */
 function fill(tpl, vars) {
   return tpl.replace(/\{(\w+)\}/g, (_, k) => (vars[k] != null ? vars[k] : ''));
 }
-
-/* Franja horaria → saludo. */
 function daypart(lang) {
   const h = new Date().getHours();
   const es = lang === 'es';
@@ -30,13 +24,16 @@ function daypart(lang) {
   return es ? 'noche' : 'night';
 }
 
+/* ── Plantillas en español colombiano (casual, cercano, "parce") ── */
 const INTROS_ES = [
-  'Suena {title}, de {artist}.',
-  'Ahora mismo, {artist} con {title}.',
-  'Te dejo con {title}, de {artist}.',
+  'Parce, suena {title}, de {artist}. ¡Qué chimba!',
+  'A ver, parce: {artist} con {title}.',
+  'Te dejo con {title}, de {artist}. ¡Dale!',
   'Siguiente parada: {artist} y su {title}.',
-  'Esto es {title}, cortesía de {artist}.',
+  'Esto es {title}, cortesía de {artist}. ¡Qué nota!',
   'Bajamos el telón para dar paso a {artist}: {title}.',
+  'Parce, ahora suena {title}, de {artist}. ¡Brutal!',
+  'Ojo con esto: {artist} y su {title}.',
 ];
 
 const INTROS_EN = [
@@ -47,10 +44,11 @@ const INTROS_EN = [
 ];
 
 const TRANSITIONS_ES = [
-  'Venimos de {prev}, y ya tenemos el siguiente listo.',
-  'Después de {prev}, subimos el nivel.',
-  'Eso fue {prev}. Ahora, algo más.',
-  'Cambiamos de tercio tras {prev}.',
+  'Veníamos de {prev}, y ya tenemos el siguiente listo, parce.',
+  'Después de {prev}, subimos el nivel. ¡Dale!',
+  'Eso fue {prev}. Ahora, algo más chimba.',
+  'Cambiamos de tercio tras {prev}, parce.',
+  'Parce, después de {prev} sigue esto.',
 ];
 
 const TRANSITIONS_EN = [
@@ -60,33 +58,52 @@ const TRANSITIONS_EN = [
 ];
 
 const GENRE_LINES_ES = {
-  Pop: ['Puro pop para cantar a todo pulmón.', 'Pop del bueno, de los que se pegan.'],
-  Rock: ['Guitarras al frente, como debe ser.', 'Rock que se siente en el pecho.'],
-  Latino: ['Esto tiene sabor, prepárate para mover el cuerpo.', 'Ritmo latino directo a las caderas.'],
-  'Electrónica': ['Sintetizadores y beats para volar.', 'Modo electrónico activado.'],
-  'Hip-Hop': ['Flow, rimas y mucha actitud.', 'Hip-hop para dominar la pista.'],
-  'Lo-Fi': ['Bajamos las revoluciones con un poco de lo-fi.', 'Beats suaves para estudiar o desconectar.'],
+  Pop: ['Pop del bueno, de los que se pegan, parce.', 'Puro pop para cantar a todo pulmón.'],
+  Rock: ['Guitarras al frente, como debe ser, parce.', 'Rock que se siente en el pecho. ¡Qué nota!'],
+  Latino: ['Esto tiene sabor, prepárate para mover el cuerpo, parce.', 'Ritmo latino directo a las caderas.'],
+  Reggaetón: ['Perreo del bueno, parce. ¡Qué chimba de canción!'],
+  Salsa: ['Salsa para los pies, parce. ¡A bailar!'],
+  Bachata: ['Bachata para dedicar, parce.'],
+  Cumbia: ['Cumbia que mueve el alma, parce.'],
+  'Electrónica': ['Sintetizadores y beats para volar, parce.', 'Modo electrónico activado.'],
+  'Hip-Hop': ['Flow, rimas y mucha actitud, parce.', 'Hip-hop para dominar la pista.'],
+  Trap: ['Trap del pesado, parce.'],
+  'R&B': ['R&B suave para el alma, parce.'],
+  Indie: ['Indie para los que buscan algo diferente, parce.'],
+  'K-Pop': ['K-Pop con toda la energía, parce.'],
+  Jazz: ['Jazz para relajarse, parce.'],
+  Blues: ['Blues con sentimiento, parce.'],
+  Country: ['Country con alma, parce.'],
+  Folk: ['Folk acústico para el alma, parce.'],
+  Reggae: ['Reggae para la tranquilidad, parce.'],
+  Metal: ['Metal pesado, parce. ¡Cabeza!'],
+  Punk: ['Punk con actitud, parce.'],
+  Clásica: ['Música clásica para el alma, parce.'],
+  Gospel: ['Gospel con sentimiento, parce.'],
+  Flamenco: ['Flamenco con duende, parce.'],
+  Soul: ['Soul con feeling, parce.'],
+  Funk: ['Funk para mover el cuerpo, parce.'],
+  Disco: ['Disco para bailar toda la noche, parce.'],
+  'Lo-Fi': ['Bajamos las revoluciones con un poco de lo-fi, parce.', 'Beats suaves para estudiar o desconectar.'],
 };
 
 const GENRE_LINES_EN = {
   Pop: ['Pure pop, made to be sung out loud.', 'Pop so catchy you’ll hum it all day.'],
   Rock: ['Guitars up front, the way it should be.', 'Rock you can feel in your chest.'],
   Latino: ['This one’s got flavor — get ready to move.', 'Latin rhythm straight to the hips.'],
-  'Electrónica': ['Synths and beats ready for takeoff.', 'Electro mode: engaged.'],
-  'Hip-Hop': ['Flow, rhymes and pure attitude.', 'Hip-hop to own the floor.'],
-  'Lo-Fi': ['Let’s slow it down with some lo-fi.', 'Soft beats to study or unwind.'],
 };
 
 const MOOD_LINES_ES = {
-  Fiesta: 'Modo fiesta: que nadie se quede sentado.',
-  Energía: 'Sube esa energía.',
-  Romántico: 'Esto va dedicado, ya sabes a quién.',
-  Relajado: 'Respira hondo y déjate llevar.',
-  Triste: 'A veces una buena canción lo dice todo.',
-  Noche: 'La noche apenas comienza.',
-  Workout: 'Un empujón más, tú puedes.',
-  Concentración: 'Enfoque total, sin distracciones.',
-  Clásico: 'Un clásico que nunca falla.',
+  Fiesta: 'Modo fiesta: que nadie se quede sentado, parce.',
+  Energía: 'Sube esa energía, parce.',
+  Romántico: 'Esto va dedicado, ya sabes a quién, parce.',
+  Relajado: 'Respira hondo y déjate llevar, parce.',
+  Triste: 'A veces una buena canción lo dice todo, parce.',
+  Noche: 'La noche apenas comienza, parce.',
+  Workout: 'Un empujón más, tú puedes, parce.',
+  Concentración: 'Enfoque total, sin distracciones, parce.',
+  Clásico: 'Un clásico que nunca falla, parce.',
+  'Fiesta latina': 'Fiesta latina del bueno, parce.',
 };
 
 const MOOD_LINES_EN = {
@@ -102,11 +119,12 @@ const MOOD_LINES_EN = {
 };
 
 const FILLERS_ES = [
-  'Seguimos con la música, sin pausas.',
-  'Ritmo no para, y tú tampoco deberías.',
-  'Aquí, en Ritmo, la buena música manda.',
-  'Directo a tus oídos.',
-  'Cierre los ojos y disfrute.',
+  'Seguimos con la música, sin pausas, parce.',
+  'Ritmo no para, y tú tampoco deberías, parce.',
+  'Aquí, en Ritmo, la buena música manda, parce.',
+  'Directo a tus oídos, parce.',
+  'Cierre los ojos y disfrute, parce.',
+  'Parce, esto es Ritmo Music. ¡Qué chimba!',
 ];
 
 const FILLERS_EN = [
@@ -117,21 +135,10 @@ const FILLERS_EN = [
   'Close your eyes and enjoy.',
 ];
 
-/* ¿Primera vez que suena este género en la sesión? */
 function isFirstOfGenre(genre, seenGenres) {
   return genre && !seenGenres.has(genre);
 }
 
-/**
- * Devuelve la intervención del DJ para un tema.
- * @param {object} opts
- * @param {object} opts.track        tema que va a sonar
- * @param {object} [opts.prevTrack]  tema anterior (para la transición)
- * @param {Set}    [opts.seenGenres] géneros ya presentados en la sesión
- * @param {string} [opts.lang]       'es' | 'en'
- * @param {string} [opts.kind]       'intro' | 'filler'
- * @returns {{ text: string, tag: string }}
- */
 export function djLine({ track, prevTrack, seenGenres, lang = 'es', kind = 'intro' } = {}) {
   const es = lang === 'es';
   if (!track) return { text: '', tag: '' };
@@ -144,21 +151,18 @@ export function djLine({ track, prevTrack, seenGenres, lang = 'es', kind = 'intr
     year: track.year,
   };
 
-  /* Intervención de relleno (cuando no hay tema nuevo, p. ej. pausa larga) */
   if (kind === 'filler') {
     return { text: pick(es ? FILLERS_ES : FILLERS_EN), tag: 'djTagFiller' };
   }
 
   const parts = [];
 
-  /* 1. Transición desde el tema anterior (a veces) */
   if (prevTrack && Math.random() < 0.5) {
     parts.push(fill(pick(es ? TRANSITIONS_ES : TRANSITIONS_EN), vars));
   } else {
     parts.push(fill(pick(es ? INTROS_ES : INTROS_EN), vars));
   }
 
-  /* 2. Comentario de género si es nuevo en la sesión */
   if (isFirstOfGenre(track.genre, seenGenres || new Set())) {
     const g = (es ? GENRE_LINES_ES : GENRE_LINES_EN)[track.genre];
     if (g) parts.push(pick(g));
@@ -167,30 +171,28 @@ export function djLine({ track, prevTrack, seenGenres, lang = 'es', kind = 'intr
     if (m) parts.push(m);
   }
 
-  /* 3. Dato temporal o de álbum, de vez en cuando */
   if (vars.year && Math.random() < 0.25) {
     parts.push(es
-      ? `Un tema de ${vars.year} que sigue sonando igual de bien.`
+      ? `Un tema de ${vars.year} que sigue sonando igual de bien, parce.`
       : `A track from ${vars.year} that still holds up.`);
   } else if (vars.album && Math.random() < 0.25) {
     parts.push(es
-      ? `Del disco «${vars.album}».`
+      ? `Del disco «${vars.album}», parce.`
       : `From the album “${vars.album}”.`);
   }
 
   return { text: parts.join(' '), tag: 'djTagIntro' };
 }
 
-/** Saludo de apertura del DJ, según la hora del día. */
 export function djGreeting(lang = 'es') {
   const es = lang === 'es';
   const part = daypart(lang);
   const map = {
     es: {
-      madrugada: 'Buenas madrugadas. Soy DJ Ritmo y esto apenas comienza.',
-      mañana: 'Buenos días. Soy DJ Ritmo, vamos a despertar esos oídos.',
-      tarde: 'Buenas tardes. Soy DJ Ritmo y traigo la mejor música.',
-      noche: 'Buenas noches. Soy DJ Ritmo; la noche es nuestra.',
+      madrugada: 'Buenas madrugadas, parce. Soy DJ Ritmo y esto apenas comienza.',
+      mañana: 'Buenos días, parce. Soy DJ Ritmo, vamos a despertar esos oídos.',
+      tarde: 'Buenas tardes, parce. Soy DJ Ritmo y traigo la mejor música.',
+      noche: 'Buenas noches, parce. Soy DJ Ritmo; la noche es nuestra.',
     },
     en: {
       'late night': 'Good late night. I’m DJ Ritmo, and we’re just getting started.',
@@ -202,11 +204,6 @@ export function djGreeting(lang = 'es') {
   return (map[es ? 'es' : 'en'])[part];
 }
 
-/** Datos que el DJ puede usar para su "tarjeta" de presentación. */
 export function djProfile() {
-  return {
-    name: 'DJ Ritmo',
-    avatar: '🎧',
-    genres: GENRES.map((g) => g.id),
-  };
+  return { name: 'DJ Ritmo', avatar: '🎧', genres: [] };
 }

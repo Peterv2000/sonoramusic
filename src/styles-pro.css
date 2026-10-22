@@ -815,3 +815,13 @@ button.setting-row:hover { background: var(--bg-3); }
   .comment-form .btn { width: 100%; justify-content: center; }
   .react-chip { padding: 5px 9px; font-size: 14px; }
 }
+.dj-voice-controls { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.dj-voice-select {
+  background: var(--bg-2); color: var(--fg); border: 1px solid var(--line);
+  border-radius: 8px; padding: 4px 8px; font-size: 12px; max-width: 170px;
+}
+.dj-voice-select:focus { outline: none; border-color: var(--red); }
+@media (max-width: 600px) {
+  .dj-voice-controls { width: 100%; justify-content: space-between; margin-left: 0; margin-top: 6px; }
+  .dj-voice-select { max-width: 100%; flex: 1; }
+}
