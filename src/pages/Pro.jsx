@@ -10,7 +10,9 @@ const PLANS = [
   { id: 'family', price: '$22.900', per: 'perMonth', tag: 'upTo6', months: 1 },
 ];
 
-const FEATURES = ['f1', 'f2', 'f3', 'f4', 'f5', 'f6'];
+const FREE_FEATURES = ['free1', 'free2', 'free3', 'free4'];
+const PRO_FEATURES = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8'];
+const FAMILY_FEATURES = ['fam1', 'fam2', 'fam3', 'fam4'];
 
 export default function Pro() {
   const { state, dispatch } = useApp();
@@ -58,9 +60,23 @@ export default function Pro() {
               </small>
             </div>
           </div>
+          <div className="pro-plan-detail">
+            <strong>{t(state.pro.plan === 'family' ? 'family' : (state.pro.plan === 'annual' ? 'annual' : 'monthly'))}</strong>
+            <small className="muted">{state.pro.plan === 'family' ? t('upTo6') : state.pro.plan === 'annual' ? t('save2Months') : t('perMonth')}</small>
+          </div>
+          <h4 style={{ marginTop: 14 }}>{t('included')}</h4>
           <ul className="feature-list on">
-            {FEATURES.map((f) => <li key={f}>✓ {t(f)}</li>)}
+            {[...PRO_FEATURES, ...(state.pro.plan === 'family' ? FAMILY_FEATURES : [])].map((f) => <li key={f}>✓ {t(f)}</li>)}
           </ul>
+          {state.pro.plan === 'family' && (
+            <>
+              <h4>{t('familyMembers')}</h4>
+              <div className="family-members">
+                {(state.pro.familyMembers || []).length === 0 ? <p className="muted">{t('noMembersYet')}</p> : (state.pro.familyMembers || []).map((m, i) => <div key={i} className="chip">{m}</div>)}
+                <button className="btn" onClick={() => toast(t('inviteComing'))}>{t('inviteMember')}</button>
+              </div>
+            </>
+          )}
           <div className="modal-actions">
             <button className="btn" onClick={() => { dispatch({ type: 'restore-pro' }); toast('✓'); }}>{t('restore')}</button>
             <button className="btn danger" onClick={cancel}>{t('cancelSub')}</button>
@@ -68,9 +84,22 @@ export default function Pro() {
         </section>
       ) : (
         <>
-          <ul className="feature-list">
-            {FEATURES.map((f) => <li key={f}>✦ {t(f)}</li>)}
-          </ul>
+          <section className="set-group">
+            <h2>{t('freePlan')}</h2>
+            <ul className="feature-list">
+              {FREE_FEATURES.map((f) => <li key={f}>✓ {t(f)}</li>)}
+            </ul>
+          </section>
+
+          <section className="set-group">
+            <h2>{t('proPlans')}</h2>
+            <ul className="feature-list">
+              {PRO_FEATURES.map((f) => <li key={f}>✦ {t(f)}</li>)}
+            </ul>
+            <ul className="feature-list family">
+              {FAMILY_FEATURES.map((f) => <li key={f}>✦ {t(f)}</li>)}
+            </ul>
+          </section>
 
           <div className="plan-grid">
             {PLANS.map((pl) => (

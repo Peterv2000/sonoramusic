@@ -6,11 +6,12 @@ import { fetchLyrics, activeLineIndex } from '../api/lyrics.js';
 import Icon from './Icon.jsx';
 import { DJAvatar, Bars } from './DJ.jsx';
 import { Reactions, Comments } from './Reactions.jsx';
+import { useToast } from './Toast.jsx';
 
-const SLEEP_OPTS = [10, 15, 30, 45, 60];
+const SLEEP_OPTS = [5, 10, 15, 30, 45, 60, 90];
 
 /* Pestaña de letra sincronizada (LRCLIB) */
-function LyricsPane({ track, position }) {
+function LyricsPane({ track, position, fullscreen = false }) {
   const { t } = useI18n();
   const [lyr, setLyr] = useState(undefined); // undefined = cargando, null = sin letra
 
@@ -21,26 +22,27 @@ function LyricsPane({ track, position }) {
     return () => { dead = true; };
   }, [track.id, track.title, track.artist]);
 
-  if (lyr === undefined) return <div className="lyrics-pane muted">🎤 {t('lyricsLoading')}</div>;
-  if (!lyr || (!lyr.plain && !lyr.synced?.length)) return <div className="lyrics-pane muted">🎤 {t('lyricsNone')}</div>;
+  if (lyr === undefined) return <div className={`lyrics-pane muted ${fullscreen ? 'lyrics-full' : ''}`}>🎤 {t('lyricsLoading')}</div>;
+  if (!lyr || (!lyr.plain && !lyr.synced?.length)) return <div className={`lyrics-pane muted ${fullscreen ? 'lyrics-full' : ''}`}>🎤 {t('lyricsNone')}</div>;
 
   if (lyr.synced?.length) {
     const active = activeLineIndex(lyr.synced, position);
     return (
-      <div className="lyrics-pane synced">
+      <div className={`lyrics-pane synced ${fullscreen ? 'lyrics-full' : ''}`}>
         {lyr.synced.map((l, i) => (
           <p key={i} className={i === active ? 'active' : ''}>{l.text}</p>
         ))}
       </div>
     );
   }
-  return <div className="lyrics-pane">{lyr.plain.split('\n').map((l, i) => <p key={i}>{l || ' '}</p>)}</div>;
+  return <div className={`lyrics-pane ${fullscreen ? 'lyrics-full' : ''}`}>{lyr.plain.split('\n').map((l, i) => <p key={i}>{l || ' '}</p>)}</div>;
 }
 
 export default function FullPlayer() {
   const p = usePlayer();
   const { state, dispatch } = useApp();
   const { t } = useI18n();
+  const toast = useToast();
   const [showSleep, setShowSleep] = useState(false);
   const track = p.track;
   if (!track) return null;
@@ -244,7 +246,12 @@ export default function FullPlayer() {
             </div>
           ) : (
             p.queue.map((q, i) => (
-              <div key={q.id + i} className="q-row" onClick={() => p.playQueueAt(i)}>
+              <div key={q.id + i} className="q-row" onClick={() => p.playQueueAt(i)} draggable onDragStart={(e) => { e.dataTransfer.setData('text/plain', String(i)); }} onDragOver={(e) => e.preventDefault()} onDrop={(e) => {
+                e.preventDefault();
+                const from = Number(e.dataTransfer.getData('text/plain'));
+                if (Number.isNaN(from) || from === i) return;
+                if (p.reorderQueue) p.reorderQueue(from, i);
+              }}>
                 <img src={q.thumb} alt="" loading="lazy" />
                 <div>
                   <strong>{q.title}</strong><small>{q.artist}</small>
@@ -280,25 +287,22 @@ export default function FullPlayer() {
         </div>
       )}
 
-      {panel === 'lyrics' && <LyricsPane track={track} position={p.position} />}
+      {panel === 'lyrics' && (state.settings.lyricsFullscreen ? <div className="lyrics-fullscreen-wrap" style={{ '--art': `url(${track.thumb})` }}><div className="lyrics-fullscreen-scrim" /><div className="lyrics-fullscreen-head"><button className="icon-btn" onClick={() => p.setPanel('player')}><Icon name="chevronDown" /></button><div>{track.title} · {track.artist}</div></div><LyricsPane track={track} position={p.position} fullscreen /></div> : <LyricsPane track={track} position={p.position} />)}
 
       {showSleep && (
         <div className="modal-backdrop" onClick={() => setShowSleep(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3><Icon name="moon" size={18} /> {t('sleepTimer')}</h3>
-            {!state.pro.active ? (
-              <>
-                <p className="muted">{t('proNeeded')}</p>
-                <button className="btn primary" onClick={() => { setShowSleep(false); location.hash = '#/pro'; }}>{t('activatePro')}</button>
-              </>
-            ) : (
-              <div className="sleep-grid">
-                {SLEEP_OPTS.map((m) => (
-                  <button key={m} className="chip" onClick={() => { p.setSleep(m); setShowSleep(false); }}>{m} min</button>
-                ))}
-                <button className="chip" onClick={() => { p.setSleep(0); setShowSleep(false); }}><Icon name="close" size={14} /></button>
-              </div>
-            )}
+            <p className="muted">{t('sleepTimerHint')}</p>
+            <div className="sleep-grid">
+              {SLEEP_OPTS.map((m) => (
+                <button key={m} className="chip" onClick={() => { p.setSleep(m); setShowSleep(false); toast(`${t('sleepTimer')} · ${m} min`); }}>{m} min</button>
+              ))}
+              {p.sleepEndsAt && (
+                <button className="chip" onClick={() => { p.setSleep(0); setShowSleep(false); }}>{t('cancel')}</button>
+              )}
+            </div>
+            {!state.pro.active && <p className="muted small">{t('sleepFreeNote')}</p>}
           </div>
         </div>
       )}

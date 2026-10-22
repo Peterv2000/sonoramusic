@@ -58,23 +58,64 @@ export default function Settings() {
     <div className="page narrow">
       <h1><Icon name="settings" size={24} /> {t('settings')}</h1>
 
-      {/* ── Cuenta ── */}
+      {/* ── Cuenta y dispositivos ── */}
       <section className="set-group">
         <h2>{t('account')}</h2>
-        <div className="setting-row static">
-          <span className="set-label"><strong>{state.profile.name}</strong><small>{state.profile.email || 'sin correo'}</small></span>
-          <button className="btn" onClick={() => {
-            const name = prompt(t('name'), state.profile.name);
-            if (name != null) dispatch({ type: 'set', key: 'profile', value: { name: name.trim() || 'Invitado' } });
-          }}><Icon name="sparkles" size={16} /></button>
-        </div>
-        <button className="setting-row link" onClick={() => location.hash = '#/pro'}>
-          <span className="set-label">
-            <strong>{t('subscription')}</strong>
-            <small>{pro ? `${t('subActive')} · ${state.pro.plan}` : 'Free'}</small>
-          </span>
-          <span className={pro ? 'badge-pro' : 'go-pro-link'}>{pro ? '✦' : t('upgrade') + ' →'}</span>
-        </button>
+        {state.auth.loggedIn ? (
+          <>
+            <div className="setting-row static">
+              <span className="set-label">
+                <strong>{state.auth.name || state.profile.name}</strong>
+                <small>{state.auth.email || state.profile.email || 'Cuenta vinculada'}</small>
+              </span>
+              <span className={pro ? 'badge-pro' : 'chip'}>{pro ? `✦ ${state.pro.plan === 'family' ? t('family') : state.pro.plan === 'annual' ? t('annual') : t('monthly')}` : t('freePlan')}</span>
+            </div>
+            <button className="setting-row link" onClick={() => location.hash = '#/pro'}>
+              <span className="set-label">
+                <strong>{t('subscription')}</strong>
+                <small>{pro ? t('subActive') : t('upgradeToPro')}</small>
+              </span>
+              <span>→</span>
+            </button>
+            <button className="setting-row link" onClick={() => {
+              dispatch({ type: 'sync-now' });
+              toast(t('syncDone'));
+            }}>
+              <span className="set-label">
+                <strong>{t('syncNow')}</strong>
+                <small>{state.sync.lastSyncAt ? `${t('lastSync')}: ${new Date(state.sync.lastSyncAt).toLocaleTimeString()}` : t('syncHint')}</small>
+              </span>
+              <span>↻</span>
+            </button>
+            <button className="setting-row link danger" onClick={() => {
+              if (confirm(t('logoutConfirm'))) { dispatch({ type: 'logout' }); toast(t('loggedOut')); }
+            }}>
+              <span className="set-label">
+                <strong>{t('logout')}</strong>
+                <small>{t('logoutAllDevices')}</small>
+              </span>
+              <span>→</span>
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="muted pad small">{t('loginHint')}</p>
+            <button className="btn primary" onClick={() => {
+              const email = prompt(t('email'));
+              if (!email) return;
+              const name = prompt(t('name'), 'Usuario');
+              dispatch({ type: 'login', email, name: name || 'Usuario' });
+              dispatch({ type: 'update-devices', devices: [{ id: 'dev-' + Date.now().toString(36), name: 'Este dispositivo (Web/PWA)', type: 'web', lastActive: Date.now(), current: true }] });
+              toast(t('loggedIn'));
+            }}><Icon name="user" size={16} /> {t('login')}</button>
+            <button className="btn" onClick={() => {
+              const name = prompt(t('name'), 'Usuario');
+              dispatch({ type: 'login', name: name || 'Usuario', email: '' });
+              dispatch({ type: 'update-devices', devices: [{ id: 'dev-' + Date.now().toString(36), name: 'Este dispositivo (Web/PWA)', type: 'web', lastActive: Date.now(), current: true }] });
+              toast(t('accountCreated'));
+            }}>{t('createAccount')}</button>
+          </>
+        )}
       </section>
 
       {/* ── Apariencia ── */}
@@ -257,20 +298,41 @@ export default function Settings() {
         </button>
       </section>
 
-      {/* ── Dispositivos (Spotify Connect style) ── */}
+      {/* ── Dispositivos vinculados (Spotify Connect style) ── */}
       <section className="set-group">
         <h2><Icon name="cast" size={16} /> {t('devices')}</h2>
-        <div className="setting-row static">
-          <span className="set-label">
-            <strong>{t('thisDevice')}</strong>
-            <small><Icon name="check" size={13} /> {t('connected')} · PWA</small>
-          </span>
-          <span className="device-now"><Icon name="device" size={20} /></span>
-        </div>
-        <div className="setting-row static">
-          <span className="set-label"><strong><Icon name="device" size={15} /> {t('appName')} Web</strong><small>{t('crossDeviceHint')}</small></span>
-          <span className="muted">{pro ? '🔗' : '—'}</span>
-        </div>
+        {state.auth.loggedIn ? (
+          <>
+            <p className="muted pad small">{t('linkedDevicesHint')}</p>
+            {(state.devices || []).map((d) => (
+              <div key={d.id} className="setting-row static">
+                <span className="set-label">
+                  <strong>{d.name}</strong>
+                  <small>{d.current ? `${t('thisDevice')} · ${t('active')}` : `${t('lastActive')}: ${d.lastActive ? new Date(d.lastActive).toLocaleString() : '-'}`}</small>
+                </span>
+                {!d.current ? (
+                  <button className="btn" onClick={() => { dispatch({ type: 'remove-device', id: d.id }); toast(t('deviceRemoved')); }}>{t('signOutDevice')}</button>
+                ) : (
+                  <span className="device-now">✓</span>
+                )}
+              </div>
+            ))}
+            {(state.devices || []).length === 0 && (
+              <div className="setting-row static">
+                <span className="set-label"><strong>{t('thisDevice')}</strong><small>{t('connected')} · PWA</small></span>
+                <span className="device-now">✓</span>
+              </div>
+            )}
+            <button className="btn" onClick={() => {
+              const devs = [...(state.devices || [])];
+              devs.push({ id: 'dev-' + Date.now().toString(36), name: `Dispositivo vinculado ${devs.length + 1}`, type: 'mobile', lastActive: Date.now(), current: false });
+              dispatch({ type: 'update-devices', devices: devs });
+              toast(t('deviceLinked'));
+            }}>{t('linkDevice')}</button>
+          </>
+        ) : (
+          <p className="muted pad small">{t('loginToLinkDevices')}</p>
+        )}
       </section>
 
       {/* ── Notificaciones ── */}

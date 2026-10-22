@@ -300,6 +300,15 @@ export function PlayerProvider({ children }) {
     enqueue(t) { setQueue((q) => [...q, t]); },
     removeFromQueue(pos) { setQueue((q) => q.filter((_, i) => i !== pos)); },
     clearQueue() { setQueue([]); },
+    reorderQueue(from, to) {
+      setQueue((q) => {
+        if (from < 0 || from >= q.length || to < 0 || to >= q.length) return q;
+        const arr = [...q];
+        const [item] = arr.splice(from, 1);
+        arr.splice(to, 0, item);
+        return arr;
+      });
+    },
     /* Reproduce un elemento de la cola por posición: descarta lo anterior */
     playQueueAt(pos) {
       const { contextList: list, queue: q, index: idx } = liveRef.current;

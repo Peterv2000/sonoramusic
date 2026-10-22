@@ -4,8 +4,22 @@ import { trackById } from '../data/catalog.js';
 const KEY = 'ritmo-state-v1';
 
 const DEFAULT_STATE = {
+  auth: {
+    loggedIn: false,
+    userId: null,
+    email: '',
+    name: 'Invitado',
+    avatar: '🎧',
+    plan: null,
+    familyId: null,
+    sessionId: null,
+    deviceId: null,
+    lastSyncAt: null,
+  },
   profile: { name: 'Invitado', email: '', avatar: '🎧' },
-  pro: { active: false, plan: null, since: null, expires: null },
+  pro: { active: false, plan: null, since: null, expires: null, familyMembers: [] },
+  devices: [], // dispositivos vinculados a la cuenta
+  sync: { enabled: true, lastSyncAt: null, status: 'idle' },
   settings: {
     theme: 'dark',            // dark | light | system
     lang: 'es',               // es | en
@@ -18,7 +32,7 @@ const DEFAULT_STATE = {
     wifiOnlyHigh: true,       // PRO
     notifyReleases: true,
     notifyRecs: true,
-    sleepTimer: 0,            // minutos, PRO
+    sleepTimer: 0,            // minutos
     // ── Nuevos (Spotify · Apple Music · YT Music) ──
     lossless: false,          // PRO — Audio sin pérdida
     spatial: false,           // PRO — Dolby Atmos / espacial
@@ -33,6 +47,9 @@ const DEFAULT_STATE = {
     dj: false,                // activar DJ interactivo
     djVoice: true,            // locutar las frases en voz alta
     djRate: 1,                // velocidad de la voz (0.6–1.6)
+    // ── Experiencia extra ──
+    lyricsFullscreen: true,   // Letras a pantalla completa inmersiva
+    showDevicePicker: true,   // Mostrar selector de dispositivos
   },
   library: {
     liked: [],                // ids de track
@@ -61,10 +78,13 @@ function load() {
     return {
       ...DEFAULT_STATE,
       ...saved,
+      auth: { ...DEFAULT_STATE.auth, ...saved.auth },
       profile: { ...DEFAULT_STATE.profile, ...saved.profile },
       pro: { ...DEFAULT_STATE.pro, ...saved.pro },
+      devices: saved.devices || [],
+      sync: { ...DEFAULT_STATE.sync, ...saved.sync },
       settings: { ...DEFAULT_STATE.settings, ...saved.settings },
-      library: { ...DEFAULT_STATE.library, ...saved.library, playCounts: { ...saved.library?.playCounts } },
+      library: { ...DEFAULT_STATE.library, ...saved.library, playCounts: { ...(saved.library?.playCounts || {}) } },
     };
   } catch {
     return DEFAULT_STATE;
@@ -204,11 +224,46 @@ function reducer(state, action) {
     }
     /* ── Suscripción PRO ── */
     case 'activate-pro':
-      return { ...state, pro: { active: true, plan: action.plan, since: Date.now(), expires: action.expires } };
+      return {
+        ...state,
+        pro: { active: true, plan: action.plan, since: Date.now(), expires: action.expires, familyMembers: action.familyMembers || state.pro.familyMembers || [] },
+        auth: { ...state.auth, plan: action.plan, loggedIn: state.auth.loggedIn || true },
+      };
     case 'cancel-pro':
-      return { ...state, pro: { ...state.pro, active: false } };
+      return { ...state, pro: { ...state.pro, active: false }, auth: { ...state.auth, plan: state.pro.plan } };
     case 'restore-pro':
-      return { ...state, pro: { active: true, plan: state.pro.plan || 'monthly', since: state.pro.since || Date.now(), expires: state.pro.expires } };
+      return { ...state, pro: { active: true, plan: state.pro.plan || 'monthly', since: state.pro.since || Date.now(), expires: state.pro.expires, familyMembers: state.pro.familyMembers || [] }, auth: { ...state.auth, plan: state.pro.plan || 'monthly' } };
+    case 'login':
+      return {
+        ...state,
+        auth: {
+          loggedIn: true,
+          userId: action.userId || 'u-' + Date.now(),
+          email: action.email || '',
+          name: action.name || state.auth.name || state.profile.name || 'Usuario',
+          avatar: action.avatar || state.auth.avatar || '🎧',
+          plan: state.pro.active ? state.pro.plan : null,
+          familyId: action.familyId || state.auth.familyId || null,
+          sessionId: 'sess-' + Date.now(),
+          deviceId: action.deviceId || state.auth.deviceId || 'dev-' + Date.now().toString(36),
+          lastSyncAt: Date.now(),
+        },
+        profile: { ...state.profile, name: action.name || state.profile.name, email: action.email || state.profile.email, avatar: action.avatar || state.profile.avatar },
+        devices: Array.isArray(action.devices) ? action.devices : state.devices,
+      };
+    case 'logout':
+      return {
+        ...state,
+        auth: { ...DEFAULT_STATE.auth },
+        devices: [],
+        sync: { ...DEFAULT_STATE.sync },
+      };
+    case 'update-devices':
+      return { ...state, devices: action.devices || [] };
+    case 'remove-device':
+      return { ...state, devices: (state.devices || []).filter((d) => d.id !== action.id) };
+    case 'sync-now':
+      return { ...state, sync: { enabled: true, lastSyncAt: Date.now(), status: 'ok' }, auth: { ...state.auth, lastSyncAt: Date.now() } };
     case 'reset':
       return DEFAULT_STATE;
     default:
