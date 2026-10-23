@@ -1,5 +1,5 @@
 /* Ritmo Music — Service Worker (app shell cache-first) */
-const CACHE = 'ritmo-v1';
+const CACHE = 'ritmo-v2';
 const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (e) => {

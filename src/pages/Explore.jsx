@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePlayer } from '../player/PlayerContext.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
@@ -8,13 +8,28 @@ import {
   GENRES, MIXES, STATIONS, tracksByGenre,
   topCharts, newReleases, VIDEOS, ARTISTS, formatViews, nf,
 } from '../data/catalog.js';
+import { useLibraryData } from '../hooks/useLibraryData.js';
+import { useApp } from '../state/AppState.jsx';
+import { getPersonalizedByGenre } from '../ai/personalize.js';
 
 export default function Explore() {
   const p = usePlayer();
   const nav = useNavigate();
   const { t } = useI18n();
+  const { state } = useApp();
+  const lib = useLibraryData();
+  const all = Array.isArray(lib.tracks) && lib.tracks.length ? lib.tracks : null;
   const [genre, setGenre] = useState(null);
-  const list = genre ? tracksByGenre(genre) : [];
+  const list = useMemo(() => {
+    if (!genre) return [];
+    const base = all || [];
+    if (base.length === 0) return tracksByGenre(genre);
+    try {
+      return getPersonalizedByGenre(base, genre, state, 150);
+    } catch {
+      return base.filter((t) => t.genre === genre);
+    }
+  }, [genre, all, state]);
 
   const charts = topCharts('Global').slice(0, 10);
   const releases = newReleases();
@@ -27,9 +42,9 @@ export default function Explore() {
       <GenreGrid
         genres={GENRES}
         selected={genre}
-        countOf={(id) => tracksByGenre(id).length}
+        countOf={(id) => (all ? all.filter((t) => t.genre === id).length : tracksByGenre(id).length)}
         onPick={(id) => setGenre(genre === id ? null : id)}
-        onPlay={(id) => { const l = tracksByGenre(id); if (l.length) p.playList(l); }}
+        onPlay={(id) => { const l = all ? all.filter((t) => t.genre === id) : tracksByGenre(id); if (l.length) p.playList(l); }}
       />
 
       {genre && (

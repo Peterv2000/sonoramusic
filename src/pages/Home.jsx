@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../state/AppState.jsx';
 import { usePlayer } from '../player/PlayerContext.jsx';
@@ -9,12 +9,18 @@ import {
   TRACKS, MIXES, STATIONS, MOODS, GENRES, tracksByMood, tracksByGenre, trackById,
   weeklyDiscovery, dailyMixes, newReleases, topCharts, ARTISTS, formatViews,
 } from '../data/catalog.js';
+import { useLibraryData } from '../hooks/useLibraryData.js';
+import { getPersonalizedFeed, refreshProfile } from '../ai/personalize.js';
 
 export default function Home() {
   const { state } = useApp();
   const p = usePlayer();
   const nav = useNavigate();
   const { t } = useI18n();
+  const lib = useLibraryData();
+  const all = Array.isArray(lib.tracks) && lib.tracks.length ? lib.tracks : TRACKS;
+
+  useEffect(() => { refreshProfile(); }, []);
 
   const recent = useMemo(
     () => state.library.history.map((h) => trackById(h.id)).filter(Boolean).slice(0, 10),
@@ -23,13 +29,21 @@ export default function Home() {
   const quickPicks = useMemo(() => {
     const pool = state.library.liked.length
       ? state.library.liked.map(trackById).filter(Boolean)
-      : TRACKS.slice(0, 6);
+      : all.slice(0, 6);
     return pool.slice(0, 6);
-  }, [state.library.liked]);
-  const added = useMemo(() => TRACKS.slice(-10).reverse(), []);
+  }, [state.library.liked, all]);
+  const added = useMemo(() => (Array.isArray(all) ? all : TRACKS).slice(-12).reverse(), [all]);
 
   // Spotify: Descubrimiento semanal + Mezclas diarias · Apple: Para ti
-  const discovery = useMemo(() => weeklyDiscovery(), []);
+  const discovery = useMemo(() => {
+    const arr = Array.isArray(all) ? all : [];
+    try {
+      refreshProfile();
+      return getPersonalizedFeed(arr, state, { limit: 40 });
+    } catch {
+      return weeklyDiscovery();
+    }
+  }, [all, state]);
   const mixes = useMemo(() => dailyMixes(), []);
   const releases = useMemo(() => newReleases(), []);
   const charts = useMemo(() => topCharts('Global').slice(0, 5), []);
@@ -66,7 +80,7 @@ export default function Home() {
             key={m}
             className="chip"
             onClick={() => {
-              const list = tracksByMood(m);
+              const list = (Array.isArray(all) ? all : TRACKS).filter((t) => Array.isArray(t.moods) && t.moods.includes(m));
               if (list.length) p.playList(list, list[0].id);
             }}
           >{m}</button>
@@ -80,10 +94,10 @@ export default function Home() {
           <button className="btn small" onClick={() => nav('/explore')}>{t('seeAll')}</button>
         </div>
         <GenreGrid
-          genres={GENRES.slice(0, 4)}
-          countOf={(id) => tracksByGenre(id).length}
+          genres={GENRES.slice(0, 6)}
+          countOf={(id) => (Array.isArray(all) ? all : TRACKS).filter((t) => t.genre === id).length}
           onPick={() => nav('/explore')}
-          onPlay={(id) => { const l = tracksByGenre(id); if (l.length) p.playList(l); }}
+          onPlay={(id) => { const l = (Array.isArray(all) ? all : TRACKS).filter((t) => t.genre === id); if (l.length) p.playList(l); }}
         />
       </section>
 
@@ -217,8 +231,8 @@ export default function Home() {
           <h2>{t('trends')}</h2>
           <button className="btn small" onClick={() => nav('/charts')}><Icon name="charts" size={14} /> {t('seeAll')}</button>
         </div>
-        {TRACKS.slice(0, 8).map((tr, i) => (
-          <TrackRow key={tr.id} track={tr} index={i} list={TRACKS.slice(0, 8)} />
+        {(Array.isArray(all) ? all : TRACKS).slice(0, 12).map((tr, i) => (
+          <TrackRow key={tr.id} track={tr} index={i} list={(Array.isArray(all) ? all : TRACKS).slice(0, 12)} />
         ))}
       </section>
     </div>

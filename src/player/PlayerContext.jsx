@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../state/AppState.jsx';
+import { recordPlay } from '../ai/personalize.js';
 import { radioFrom, relatedTracks, shuffle as shuffleArr } from '../data/catalog.js';
 import { djLine as makeDjLine, djGreeting } from './dj.js';
 import VideoStage from './VideoStage.jsx';
@@ -191,6 +192,7 @@ export function PlayerProvider({ children }) {
     visitedRef.current.add(tk.id);
     try { p.loadVideoById({ videoId: tk.yt, startSeconds: 0 }); } catch { /* noop */ }
     dispatch({ type: 'add-history', id: tk.id });
+    try { recordPlay(tk); } catch { /* noop */ }
     /* DJ Ritmo: comenta la nueva canción (usa el tema anterior para la transición) */
     if (tk.id !== prev?.id) emitDj({ track: tk, prevTrack: prev });
     prevTrackRef.current = tk;

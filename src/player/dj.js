@@ -166,7 +166,7 @@ export function djLine({ track, prevTrack, seenGenres, lang = 'es', kind = 'intr
   if (isFirstOfGenre(track.genre, seenGenres || new Set())) {
     const g = (es ? GENRE_LINES_ES : GENRE_LINES_EN)[track.genre];
     if (g) parts.push(pick(g));
-  } else if (track.moods?.length && Math.random() < 0.6) {
+  } else if (Array.isArray(track.moods) && track.moods.length && Math.random() < 0.6) {
     const m = (es ? MOOD_LINES_ES : MOOD_LINES_EN)[track.moods[0]];
     if (m) parts.push(m);
   }

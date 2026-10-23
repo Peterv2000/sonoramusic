@@ -36,6 +36,44 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST = path.join(__dirname, '..', 'dist');
 const PORT = Number(process.env.PORT || 4173);
 
+/* ---------- Seguridad: cabeceras + rate limit por IP ---------- */
+const ADMIN_TOKEN = (process.env.RITMO_ADMIN_TOKEN || '').trim();
+
+function applySecurityHeaders(res) {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+}
+
+const rlBuckets = new Map();
+function rateLimit(req, res) {
+  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown').toString().split(',')[0].trim();
+  const now = Date.now();
+  const windowMs = 60_000;
+  const max = 120;
+  let b = rlBuckets.get(ip);
+  if (!b || now - b.start > windowMs) { b = { start: now, count: 0 }; rlBuckets.set(ip, b); }
+  b.count += 1;
+  if (b.count > max) {
+    res.writeHead(429, { 'Content-Type': 'application/json; charset=utf-8', 'Retry-After': '60' });
+    res.end(JSON.stringify({ error: 'demasiadas solicitudes, intenta en un minuto' }));
+    return false;
+  }
+  return true;
+}
+
+function checkAdmin(req, res) {
+  if (!ADMIN_TOKEN) return true; // si no hay token configurado, acceso libre (dev)
+  const provided = (req.headers['x-admin-token'] || req.headers['authorization'] || '').replace(/^Bearer\s+/i, '').trim();
+  const q = new URL(req.url, 'http://localhost').searchParams.get('token') || '';
+  if (provided === ADMIN_TOKEN || q === ADMIN_TOKEN) return true;
+  res.writeHead(401, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify({ error: 'token de administrador requerido' }));
+  return false;
+}
+
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -58,6 +96,7 @@ const cache = new Map();
 const TTL = 5 * 60 * 1000;
 
 function sendJson(res, code, obj) {
+  applySecurityHeaders(res);
   const body = JSON.stringify(obj);
   res.writeHead(code, {
     'Content-Type': 'application/json; charset=utf-8',
@@ -356,7 +395,7 @@ function serveStatic(req, res, pathname) {
     if (err) {
       fs.readFile(path.join(DIST, 'index.html'), (e2, index) => {
         if (e2) { res.writeHead(404); res.end('no encontrado'); return; }
-        res.writeHead(200, { 'Content-Type': MIME['.html'] });
+        res.writeHead(200, { 'Content-Type': MIME['.html'], 'Cache-Control': 'no-cache' });
         res.end(index);
       });
       return;
@@ -375,14 +414,26 @@ const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const { pathname } = url;
 
+  applySecurityHeaders(res);
+
   // Preflight CORS
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Token, Authorization',
     });
     return res.end();
+  }
+
+  // Rate limit para /api/*
+  if (pathname.startsWith('/api/')) {
+    if (!rateLimit(req, res)) return;
+  }
+
+  // Admin token para rutas sensibles
+  if (pathname.startsWith('/api/admin/') || pathname === '/api/update') {
+    if (!checkAdmin(req, res)) return;
   }
 
   if (pathname === '/api/search') return apiSearch(res, url);

@@ -23,7 +23,7 @@ export function buildTaste(profile) {
     const w = Math.max(1, 12 - idx * 0.15);
     bump(genres, tr.genre, w);
     bump(artists, norm(tr.artist), w * 1.4);
-    (tr.moods || []).forEach((m) => bump(moods, m, w * 0.6));
+    (Array.isArray(tr.moods) ? tr.moods : []).forEach((m) => bump(moods, m, w * 0.6));
     if (tr.year) bump(years, Math.floor(tr.year / 10) * 10, w * 0.4);
   });
 
@@ -31,7 +31,7 @@ export function buildTaste(profile) {
     if (!tr) return;
     bump(genres, tr.genre, 8);
     bump(artists, norm(tr.artist), 10);
-    (tr.moods || []).forEach((m) => bump(moods, m, 4));
+    (Array.isArray(tr.moods) ? tr.moods : []).forEach((m) => bump(moods, m, 4));
   });
 
   followedArtists.forEach((a) => bump(artists, norm(a), 16));
@@ -57,7 +57,7 @@ export function scoreTrack(track, taste, seen = new Set(), now = Date.now()) {
   const m = taste.topMoods;
   if (g.includes(track.genre)) s += 18;
   if (a.includes(norm(track.artist))) s += 26;
-  (track.moods || []).forEach((x) => { if (m.includes(x)) s += 6; });
+  (Array.isArray(track.moods) ? track.moods : []).forEach((x) => { if (m.includes(x)) s += 6; });
   if (track.views) s += Math.min(10, Math.log10(track.views) * 2);
   if (track.year >= 2018) s += 4;
   else if (track.year >= 2010) s += 2;

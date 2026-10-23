@@ -75,7 +75,7 @@ export function useLibraryData() {
 
   const moods = useMemo(() => {
     const map = new Map();
-    for (const t of tracks) for (const m of t.moods || []) map.set(m, (map.get(m) || 0) + 1);
+    for (const t of tracks) { const ms = Array.isArray(t.moods) ? t.moods : []; for (const m of ms) map.set(m, (map.get(m) || 0) + 1); }
     return [...map.entries()].sort((a, b) => b[1] - a[1]).map(([m, n]) => ({ id: m, count: n }));
   }, [tracks]);
 

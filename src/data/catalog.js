@@ -143,7 +143,7 @@ export const GENRES = [
 export const MOODS = ['Fiesta', 'Relajado', 'Energía', 'Romántico', 'Triste', 'Concentración', 'Fiesta latina', 'Workout', 'Noche', 'Clásico'];
 
 export const tracksByGenre = (g) => TRACKS.filter((t) => t.genre === g);
-export const tracksByMood = (m) => TRACKS.filter((t) => t.moods.includes(m));
+export const tracksByMood = (m) => TRACKS.filter((t) => Array.isArray(t.moods) && t.moods.includes(m));
 
 /* ── Álbumes (agrupados del catálogo) ─────────────────────────────── */
 export const ALBUMS = (() => {
@@ -243,7 +243,7 @@ export const dailyMixes = () => {
 /* ── Canciones relacionadas (para "Reproducir a continuación") ────── */
 export const relatedTracks = (seed, n = 10) => {
   const same = TRACKS.filter((t) => t.id !== seed.id && t.genre === seed.genre);
-  const mood = TRACKS.filter((t) => t.id !== seed.id && t.moods.some((m) => seed.moods.includes(m)) && !same.includes(t));
+  const mood = TRACKS.filter((t) => t.id !== seed.id && Array.isArray(t.moods) && Array.isArray(seed.moods) && t.moods.some((m) => seed.moods.includes(m)) && !same.includes(t));
   const rest = TRACKS.filter((t) => t.id !== seed.id && !same.includes(t) && !mood.includes(t));
   return [...same, ...mood, ...rest].slice(0, n);
 };
@@ -251,7 +251,7 @@ export const relatedTracks = (seed, n = 10) => {
 /* ── Construye una emisora infinita a partir de una canción semilla ─ */
 export function radioFrom(seed) {
   const same = TRACKS.filter((t) => t.genre === seed.genre && t.id !== seed.id);
-  const mood = TRACKS.filter((t) => t.moods.some((m) => seed.moods.includes(m)) && t.id !== seed.id && !same.includes(t));
+  const mood = TRACKS.filter((t) => Array.isArray(t.moods) && Array.isArray(seed.moods) && t.moods.some((m) => seed.moods.includes(m)) && t.id !== seed.id && !same.includes(t));
   const rest = TRACKS.filter((t) => t.id !== seed.id && !same.includes(t) && !mood.includes(t));
   return [seed, ...shuffle(same), ...shuffle(mood), ...shuffle(rest)];
 }
