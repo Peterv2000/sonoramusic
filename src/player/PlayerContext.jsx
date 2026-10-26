@@ -422,6 +422,7 @@ export function PlayerProvider({ children }) {
       const nv = Math.max(0, Math.min(100, Number(v) || 0));
       setVolumeState(nv);
       try { if (audioRef.current) audioRef.current.volume = nv / 100; } catch {}
+      try { const p = ytRef.current; if (p?.setVolume) p.setVolume(nv); } catch {}
       try { localStorage.setItem('ritmo_vol', String(nv)); } catch {}
     },
     toggleShuffle() { setShuffle((s) => !s); },

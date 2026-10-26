@@ -147,23 +147,31 @@ export default function Search() {
     return () => { alive = false; };
   }, []);
 
-  /* Retardo de 400 ms: evita buscar con cada tecla */
+  /* Retardo de 250 ms: búsqueda en vivo sin irse de la página */
   useEffect(() => {
     const term = q.trim();
-    if (term.length < 3) { setDebounced(''); return; }
-    const id = setTimeout(() => setDebounced(term), 400);
+    if (term.length < 2) { setDebounced(''); return; }
+    const id = setTimeout(() => setDebounced(term), 250);
     return () => clearTimeout(id);
   }, [q]);
 
   /* Sugerencias en vivo (autocompletado) mientras se escribe */
   useEffect(() => {
     const term = q.trim();
-    if (term.length < 2) { setSugg([]); return; }
+    if (term.length < 2) { setSugg([]); setSuggOpen(false); return; }
     const id = ++suggReq.current;
+    setSuggOpen(true);
     const timer = setTimeout(async () => {
-      const list = await suggestYouTube(term);
-      if (id === suggReq.current) { setSugg(list); }
-    }, 180);
+      try {
+        const list = await suggestYouTube(term).catch(() => []);
+        if (id === suggReq.current) {
+          setSugg(Array.isArray(list) ? list : []);
+          setSuggOpen(true);
+        }
+      } catch {
+        if (id === suggReq.current) { setSugg([]); }
+      }
+    }, 150);
     return () => clearTimeout(timer);
   }, [q]);
 
@@ -201,7 +209,7 @@ export default function Search() {
     setQ(value);
     setSuggOpen(true);
     const v = value.trim();
-    if (v.length > 2) dispatch({ type: 'add-search', q: v });
+    if (v.length > 1) dispatch({ type: 'add-search', q: v });
   };
 
   const pickSuggestion = (s) => {

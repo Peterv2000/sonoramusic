@@ -247,13 +247,24 @@ export default function VideoStage({ hostRef, videoMode }) {
                   <strong>{track?.title}</strong>
                   <small>{track?.artist}</small>
                 </div>
-                <button
-                  className="vstage-icon"
-                  title={t('volume')}
-                  onClick={() => p.setVolume(p.volume > 0 ? 0 : 80)}
-                >
-                  <Icon name={p.volume > 0 ? 'volume' : 'mute'} size={18} />
-                </button>
+                <div className="vstage-vol">
+                  <button
+                    className="vstage-icon"
+                    title={t('volume')}
+                    onClick={() => p.setVolume(p.volume > 0 ? 0 : 80)}
+                  >
+                    <Icon name={p.volume > 0 ? 'volume' : 'mute'} size={18} />
+                  </button>
+                  <input
+                    className="vstage-vol-slider"
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={p.volume}
+                    onChange={(e) => p.setVolume(Number(e.target.value))}
+                    aria-label={t('volume')}
+                  />
+                </div>
                 <button className="vstage-icon" title={fsLabel} onClick={toggleFullscreen}>
                   <Icon name={fs ? 'fullscreenExit' : 'fullscreen'} size={18} />
                 </button>

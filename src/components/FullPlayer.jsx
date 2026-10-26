@@ -166,13 +166,17 @@ export default function FullPlayer() {
 
           <div className="full-extra">
             <div className="vol-row">
-              <Icon name="mute" size={18} />
+              <button className="icon-btn" onClick={() => p.setVolume(p.volume > 0 ? 0 : 80)} aria-label={t('mute')}>
+                <Icon name={p.volume > 0 ? "volume" : "mute"} size={18} />
+              </button>
               <input
                 type="range" min="0" max="100" value={p.volume}
                 onChange={(e) => p.setVolume(Number(e.target.value))}
                 aria-label={t('volume')}
               />
-              <Icon name="volume" size={18} />
+              <button className="icon-btn" onClick={() => p.setVolume(100)} aria-label={t('volumeMax')}>
+                <Icon name="volume" size={18} />
+              </button>
             </div>
             <div className="extra-btns">
               <button className="chip" onClick={() => setShowSleep(true)}>
