@@ -8,7 +8,26 @@ export default function MiniPlayer() {
 
   return (
     <div className="mini-player">
-      <div className="mini-progress" style={{ width: `${Math.min(100, frac * 100)}%` }} />
+      <div
+        className="mini-progress-wrap"
+        onClick={(e) => {
+          if (!p.track || p.track.live) return;
+          const r = e.currentTarget.getBoundingClientRect();
+          p.seek((e.clientX - r.left) / Math.max(1, r.width));
+        }}
+        role="slider"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(frac * 100)}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (!p.track || p.track.live) return;
+          if (e.key === 'ArrowRight') { p.nudge(5); e.preventDefault(); }
+          if (e.key === 'ArrowLeft') { p.nudge(-5); e.preventDefault(); }
+        }}
+      >
+        <div className="mini-progress" style={{ width: `${Math.min(100, frac * 100)}%` }} />
+      </div>
       <div className="mini-body" onClick={() => p.openFull(true)}>
         <img className="mini-thumb" src={p.track.thumb} alt="" loading="lazy" />
         <div className="mini-meta">
