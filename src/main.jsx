@@ -6,16 +6,19 @@ import { AppProvider } from './state/AppState.jsx';
 import { PlayerProvider } from './player/PlayerContext.jsx';
 import './styles.css';
 import './styles-pro.css';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <HashRouter>
-      <AppProvider>
-        <PlayerProvider>
-          <App />
-        </PlayerProvider>
-      </AppProvider>
-    </HashRouter>
+    <ErrorBoundary>
+      <HashRouter>
+        <AppProvider>
+          <PlayerProvider>
+            <App />
+          </PlayerProvider>
+        </AppProvider>
+      </HashRouter>
+    </ErrorBoundary>
   </React.StrictMode>
 );
 
