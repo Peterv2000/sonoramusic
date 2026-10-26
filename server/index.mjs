@@ -31,6 +31,7 @@ import {
   startAutoUpdater, runUpdate, status as updaterStatus, readJson, writeJson, CONFIG,
   guessGenre, guessMoods, CHART_TABS,
 } from './updater.mjs';
+import { resolveTrack } from './resolver.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST = path.join(__dirname, '..', 'dist');
@@ -476,6 +477,12 @@ const server = http.createServer((req, res) => {
     return sendJson(res, 202, { started: true, force, running: updaterStatus.running });
   }
   if (pathname === '/api/download') return apiDownload(res, url);
+  if (pathname === '/api/resolve') {
+    const title = url.searchParams.get('title') || '';
+    const artist = url.searchParams.get('artist') || '';
+    resolveTrack(title, artist).then(r => sendJson(res, 200, r)).catch(() => sendJson(res, 200, { ok: false }));
+    return;
+  }
   if (pathname === '/api/health') {
     const meta = readJson('status.json');
     return sendJson(res, 200, {

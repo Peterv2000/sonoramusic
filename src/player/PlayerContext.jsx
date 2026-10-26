@@ -63,6 +63,78 @@ export function PlayerProvider({ children }) {
   const handlersRef = useRef({});        // siempre el último advance/handleEnded
   const liveRef = useRef({ contextList: [], queue: [], index: -1 });
   liveRef.current = { contextList, queue, index }; // reflejo síncrono del estado
+  const audioRef = useRef(null);
+  const sameSongLockRef = useRef(false);
+  const triedResolveRef = useRef(new Set());
+  const [audioMode, setAudioMode] = useState(false);
+  const audioSyncRef = useRef(null);
+
+  const playSameSongGuaranteed = useCallback(async (failedTrack) => {
+    if (!failedTrack || sameSongLockRef.current) return false;
+    if (triedResolveRef.current.has(failedTrack.id)) return false;
+    sameSongLockRef.current = true;
+    triedResolveRef.current.add(failedTrack.id);
+    try {
+      setError('Buscando esta canción en otra fuente...');
+      const url = `/api/resolve?title=${encodeURIComponent(failedTrack.title || '')}&artist=${encodeURIComponent(failedTrack.artist || '')}`;
+      const res = await fetch(url, { cache: 'no-store' }).then(r => r.json()).catch(() => ({ ok: false }));
+      if (res?.ok) {
+        if (res.type === 'audio' && res.audioUrl) {
+          try { ytRef.current?.pauseVideo?.(); ytRef.current?.stopVideo?.(); } catch {}
+          if (!audioRef.current) {
+            audioRef.current = new Audio();
+            audioRef.current.preload = 'auto';
+            audioRef.current.playsInline = true;
+          }
+          audioRef.current.src = res.audioUrl;
+          audioRef.current.volume = Math.max(0, Math.min(1, volume / 100));
+          setAudioMode(true);
+          setTrack({ ...failedTrack, _guaranteed: true, source: res.source });
+          setPlaying(true);
+          setReady(true);
+          setPosition(0);
+          setError(null);
+          try { await audioRef.current.play(); } catch {}
+          if (audioSyncRef.current) clearInterval(audioSyncRef.current);
+          audioSyncRef.current = setInterval(() => {
+            if (!audioRef.current) return;
+            try {
+              setPosition(audioRef.current.currentTime || 0);
+              if (audioRef.current.duration && isFinite(audioRef.current.duration)) setDuration(audioRef.current.duration);
+              if (audioRef.current.ended) {
+                clearInterval(audioSyncRef.current);
+                audioSyncRef.current = null;
+                handlersRef.current.handleEnded?.();
+              }
+            } catch {}
+          }, 400);
+          sameSongLockRef.current = false;
+          return true;
+        }
+        if (res.type === 'video' && res.videoId && res.videoId !== failedTrack.id) {
+          try {
+            setAudioMode(false);
+            setError(null);
+            const p = ytRef.current;
+            if (p?.loadVideoById) {
+              p.loadVideoById({ videoId: res.videoId, startSeconds: 0 });
+              p.playVideo?.();
+            }
+            setTrack({ ...failedTrack, id: res.videoId, yt: res.videoId, _guaranteed: true });
+            setPlaying(true);
+            setReady(true);
+            setPosition(0);
+            sameSongLockRef.current = false;
+            return true;
+          } catch {}
+        }
+      }
+    } catch (e) {
+      console.warn('[guaranteed] err', e);
+    }
+    sameSongLockRef.current = false;
+    return false;
+  }, [volume]);
 
   /* ---------- init del player ---------- */
   useEffect(() => {
@@ -80,12 +152,34 @@ export function PlayerProvider({ children }) {
           onStateChange: (e) => {
             setPlaying(e.data === 1 || e.data === 3);
             if (e.data === 1) setError(null);
-            if (e.data === 0) handlersRef.current.handleEnded?.();
+            if (e.data === 0) {
+              if (audioMode) return;
+              handlersRef.current.handleEnded?.();
+            }
           },
-          onError: () => {
-            // Vídeo retirado/no disponible: avisar y saltar al siguiente
-            setError('unavailable');
-            setTimeout(() => handlersRef.current.advance?.(1, { force: true }), 700);
+          onError: async () => {
+            if (sameSongLockRef.current || audioMode) return;
+            const cur = track;
+            if (cur) {
+              const ok = await playSameSongGuaranteed(cur);
+              if (ok) {
+                setError(null);
+                return;
+              }
+            }
+            // Solo en último recurso extremo, intentar una vez más
+            setError('Reintentando...');
+            setTimeout(async () => {
+              if (sameSongLockRef.current) return;
+              const ok2 = await playSameSongGuaranteed(track).catch(() => false);
+              if (!ok2) {
+                setError('No disponible. Saltando...');
+                sameSongLockRef.current = false;
+                setTimeout(() => handlersRef.current.advance?.(1, { force: true }), 600);
+              } else {
+                setError(null);
+              }
+            }, 500);
           },
         },
       });
@@ -193,6 +287,13 @@ export function PlayerProvider({ children }) {
     setQueue(extraQueue);
     setPosition(0);
     setPlaying(true);
+    setAudioMode(false);
+    sameSongLockRef.current = false;
+    triedResolveRef.current.clear();
+    try {
+      if (audioSyncRef.current) { clearInterval(audioSyncRef.current); audioSyncRef.current = null; }
+      if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; audioRef.current.load?.(); }
+    } catch {}
     visitedRef.current.add(tk.id);
     try { p.loadVideoById({ videoId: tk.yt, startSeconds: 0 }); } catch { /* noop */ }
     dispatch({ type: 'add-history', id: tk.id });
@@ -277,6 +378,13 @@ export function PlayerProvider({ children }) {
       playNow(seed, radioFrom(seed), 0, []);
     },
     toggle() {
+      if (audioMode && audioRef.current) {
+        try {
+          if (audioRef.current.paused) { audioRef.current.play(); setPlaying(true); }
+          else { audioRef.current.pause(); setPlaying(false); }
+          return;
+        } catch {}
+      }
       const p = ytRef.current;
       if (!p || !track) return;
       try { playing ? p.pauseVideo() : p.playVideo(); } catch { /* noop */ }
@@ -287,11 +395,24 @@ export function PlayerProvider({ children }) {
       advance(-1, { force: true });
     },
     seek(frac) {
+      if (audioMode && audioRef.current && audioRef.current.duration) {
+        const to = audioRef.current.duration * frac;
+        try { audioRef.current.currentTime = Math.max(0, Math.min(audioRef.current.duration, to)); setPosition(audioRef.current.currentTime); } catch {}
+        return;
+      }
       if (!duration) return;
       const to = Math.max(0, Math.min(duration, duration * frac));
       try { ytRef.current?.seekTo?.(to, true); setPosition(to); } catch { /* noop */ }
     },
     nudge(sec) {
+      if (audioMode && audioRef.current) {
+        try {
+          const to = Math.max(0, (audioRef.current.currentTime || 0) + sec);
+          audioRef.current.currentTime = to;
+          setPosition(audioRef.current.currentTime);
+        } catch {}
+        return;
+      }
       try {
         const to = Math.max(0, Math.min(duration, position + sec));
         ytRef.current?.seekTo?.(to, true); setPosition(to);
@@ -300,6 +421,7 @@ export function PlayerProvider({ children }) {
     setVolume(v) {
       const nv = Math.max(0, Math.min(100, Number(v) || 0));
       setVolumeState(nv);
+      try { if (audioRef.current) audioRef.current.volume = nv / 100; } catch {}
       try { localStorage.setItem('ritmo_vol', String(nv)); } catch {}
     },
     toggleShuffle() { setShuffle((s) => !s); },
@@ -413,7 +535,8 @@ export function PlayerProvider({ children }) {
     related: track ? relatedTracks(track, 6) : [],
     // Lo que sonará después, cuando la cola se vacíe (resto de la lista en curso)
     upcoming: (index >= 0 && contextList.length > index + 1) ? contextList.slice(index + 1) : [],
-  }), [api, track, queue, contextList, index, playing, position, duration, shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode, djText, djTag, djSpeaking, settings.dj, djVoiceURI]);
+    audioMode,
+  }), [api, track, queue, contextList, index, playing, position, duration, shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode, djText, djTag, djSpeaking, settings.dj, djVoiceURI, audioMode]);
 
   return (
     <PlayerCtx.Provider value={value}>
