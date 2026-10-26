@@ -11,6 +11,7 @@ import {
 } from '../api/youtubeSearch.js';
 import { getCatalog, warmLookup } from '../api/liveData.js';
 import Icon from '../components/Icon.jsx';
+import ErrorBoundary from '../components/ErrorBoundary.jsx';
 
 export { parseYouTubeId };
 
@@ -23,31 +24,40 @@ function LiveResults({ query, deep, onPlay, onPlayAll }) {
   const [items, setItems] = useState(null); // null = cargando
   const [instant, setInstant] = useState(false);
   const reqRef = useRef(0);
+  const aliveRef = useRef(true);
 
   useEffect(() => {
+    aliveRef.current = true;
     const id = ++reqRef.current;
     setItems(null);
     setInstant(false);
-    let alive = true;
     (async () => {
       try {
         // 1) caché caliente del servidor → respuesta inmediata (solo búsqueda normal)
         if (!deep) {
-          const warm = await warmLookup(query).catch(() => null);
-          if (alive && id === reqRef.current && warm && warm.length) {
-            setItems(warm);
-            setInstant(true);
-            return;
-          }
+          try {
+            const warm = await warmLookup(query).catch(() => null);
+            if (aliveRef.current && id === reqRef.current && Array.isArray(warm) && warm.length) {
+              setItems(warm);
+              setInstant(true);
+              return;
+            }
+          } catch {}
         }
         // 2) búsqueda real (profunda si se pidió)
-        const list = await searchYouTube(query, { deep }).catch(() => []);
-        if (alive && id === reqRef.current) setItems(Array.isArray(list) ? list : []);
+        try {
+          const list = await searchYouTube(query, { deep }).catch(() => []);
+          if (aliveRef.current && id === reqRef.current) {
+            setItems(Array.isArray(list) ? list : []);
+          }
+        } catch {
+          if (aliveRef.current && id === reqRef.current) setItems([]);
+        }
       } catch {
-        if (alive && id === reqRef.current) setItems([]);
+        if (aliveRef.current && id === reqRef.current) setItems([]);
       }
     })();
-    return () => { alive = false; };
+    return () => { aliveRef.current = false; };
   }, [query, deep]);
 
   if (items === null) {
