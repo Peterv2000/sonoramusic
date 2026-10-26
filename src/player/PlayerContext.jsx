@@ -40,7 +40,10 @@ export function PlayerProvider({ children }) {
   const [duration, setDuration] = useState(0);
   const [shuffle, setShuffle] = useState(false);
   const [repeat, setRepeat] = useState('off'); // off | all | one
-  const [volume, setVolumeState] = useState(80);
+  const [volume, setVolumeState] = useState(() => {
+    try { const v = localStorage.getItem('ritmo_vol'); if (v != null) return Math.max(0, Math.min(100, Number(v))); } catch {}
+    return 80;
+  });
   const [fullOpen, setFullOpen] = useState(false);
   const [panel, setPanel] = useState('player'); // player | queue | lyrics | video
   const [error, setError] = useState(null);
@@ -124,6 +127,7 @@ export function PlayerProvider({ children }) {
       ? Math.min(100, volume + 8)
       : volume;
     try { p.setVolume(v); } catch { /* noop */ }
+    try { localStorage.setItem('ritmo_vol', String(volume)); } catch {}
   }, [volume, settings.volumeNorm, settings.normalizeEQ, pro.active, ready]);
 
   /* ---------- DJ Ritmo: locución y frases ---------- */
@@ -293,7 +297,11 @@ export function PlayerProvider({ children }) {
         ytRef.current?.seekTo?.(to, true); setPosition(to);
       } catch { /* noop */ }
     },
-    setVolume(v) { setVolumeState(v); },
+    setVolume(v) {
+      const nv = Math.max(0, Math.min(100, Number(v) || 0));
+      setVolumeState(nv);
+      try { localStorage.setItem('ritmo_vol', String(nv)); } catch {}
+    },
     toggleShuffle() { setShuffle((s) => !s); },
     cycleRepeat() { setRepeat((r) => (r === 'off' ? 'all' : r === 'all' ? 'one' : 'off')); },
 

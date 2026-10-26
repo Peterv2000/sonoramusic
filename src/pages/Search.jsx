@@ -30,18 +30,22 @@ function LiveResults({ query, deep, onPlay, onPlayAll }) {
     setInstant(false);
     let alive = true;
     (async () => {
-      // 1) caché caliente del servidor → respuesta inmediata (solo búsqueda normal)
-      if (!deep) {
-        const warm = await warmLookup(query);
-        if (alive && id === reqRef.current && warm) {
-          setItems(warm);
-          setInstant(true);
-          return;
+      try {
+        // 1) caché caliente del servidor → respuesta inmediata (solo búsqueda normal)
+        if (!deep) {
+          const warm = await warmLookup(query).catch(() => null);
+          if (alive && id === reqRef.current && warm && warm.length) {
+            setItems(warm);
+            setInstant(true);
+            return;
+          }
         }
+        // 2) búsqueda real (profunda si se pidió)
+        const list = await searchYouTube(query, { deep }).catch(() => []);
+        if (alive && id === reqRef.current) setItems(Array.isArray(list) ? list : []);
+      } catch {
+        if (alive && id === reqRef.current) setItems([]);
       }
-      // 2) búsqueda real (profunda si se pidió)
-      const list = await searchYouTube(query, { deep });
-      if (alive && id === reqRef.current) setItems(list);
     })();
     return () => { alive = false; };
   }, [query, deep]);
@@ -196,7 +200,8 @@ export default function Search() {
   const onSearch = (value) => {
     setQ(value);
     setSuggOpen(true);
-    if (value.trim().length > 2) dispatch({ type: 'add-search', q: value.trim() });
+    const v = value.trim();
+    if (v.length > 2) dispatch({ type: 'add-search', q: v });
   };
 
   const pickSuggestion = (s) => {
