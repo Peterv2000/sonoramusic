@@ -200,10 +200,11 @@ export default function Search() {
   };
 
   const pickSuggestion = (s) => {
-    setQ(s);
+    const val = s.trim();
+    setQ(val);
     setSuggOpen(false);
-    setDebounced(s.trim());
-    dispatch({ type: 'add-search', q: s.trim() });
+    setDebounced(val);
+    if (val) dispatch({ type: 'add-search', q: val });
   };
 
   const playPasted = () => {
@@ -224,15 +225,21 @@ export default function Search() {
           <Icon name="search" size={17} className="search-lead" />
           <input
             className="search-input"
+            type="search"
             value={q}
-            onChange={(e) => onSearch(e.target.value)}
+            onChange={(e) => { onSearch(e.target.value); setSuggOpen(true); }}
             onFocus={() => setSuggOpen(true)}
+            onClick={() => setSuggOpen(true)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') { setDebounced(q.trim()); setSuggOpen(false); }
               if (e.key === 'Escape') setSuggOpen(false);
             }}
             placeholder={t('searchPlaceholder')}
             autoFocus
+            inputMode="search"
+            enterKeyHint="search"
+            autoComplete="off"
+            spellCheck={false}
           />
           {q && <button className="icon-btn clear-x" onClick={() => { setQ(''); setSugg([]); }}><Icon name="close" size={16} /></button>}
         </div>
