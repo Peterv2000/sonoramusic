@@ -6,7 +6,7 @@ export default function Admin() {
   const { user, isAdmin } = useAuth();
   const nav = useNavigate();
   const [tab, setTab] = useState('users');
-  const [prices, setPrices] = useState({ monthly: 9900, annual: 79900, family: 14900 });
+  const [prices, setPrices] = useState({ monthly: 4900, annual: 39900, family: 7900 });
 
   if (!isAdmin) {
     return (
@@ -62,13 +62,13 @@ export default function Admin() {
         <section>
           <h2>Precios (COP)</h2>
           <div style={{ display: 'grid', gap: 12, maxWidth: 400 }}>
-            <label>Mensual
+            <label>Mensual (COP)
               <input type="number" value={prices.monthly} onChange={(e) => setPrices({ ...prices, monthly: +e.target.value })} />
             </label>
-            <label>Anual
+            <label>Anual (COP)
               <input type="number" value={prices.annual} onChange={(e) => setPrices({ ...prices, annual: +e.target.value })} />
             </label>
-            <label>Familiar
+            <label>Familiar (COP)
               <input type="number" value={prices.family} onChange={(e) => setPrices({ ...prices, family: +e.target.value })} />
             </label>
             <button className="btn primary">Guardar precios</button>

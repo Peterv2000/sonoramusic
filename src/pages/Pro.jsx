@@ -5,9 +5,9 @@ import { useToast } from '../components/Toast.jsx';
 import Icon from '../components/Icon.jsx';
 
 const PLANS = [
-  { id: 'monthly', price: '$9.900', per: 'perMonth', tag: null, months: 1 },
-  { id: 'annual', price: '$79.900', per: 'perYear', tag: 'save2Months', months: 12, popular: true },
-  { id: 'family', price: '$14.900', per: 'perMonth', tag: 'upTo6', months: 1 },
+  { id: 'monthly', price: '$4.900', per: 'perMonth', tag: null, months: 1 },
+  { id: 'annual', price: '$39.900', per: 'perYear', tag: 'save3Months', months: 12, popular: true },
+  { id: 'family', price: '$7.900', per: 'perMonth', tag: 'upTo6', months: 1 },
 ];
 
 const FREE_FEATURES = ['free1', 'free2', 'free3', 'free4'];
