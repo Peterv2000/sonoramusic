@@ -193,22 +193,31 @@ export default function Search() {
   }, []);
 
   const results = useMemo(() => {
-    const empty = { songs: [], videos: [], mixes: [], albums: [], artists: [], playlists: [], stations: [] };
-    if (!query) return empty;
-    const hit = (s) => s.toLowerCase().includes(query);
-    // Catálogo curado + catálogo en vivo (sin duplicar por id)
-    const all = [...TRACKS, ...liveTracks.filter((tr) => !TRACKS.some((x) => x.id === tr.id))];
-    const songs = all.filter((tr) => [tr.title, tr.artist, tr.album, tr.genre, ...(tr.moods || [])].join(' ').toLowerCase().includes(query));
-    return {
-      songs,
-      videos: songs.filter((tr) => !tr.live),
-      mixes: MIXES.filter((mx) => hit(`${mx.title} ${mx.desc}`)),
-      albums: ALBUMS.filter((al) => hit(`${al.title} ${al.artist} ${al.year}`)),
-      artists: ARTISTS.filter((a) => hit(`${a.name} ${a.genre}`)),
-      playlists: state.library.playlists.filter((pl) => hit(`${pl.name} ${pl.desc || ''}`)),
-      stations: STATIONS.filter((st) => hit(`${st.title} ${st.desc}`)),
-    };
-  }, [query, state.library.playlists, liveTracks]);
+    try {
+      const empty = { songs: [], videos: [], mixes: [], albums: [], artists: [], playlists: [], stations: [] };
+      if (!query) return empty;
+      const hit = (s) => (s || '').toString().toLowerCase().includes(query);
+      // Catálogo curado + catálogo en vivo (sin duplicar por id)
+      const all = [...(Array.isArray(TRACKS) ? TRACKS : []), ...(Array.isArray(liveTracks) ? liveTracks.filter((tr) => !(Array.isArray(TRACKS) && TRACKS.some((x) => x?.id === tr?.id))) : [])];
+      const songs = all.filter((tr) => {
+        try {
+          const moods = Array.isArray(tr?.moods) ? tr.moods : [];
+          return [tr?.title, tr?.artist, tr?.album, tr?.genre, ...moods].join(' ').toLowerCase().includes(query);
+        } catch { return false; }
+      });
+      return {
+        songs,
+        videos: songs.filter((tr) => !tr?.live),
+        mixes: Array.isArray(MIXES) ? MIXES.filter((mx) => hit(`${mx?.title || ''} ${mx?.desc || ''}`)) : [],
+        albums: Array.isArray(ALBUMS) ? ALBUMS.filter((al) => hit(`${al?.title || ''} ${al?.artist || ''} ${al?.year || ''}`)) : [],
+        artists: Array.isArray(ARTISTS) ? ARTISTS.filter((a) => hit(`${a?.name || ''} ${a?.genre || ''}`)) : [],
+        playlists: Array.isArray(state?.library?.playlists) ? state.library.playlists.filter((pl) => hit(`${pl?.name || ''} ${pl?.desc || ''}`)) : [],
+        stations: Array.isArray(STATIONS) ? STATIONS.filter((st) => hit(`${st?.title || ''} ${st?.desc || ''}`)) : [],
+      };
+    } catch {
+      return { songs: [], videos: [], mixes: [], albums: [], artists: [], playlists: [], stations: [] };
+    }
+  }, [query, state?.library?.playlists, liveTracks]);
 
   const totalHits = results.songs.length + results.mixes.length + results.albums.length +
     results.artists.length + results.playlists.length + results.stations.length;
@@ -216,10 +225,13 @@ export default function Search() {
   const show = (k) => (filter === 'all' || filter === k) && results[k]?.length > 0;
 
   const onSearch = (value) => {
-    setQ(value);
-    setSuggOpen(true);
-    const v = value.trim();
-    if (v.length > 1) dispatch({ type: 'add-search', q: v });
+    const v = value || '';
+    setQ(v);
+    const tval = v.trim();
+    setSuggOpen(tval.length >= 2);
+    if (tval.length > 1) {
+      try { dispatch({ type: 'add-search', q: tval }); } catch {}
+    }
   };
 
   const pickSuggestion = (s) => {
@@ -243,18 +255,25 @@ export default function Search() {
     <div className="page search-page">
       <h1>{t('search')}</h1>
 
-      <div className="search-bar" ref={boxRef}>
+      <form className="search-bar" ref={boxRef} onSubmit={(e) => { e.preventDefault(); const v = q.trim(); if (!v) return; setDebounced(v); setSuggOpen(false); if (v.length > 1) { try { dispatch({ type: 'add-search', q: v }); } catch {} } }} autoComplete="off">
         <div className="search-input-wrap">
           <Icon name="search" size={17} className="search-lead" />
           <input
             className="search-input"
             type="search"
             value={q}
-            onChange={(e) => { onSearch(e.target.value); setSuggOpen(true); }}
-            onFocus={() => setSuggOpen(true)}
-            onClick={() => setSuggOpen(true)}
+            onChange={(e) => { onSearch(e.target.value); setSuggOpen((e.target.value || '').trim().length >= 2); }}
+            onFocus={() => setSuggOpen((q || '').trim().length >= 2)}
+            onClick={() => setSuggOpen((q || '').trim().length >= 2)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') { setDebounced(q.trim()); setSuggOpen(false); }
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                const v = q.trim();
+                if (!v) return;
+                setDebounced(v);
+                setSuggOpen(false);
+                if (v.length > 1) { try { dispatch({ type: 'add-search', q: v }); } catch {} }
+              }
               if (e.key === 'Escape') setSuggOpen(false);
             }}
             placeholder={t('searchPlaceholder')}
@@ -264,10 +283,11 @@ export default function Search() {
             autoComplete="off"
             spellCheck={false}
           />
-          {q && <button className="icon-btn clear-x" onClick={() => { setQ(''); setSugg([]); }}><Icon name="close" size={16} /></button>}
+          {q && <button type="button" className="icon-btn clear-x" onClick={() => { setQ(''); setSugg([]); setSuggOpen(false); setDebounced(''); }}><Icon name="close" size={16} /></button>}
         </div>
 
         <button
+          type="button"
           className={`btn deep-toggle ${deep ? 'on' : ''}`}
           onClick={() => setDeep((v) => !v)}
           title={t('deepSearchHint')}
@@ -275,16 +295,16 @@ export default function Search() {
           <Icon name="globe" size={15} /> {t('deepSearch')}
         </button>
 
-        {suggOpen && sugg.length > 0 && (
+        {suggOpen && Array.isArray(sugg) && sugg.length > 0 && (
           <div className="sugg-list">
-            {sugg.map((s) => (
-              <button key={s} className="sugg-item" onClick={() => pickSuggestion(s)}>
+            {sugg.slice(0, 8).map((s, idx) => (
+              <button type="button" key={s + idx} className="sugg-item" onClick={() => pickSuggestion(s)}>
                 <Icon name="search" size={14} /> <span>{s}</span>
               </button>
             ))}
           </div>
         )}
-      </div>
+      </form>
 
       {deep && (
         <p className="deep-hint"><Icon name="globe" size={13} /> {t('deepSearchHint')}</p>
