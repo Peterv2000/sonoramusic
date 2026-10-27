@@ -23,12 +23,22 @@ export default function Explore() {
   const list = useMemo(() => {
     if (!genre) return [];
     const base = all || [];
-    if (base.length === 0) return tracksByGenre(genre);
-    try {
-      return getPersonalizedByGenre(base, genre, state, 150);
-    } catch {
-      return base.filter((t) => t.genre === genre);
+    let res = [];
+    if (base.length === 0) res = tracksByGenre(genre);
+    else {
+      try {
+        res = getPersonalizedByGenre(base, genre, state, 150);
+      } catch {
+        res = base.filter((t) => t.genre === genre);
+      }
     }
+    const seen = new Set();
+    res = res.filter((t) => {
+      if (!t || seen.has(t.id)) return false;
+      seen.add(t.id);
+      return true;
+    });
+    return res.sort(() => Math.random() - 0.5);
   }, [genre, all, state]);
 
   const charts = topCharts('Global').slice(0, 10);

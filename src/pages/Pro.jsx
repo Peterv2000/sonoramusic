@@ -101,17 +101,30 @@ export default function Pro() {
             </ul>
           </section>
 
-          <div className="plan-grid">
+          <div className="plan-grid pro-grid">
             {PLANS.map((pl) => (
               <button
                 key={pl.id}
-                className={`plan-card ${sel === pl.id ? 'sel' : ''} ${pl.popular ? 'popular' : ''}`}
+                className={`plan-card pro-card-modern ${sel === pl.id ? 'sel' : ''} ${pl.popular ? 'popular' : ''}`}
                 onClick={() => setSel(pl.id)}
               >
                 {pl.popular && <span className="plan-tag">{t('mostPopular') || 'Más popular'}</span>}
-                <strong>{pl.id === 'monthly' ? 'Mensual' : pl.id === 'annual' ? 'Anual' : 'Familiar'}</strong>
-                <span className="plan-price">{pl.price}<small>/{pl.id === 'annual' ? 'año' : 'mes'}</small></span>
-                {pl.tag && <em>{pl.id === 'annual' ? 'Ahorra más' : pl.id === 'family' ? 'Hasta 6 cuentas' : ''}</em>}
+                <div className="plan-head">
+                  <strong>{pl.id === 'monthly' ? 'Mensual' : pl.id === 'annual' ? 'Anual' : 'Familiar'}</strong>
+                  {pl.id === 'annual' && <span className="plan-badge">-65%</span>}
+                </div>
+                <div className="plan-price-wrap">
+                  <span className="plan-price">{pl.price}</span>
+                  <span className="plan-per">/{pl.id === 'annual' ? 'año' : 'mes'}</span>
+                </div>
+                {pl.id === 'annual' && <div className="plan-sub">~$3.325/mes</div>}
+                <ul className="plan-list">
+                  <li>Sin anuncios</li>
+                  <li>Reproducción en segundo plano</li>
+                  <li>Audio de alta calidad</li>
+                  {pl.id === 'family' && <li>Hasta 6 cuentas</li>}
+                  {pl.id === 'annual' && <li>Ahorro garantizado</li>}
+                </ul>
               </button>
             ))}
           </div>

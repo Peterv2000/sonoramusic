@@ -32,14 +32,17 @@ export default function MiniPlayer() {
         <img className="mini-thumb" src={p.track.thumb} alt="" loading="lazy" />
         <div className="mini-meta">
           <strong>{p.track.title}</strong>
-          <small>{p.track.artist} · {p.track.live ? 'EN VIVO' : fmt(p.duration - p.position)}</small>
+          <small>{p.track.artist} · {p.track.live ? 'EN VIVO' : `${fmt(p.position)} / ${fmt(p.duration)}`}</small>
         </div>
       </div>
       <div className="mini-controls">
-        <button className="icon-btn" onClick={p.toggle} aria-label={p.playing ? 'Pausar' : 'Reproducir'}>
+        <button className="icon-btn" onClick={(e) => { e.stopPropagation(); p.prev(); }} aria-label="Anterior">
+          <Icon name="prev" />
+        </button>
+        <button className="icon-btn" onClick={(e) => { e.stopPropagation(); p.toggle(); }} aria-label={p.playing ? 'Pausar' : 'Reproducir'}>
           <Icon name={p.playing ? 'pause' : 'play'} />
         </button>
-        <button className="icon-btn" onClick={p.next} aria-label="Siguiente">
+        <button className="icon-btn" onClick={(e) => { e.stopPropagation(); p.next(); }} aria-label="Siguiente">
           <Icon name="next" />
         </button>
       </div>

@@ -9,15 +9,15 @@ import Icon from './Icon.jsx';
 /* Tarjeta cuadrada estilo YouTube Music: carátula + título + subtítulo */
 export function Card({ item, onPlay, onOpen, sub, round, badge }) {
   return (
-    <div className={`card ${round ? 'round' : ''}`} onClick={onOpen}>
+    <div className={`card ${round ? 'round' : ''}`} onClick={onOpen || onPlay}>
       <div className="card-art">
         <img src={item.thumb || item.cover} alt="" loading="lazy" />
         {badge && <span className="card-badge">{badge}</span>}
-        {onPlay && (
+        {(onPlay || onOpen) && (
           <button
             className="card-play"
             aria-label="Reproducir"
-            onClick={(e) => { e.stopPropagation(); onPlay(); }}
+            onClick={(e) => { e.stopPropagation(); if (onPlay) onPlay(); else if (onOpen) onOpen(); }}
           ><Icon name="play" size={22} /></button>
         )}
       </div>

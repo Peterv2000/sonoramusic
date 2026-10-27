@@ -1,24 +1,118 @@
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../state/AppState.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
+import { usePlayer } from '../player/PlayerContext.jsx';
 import Icon from './Icon.jsx';
 import Logo from './Logo.jsx';
+import { suggestYouTube, searchYouTube } from '../api/youtubeSearch.js';
 
 export default function TopBar() {
   const nav = useNavigate();
-  const { state } = useApp();
+  const { state, dispatch } = useApp();
   const { t } = useI18n();
+  const p = usePlayer();
   const initial = (state.profile.name || ' Invitado').trim().charAt(0).toUpperCase();
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState('');
+  const [sugg, setSugg] = useState([]);
+  const [res, setRes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const ref = useRef(null);
+  const req = useRef(0);
+
+  useEffect(() => {
+    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, []);
+
+  useEffect(() => {
+    const term = q.trim();
+    if (term.length < 2) { setSugg([]); setRes([]); return; }
+    const id = ++req.current;
+    setLoading(true);
+    const tmr = setTimeout(async () => {
+      try {
+        const [s, r] = await Promise.all([
+          suggestYouTube(term).catch(() => []),
+          searchYouTube(term, { deep: false }).catch(() => []),
+        ]);
+        if (id !== req.current) return;
+        setSugg(Array.isArray(s) ? s.filter(x => typeof x === 'string').slice(0, 6) : []);
+        setRes(Array.isArray(r) ? r.slice(0, 8) : []);
+      } catch {
+        if (id === req.current) { setSugg([]); setRes([]); }
+      } finally {
+        if (id === req.current) setLoading(false);
+      }
+    }, 160);
+    return () => clearTimeout(tmr);
+  }, [q]);
+
+  const pick = (val) => {
+    const v = (val || '').trim();
+    if (!v) return;
+    setQ(v);
+    setOpen(true);
+    try { dispatch({ type: 'add-search', q: v }); } catch {}
+  };
+
+  const playItem = (item) => {
+    try {
+      p.playList([item], item.id);
+      setOpen(false);
+    } catch {}
+  };
 
   return (
     <header className="topbar">
       <button className="icon-btn only-mobile" onClick={() => nav('/')} aria-label="Inicio">
         <Logo size={26} />
       </button>
-      <button className="search-pill search-pill-modern" onClick={() => nav('/search')} aria-label={t('search')}>
-        <Icon name="search" size={18} />
-        <span>{t('searchPlaceholder') || 'Buscar canciones, artistas...'}</span>
-      </button>
+      <div className="search-pill-wrap" ref={ref}>
+        <div className="search-pill search-pill-modern" onClick={() => setOpen(true)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(true); } }}>
+          <Icon name="search" size={18} />
+          <input
+            className="search-pill-input"
+            value={q}
+            onChange={(e) => { setQ(e.target.value); setOpen(true); }}
+            onFocus={() => setOpen(true)}
+            placeholder={t('searchPlaceholder') || 'Buscar canciones, artistas...'}
+            spellCheck={false}
+            autoComplete="off"
+          />
+          {q && <button className="icon-btn sm" onClick={(e) => { e.stopPropagation(); setQ(''); setSugg([]); setRes([]); }}><Icon name="close" size={14} /></button>}
+        </div>
+        {open && (q.trim().length >= 2 || sugg.length > 0) && (
+          <div className="search-dropdown">
+            {sugg.length > 0 && (
+              <div className="sd-section">
+                <div className="sd-title">{t('suggestions') || 'Sugerencias'}</div>
+                {sugg.map((s, i) => (
+                  <button key={i} className="sd-item" onClick={() => pick(s)}><Icon name="search" size={14} /> <span>{s}</span></button>
+                ))}
+              </div>
+            )}
+            {res.length > 0 && (
+              <div className="sd-section">
+                <div className="sd-title">{t('results') || 'Resultados'}</div>
+                {res.map((it) => (
+                  <button key={it.id} className="sd-track" onClick={() => playItem(it)}>
+                    <img src={it.thumb} alt="" />
+                    <div className="sd-track-meta">
+                      <strong>{it.title}</strong>
+                      <small>{it.artist}</small>
+                    </div>
+                    <Icon name="play" size={16} />
+                  </button>
+                ))}
+              </div>
+            )}
+            {loading && <div className="sd-loading">...</div>}
+          </div>
+        )}
+      </div>
       <div className="topbar-right">
         {state.pro.active && (
           <span className="badge-pro"><Icon name="star" size={12} /> {t('proBadge')}</span>

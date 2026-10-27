@@ -257,7 +257,7 @@ export default function Search() {
 
   return (
     <div className="page search-page">
-      <div className="search-hero">
+      <div className="search-hero" style={{ display: 'none' }}>
         <h1 className="search-title">{t('search') || 'Buscar'}</h1>
         <form className="search-bar search-bar-hero" ref={boxRef} onSubmit={(e) => { e.preventDefault(); const v = q.trim(); if (!v) return; setDebounced(v); setSuggOpen(false); if (v.length > 1) { try { dispatch({ type: 'add-search', q: v }); } catch {} } }} autoComplete="off">
           <div className="search-input-wrap search-input-wrap-hero">

@@ -132,11 +132,17 @@ export function getPersonalizedByGenre(tracks, genre, state, limit) {
   const lim = Math.max(limit || 100, 100);
   const arr = Array.isArray(tracks) ? tracks : [];
   const pool = arr.filter((t) => t.genre === genre);
-  const base = pool.length >= lim ? [...pool, ...arr.filter((t) => t.genre !== genre)].sort(() => Math.random() - 0.5) : [...pool, ...arr.filter((t) => t.genre !== genre)].sort(() => Math.random() - 0.5);
+  const base = [...new Set([...pool, ...arr.filter((t) => t.genre !== genre)])];
   const feed = getPersonalizedFeed(base, state, { limit: lim * 2 });
   const pri = feed.filter((t) => t.genre === genre);
   const sec = feed.filter((t) => t.genre !== genre);
   const out = [...pri, ...sec].slice(0, lim);
-  // Mezclar para variar cada vez
-  return out.sort(() => Math.random() - 0.5);
+  // Eliminar duplicados y mezclar para variar cada vez
+  const seen = new Set();
+  const uniq = out.filter((t) => {
+    if (!t || !t.id || seen.has(t.id)) return false;
+    seen.add(t.id);
+    return true;
+  });
+  return uniq.sort(() => Math.random() - 0.5);
 }
