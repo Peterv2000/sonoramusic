@@ -4,6 +4,8 @@ import { HashRouter } from 'react-router-dom';
 import App from './App.jsx';
 import { AppProvider } from './state/AppState.jsx';
 import { PlayerProvider } from './player/PlayerContext.jsx';
+import { AuthProvider } from './auth/AuthContext.jsx';
+import { AdProvider } from './ads/AdManager.jsx';
 import './styles.css';
 import './styles-pro.css';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
@@ -12,11 +14,15 @@ createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
       <HashRouter>
-        <AppProvider>
-          <PlayerProvider>
-            <App />
-          </PlayerProvider>
-        </AppProvider>
+        <AuthProvider>
+          <AppProvider>
+            <AdProvider>
+              <PlayerProvider>
+                <App />
+              </PlayerProvider>
+            </AdProvider>
+          </AppProvider>
+        </AuthProvider>
       </HashRouter>
     </ErrorBoundary>
   </React.StrictMode>

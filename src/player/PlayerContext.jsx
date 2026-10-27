@@ -5,6 +5,7 @@ import { radioFrom, relatedTracks, shuffle as shuffleArr } from '../data/catalog
 import { djLine as makeDjLine, djGreeting } from './dj.js';
 import VideoStage from './VideoStage.jsx';
 import { DJDrop } from '../components/DJ.jsx';
+import { useAds } from '../ads/AdManager.jsx';
 
 const PlayerCtx = createContext(null);
 
@@ -27,6 +28,7 @@ function loadYT() {
 export function PlayerProvider({ children }) {
   const { state, dispatch } = useApp();
   const { pro, settings } = state;
+  const ads = useAds ? useAds() : null;
 
   const ytRef = useRef(null);
   const hostRef = useRef(null);
@@ -295,6 +297,7 @@ export function PlayerProvider({ children }) {
       if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; audioRef.current.load?.(); }
     } catch {}
     visitedRef.current.add(tk.id);
+    try { ads?.incrementPlay?.(); } catch {}
     try { p.loadVideoById({ videoId: tk.yt, startSeconds: 0 }); } catch { /* noop */ }
     dispatch({ type: 'add-history', id: tk.id });
     try { recordPlay(tk); } catch { /* noop */ }
@@ -309,7 +312,7 @@ export function PlayerProvider({ children }) {
         });
       } catch { /* noop */ }
     }
-  }, [dispatch, emitDj]);
+  }, [dispatch, emitDj, ads]);
 
   const advance = useCallback((dir, opts = {}) => {
     // La cola "a continuación" tiene prioridad (también al terminar la canción)
