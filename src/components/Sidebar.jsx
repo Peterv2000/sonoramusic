@@ -44,7 +44,7 @@ export default function Sidebar() {
 
       <div className="side-section side-admin">
         <NavLink to="/admin" className="side-link admin-link">
-          <span className="ico"><Icon name="settings" /></span>{t('admin')}
+          <span className="ico"><Icon name="settings" /></span>Admin
         </NavLink>
       </div>
 
