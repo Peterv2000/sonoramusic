@@ -295,11 +295,11 @@ export default function Search() {
           <Icon name="globe" size={15} /> {t('deepSearch')}
         </button>
 
-        {suggOpen && Array.isArray(sugg) && sugg.length > 0 && (
+        {suggOpen && Array.isArray(sugg) && sugg.filter(Boolean).length > 0 && (
           <div className="sugg-list">
-            {sugg.slice(0, 8).map((s, idx) => (
-              <button type="button" key={s + idx} className="sugg-item" onClick={() => pickSuggestion(s)}>
-                <Icon name="search" size={14} /> <span>{s}</span>
+            {sugg.filter(Boolean).slice(0, 8).map((s, idx) => (
+              <button type="button" key={(typeof s === 'string' ? s : idx) + idx} className="sugg-item" onClick={() => pickSuggestion(typeof s === 'string' ? s : '')}>
+                <Icon name="search" size={14} /> <span>{typeof s === 'string' ? s : ''}</span>
               </button>
             ))}
           </div>
