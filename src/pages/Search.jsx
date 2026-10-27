@@ -167,7 +167,7 @@ export default function Search() {
 
   /* Sugerencias en vivo (autocompletado) mientras se escribe */
   useEffect(() => {
-    const term = q.trim();
+    const term = (q || '').trim();
     if (term.length < 2) { setSugg([]); setSuggOpen(false); return; }
     const id = ++suggReq.current;
     setSuggOpen(true);
@@ -175,7 +175,11 @@ export default function Search() {
       try {
         const list = await suggestYouTube(term).catch(() => []);
         if (id === suggReq.current) {
-          setSugg(Array.isArray(list) ? list : []);
+          if (Array.isArray(list)) {
+            setSugg(list.filter((x) => typeof x === 'string'));
+          } else {
+            setSugg([]);
+          }
           setSuggOpen(true);
         }
       } catch {
