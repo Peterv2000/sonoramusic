@@ -108,10 +108,10 @@ export default function Pro() {
                 className={`plan-card ${sel === pl.id ? 'sel' : ''} ${pl.popular ? 'popular' : ''}`}
                 onClick={() => setSel(pl.id)}
               >
-                {pl.popular && <span className="plan-tag">{t('mostPopular')}</span>}
-                <strong>{t(pl.id)}</strong>
-                <span className="plan-price">{pl.price}<small>{t(pl.per)}</small></span>
-                {pl.tag && <em>{t(pl.tag)}</em>}
+                {pl.popular && <span className="plan-tag">{t('mostPopular') || 'Más popular'}</span>}
+                <strong>{pl.id === 'monthly' ? 'Mensual' : pl.id === 'annual' ? 'Anual' : 'Familiar'}</strong>
+                <span className="plan-price">{pl.price}<small>/{pl.id === 'annual' ? 'año' : 'mes'}</small></span>
+                {pl.tag && <em>{pl.id === 'annual' ? 'Ahorra más' : pl.id === 'family' ? 'Hasta 6 cuentas' : ''}</em>}
               </button>
             ))}
           </div>

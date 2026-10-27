@@ -102,24 +102,26 @@ export function getPersonalizedFeed(tracks, state, opts) {
   if (arr.length === 0) return [];
   const scored = arr
     .filter((t) => t && !exclude.has(t.id))
-    .map((t) => ({ t, s: scoreTrack(t, state) }))
+    .map((t) => ({ t, s: scoreTrack(t, state) + Math.random() * 25 }))
     .sort((a, b) => b.s - a.s);
   const out = [];
   const seenGen = new Set();
   for (const item of scored) {
     if (out.length >= limit) break;
     const g = item.t.genre;
-    if (seenGen.has(g) && out.length < limit * 0.7 && Math.random() > 0.4) continue;
+    if (seenGen.has(g) && out.length < limit * 0.6 && Math.random() > 0.3) continue;
     seenGen.add(g);
     out.push(item.t);
   }
-  if (out.length < Math.min(limit, 80)) {
+  if (out.length < Math.min(limit, 120)) {
     for (const item of scored) {
       if (out.length >= limit) break;
       if (!out.find((x) => x.id === item.t.id)) out.push(item.t);
     }
   }
   const p = loadProfile();
+  p.lastKey = Date.now();
+  try { saveProfile(p); } catch {}
   const key = p.lastKey || Date.now();
   if (out.length === 0) return [];
   const rot = key % out.length;
@@ -128,10 +130,13 @@ export function getPersonalizedFeed(tracks, state, opts) {
 
 export function getPersonalizedByGenre(tracks, genre, state, limit) {
   const lim = Math.max(limit || 100, 100);
-  const pool = (Array.isArray(tracks) ? tracks : []).filter((t) => t.genre === genre);
-  const base = pool.length >= lim ? pool : [...pool, ...(Array.isArray(tracks) ? tracks : []).filter((t) => t.genre !== genre)];
-  const feed = getPersonalizedFeed(base, state, { limit: lim });
+  const arr = Array.isArray(tracks) ? tracks : [];
+  const pool = arr.filter((t) => t.genre === genre);
+  const base = pool.length >= lim ? [...pool, ...arr.filter((t) => t.genre !== genre)].sort(() => Math.random() - 0.5) : [...pool, ...arr.filter((t) => t.genre !== genre)].sort(() => Math.random() - 0.5);
+  const feed = getPersonalizedFeed(base, state, { limit: lim * 2 });
   const pri = feed.filter((t) => t.genre === genre);
   const sec = feed.filter((t) => t.genre !== genre);
-  return [...pri, ...sec].slice(0, lim);
+  const out = [...pri, ...sec].slice(0, lim);
+  // Mezclar para variar cada vez
+  return out.sort(() => Math.random() - 0.5);
 }
