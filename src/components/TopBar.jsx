@@ -15,8 +15,9 @@ export default function TopBar() {
       <button className="icon-btn only-mobile" onClick={() => nav('/')} aria-label="Inicio">
         <Logo size={26} />
       </button>
-      <button className="search-pill" onClick={() => nav('/search')} aria-label={t('search')}>
-        <Icon name="search" size={17} /> {t('searchPlaceholder')}
+      <button className="search-pill search-pill-modern" onClick={() => nav('/search')} aria-label={t('search')}>
+        <Icon name="search" size={18} />
+        <span>{t('searchPlaceholder') || 'Buscar canciones, artistas...'}</span>
       </button>
       <div className="topbar-right">
         {state.pro.active && (

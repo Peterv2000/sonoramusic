@@ -257,58 +257,59 @@ export default function Search() {
 
   return (
     <div className="page search-page">
-      <h1>{t('search')}</h1>
-
-      <form className="search-bar" ref={boxRef} onSubmit={(e) => { e.preventDefault(); const v = q.trim(); if (!v) return; setDebounced(v); setSuggOpen(false); if (v.length > 1) { try { dispatch({ type: 'add-search', q: v }); } catch {} } }} autoComplete="off">
-        <div className="search-input-wrap">
-          <Icon name="search" size={17} className="search-lead" />
-          <input
-            className="search-input"
-            type="search"
-            value={q}
-            onChange={(e) => { onSearch(e.target.value); setSuggOpen((e.target.value || '').trim().length >= 2); }}
-            onFocus={() => setSuggOpen((q || '').trim().length >= 2)}
-            onClick={() => setSuggOpen((q || '').trim().length >= 2)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                const v = q.trim();
-                if (!v) return;
-                setDebounced(v);
-                setSuggOpen(false);
-                if (v.length > 1) { try { dispatch({ type: 'add-search', q: v }); } catch {} }
-              }
-              if (e.key === 'Escape') setSuggOpen(false);
-            }}
-            placeholder={t('searchPlaceholder')}
-            autoFocus
-            inputMode="search"
-            enterKeyHint="search"
-            autoComplete="off"
-            spellCheck={false}
-          />
-          {q && <button type="button" className="icon-btn clear-x" onClick={() => { setQ(''); setSugg([]); setSuggOpen(false); setDebounced(''); }}><Icon name="close" size={16} /></button>}
-        </div>
-
-        <button
-          type="button"
-          className={`btn deep-toggle ${deep ? 'on' : ''}`}
-          onClick={() => setDeep((v) => !v)}
-          title={t('deepSearchHint')}
-        >
-          <Icon name="globe" size={15} /> {t('deepSearch')}
-        </button>
-
-        {suggOpen && Array.isArray(sugg) && sugg.filter(x => typeof x === 'string' && x.trim().length > 0).length > 0 && (
-          <div className="sugg-list">
-            {sugg.filter(x => typeof x === 'string' && x.trim().length > 0).slice(0, 8).map((s, idx) => (
-              <button type="button" key={s + '-' + idx} className="sugg-item" onClick={() => pickSuggestion(s)}>
-                <Icon name="search" size={14} /> <span>{s}</span>
-              </button>
-            ))}
+      <div className="search-hero">
+        <h1 className="search-title">{t('search') || 'Buscar'}</h1>
+        <form className="search-bar search-bar-hero" ref={boxRef} onSubmit={(e) => { e.preventDefault(); const v = q.trim(); if (!v) return; setDebounced(v); setSuggOpen(false); if (v.length > 1) { try { dispatch({ type: 'add-search', q: v }); } catch {} } }} autoComplete="off">
+          <div className="search-input-wrap search-input-wrap-hero">
+            <Icon name="search" size={20} className="search-lead" />
+            <input
+              className="search-input search-input-hero"
+              type="search"
+              value={q}
+              onChange={(e) => { onSearch(e.target.value); setSuggOpen((e.target.value || '').trim().length >= 2); }}
+              onFocus={() => setSuggOpen((q || '').trim().length >= 2)}
+              onClick={() => setSuggOpen((q || '').trim().length >= 2)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  const v = q.trim();
+                  if (!v) return;
+                  setDebounced(v);
+                  setSuggOpen(false);
+                  if (v.length > 1) { try { dispatch({ type: 'add-search', q: v }); } catch {} }
+                }
+                if (e.key === 'Escape') setSuggOpen(false);
+              }}
+              placeholder={t('searchPlaceholder') || '¿Qué quieres escuchar?'}
+              autoFocus
+              inputMode="search"
+              enterKeyHint="search"
+              autoComplete="off"
+              spellCheck={false}
+            />
+            {q && <button type="button" className="icon-btn clear-x" onClick={() => { setQ(''); setSugg([]); setSuggOpen(false); setDebounced(''); }}><Icon name="close" size={16} /></button>}
           </div>
-        )}
-      </form>
+
+          <button
+            type="button"
+            className={`btn deep-toggle ${deep ? 'on' : ''}`}
+            onClick={() => setDeep((v) => !v)}
+            title={t('deepSearchHint')}
+          >
+            <Icon name="globe" size={15} /> {t('deepSearch') || 'Búsqueda profunda'}
+          </button>
+
+          {suggOpen && Array.isArray(sugg) && sugg.filter(x => typeof x === 'string' && x.trim().length > 0).length > 0 && (
+            <div className="sugg-list sugg-list-hero">
+              {sugg.filter(x => typeof x === 'string' && x.trim().length > 0).slice(0, 8).map((s, idx) => (
+                <button type="button" key={s + '-' + idx} className="sugg-item sugg-item-hero" onClick={() => pickSuggestion(s)}>
+                  <Icon name="search" size={16} /> <span>{s}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </form>
+      </div>
 
       {deep && (
         <p className="deep-hint"><Icon name="globe" size={13} /> {t('deepSearchHint')}</p>
