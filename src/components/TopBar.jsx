@@ -54,7 +54,7 @@ export default function TopBar() {
     const v = (val || '').trim();
     if (!v) return;
     setQ(v);
-    setOpen(true);
+    setOpen(false);
     try { dispatch({ type: 'add-search', q: v }); } catch {}
   };
 
@@ -71,7 +71,7 @@ export default function TopBar() {
         <Logo size={26} />
       </button>
       <div className="search-pill-wrap" ref={ref}>
-        <div className="search-pill search-pill-modern" onClick={() => setOpen(true)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(true); } }}>
+        <div className={`search-pill search-pill-modern ${open ? 'open' : ''}`} onClick={() => setOpen(true)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(true); } }}>
           <Icon name="search" size={18} />
           <input
             className="search-pill-input"
@@ -84,32 +84,43 @@ export default function TopBar() {
           />
           {q && <button className="icon-btn sm" onClick={(e) => { e.stopPropagation(); setQ(''); setSugg([]); setRes([]); }}><Icon name="close" size={14} /></button>}
         </div>
-        {open && (q.trim().length >= 2 || sugg.length > 0) && (
-          <div className="search-dropdown">
-            {sugg.length > 0 && (
+        {open && (
+          <div className="search-dropdown search-dropdown-compact">
+            {q.trim().length < 2 ? (
               <div className="sd-section">
-                <div className="sd-title">{t('suggestions') || 'Sugerencias'}</div>
-                {sugg.map((s, i) => (
-                  <button key={i} className="sd-item" onClick={() => pick(s)}><Icon name="search" size={14} /> <span>{s}</span></button>
+                <div className="sd-title">Recientes</div>
+                {(state.library?.recentSearches || []).slice(0,6).map((s) => (
+                  <button key={s} className="sd-item" onClick={() => pick(s)}><Icon name="history" size={14} /> <span>{s}</span></button>
                 ))}
               </div>
+            ) : (
+              <>
+                {sugg.length > 0 && (
+                  <div className="sd-section">
+                    <div className="sd-title">{t('suggestions') || 'Sugerencias'}</div>
+                    {sugg.map((s, i) => (
+                      <button key={i} className="sd-item" onClick={() => pick(s)}><Icon name="search" size={14} /> <span>{s}</span></button>
+                    ))}
+                  </div>
+                )}
+                {res.length > 0 && (
+                  <div className="sd-section">
+                    <div className="sd-title">{t('results') || 'Resultados'}</div>
+                    {res.map((it) => (
+                      <button key={it.id} className="sd-track" onClick={() => playItem(it)}>
+                        <img src={it.thumb} alt="" />
+                        <div className="sd-track-meta">
+                          <strong>{it.title}</strong>
+                          <small>{it.artist}</small>
+                        </div>
+                        <Icon name="play" size={16} />
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {loading && <div className="sd-loading">...</div>}
+              </>
             )}
-            {res.length > 0 && (
-              <div className="sd-section">
-                <div className="sd-title">{t('results') || 'Resultados'}</div>
-                {res.map((it) => (
-                  <button key={it.id} className="sd-track" onClick={() => playItem(it)}>
-                    <img src={it.thumb} alt="" />
-                    <div className="sd-track-meta">
-                      <strong>{it.title}</strong>
-                      <small>{it.artist}</small>
-                    </div>
-                    <Icon name="play" size={16} />
-                  </button>
-                ))}
-              </div>
-            )}
-            {loading && <div className="sd-loading">...</div>}
           </div>
         )}
       </div>
