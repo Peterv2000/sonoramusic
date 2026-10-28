@@ -116,14 +116,14 @@ async function apiDownload(res, url) {
   res.end();
 }
 async function apiSearch(res, url) {
-  const q = (url.searchParams.get('q') || '').trim();
+  const q = (url.searchParams.get('q') || '').replace(/\s+/g, ' ').trim();
   if (!q) return sendJson(res, 400, { error: 'falta el parámetro q' });
 
-  // Búsqueda PROFUNDA: más resultados y más páginas. `deep=1` amplía sola.
-  const deep = url.searchParams.get('deep') === '1' || url.searchParams.get('deep') === 'true';
-  const limit = Math.min(120, Number(url.searchParams.get('limit')) || (deep ? 60 : 30));
-  const pages = Math.min(10, Number(url.searchParams.get('pages')) || (deep ? 4 : undefined));
-  const key = `${q}|${limit}|${pages || ''}`;
+  // Búsqueda PROFUNDA por defecto: más resultados y más páginas.
+  const deep = url.searchParams.get('deep') !== '0';
+  const limit = Math.min(160, Number(url.searchParams.get('limit')) || (deep ? 80 : 40));
+  const pages = Math.min(12, Number(url.searchParams.get('pages')) || (deep ? 6 : 3));
+  const key = `${q}|${limit}|${pages}`;
 
   const hit = cache.get(key);
   if (hit && Date.now() - hit.t < TTL) {
@@ -141,9 +141,9 @@ async function apiSearch(res, url) {
   }
 
   try {
-    const results = await searchYouTube(q, { limit, pages, music: true });
+    const results = await searchYouTube(q, { limit, pages, music: true, retries: 3 });
     cache.set(key, { t: Date.now(), v: results });
-    if (cache.size > 150) cache.delete(cache.keys().next().value);
+    if (cache.size > 200) cache.delete(cache.keys().next().value);
     sendJson(res, 200, { query: q, deep, count: results.length, results });
   } catch (err) {
     sendJson(res, 502, { error: 'no se pudo consultar YouTube', detail: String(err.message || err) });
@@ -152,7 +152,7 @@ async function apiSearch(res, url) {
 
 /* GET /api/suggest?q=… → sugerencias de búsqueda (autocompletado en vivo) */
 async function apiSuggest(res, url) {
-  const q = (url.searchParams.get('q') || '').trim();
+  const q = (url.searchParams.get('q') || '').replace(/\s+/g, ' ').trim();
   if (q.length < 2) return sendJson(res, 200, { query: q, suggestions: [] });
   try {
     const suggestions = await searchSuggestions(q);
