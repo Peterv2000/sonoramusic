@@ -264,13 +264,12 @@ export default function Search() {
             <Icon name="search" size={20} className="search-lead" />
             <input
               className="search-input search-input-hero"
-              type="text"
+              type="search"
               value={q}
               onChange={(e) => { onSearch(e.target.value); setSuggOpen((e.target.value || '').trim().length >= 2); }}
               onFocus={() => setSuggOpen((q || '').trim().length >= 2)}
               onClick={() => setSuggOpen((q || '').trim().length >= 2)}
               onKeyDown={(e) => {
-                if (e.key === ' ') { e.stopPropagation(); }
                 if (e.key === 'Enter') {
                   e.preventDefault();
                   const v = q.trim();
@@ -287,6 +286,8 @@ export default function Search() {
               enterKeyHint="search"
               autoComplete="off"
               spellCheck={false}
+              lang="es"
+              name="q"
             />
             {q && <button type="button" className="icon-btn clear-x" onClick={() => { setQ(''); setSugg([]); setSuggOpen(false); setDebounced(''); }}><Icon name="close" size={16} /></button>}
           </div>

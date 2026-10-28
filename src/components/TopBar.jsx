@@ -82,12 +82,14 @@ export default function TopBar() {
               setOpen(true); 
             }}
             onFocus={() => setOpen(true)}
-            onKeyDown={(e) => { if (e.key === ' ') e.stopPropagation(); }}
+            onKeyDown={(e) => { }}
             placeholder={t('searchPlaceholder') || 'Buscar canciones, artistas...'}
             spellCheck={false}
             autoComplete="off"
             inputMode="search"
-            type="text"
+            type="search"
+            name="q"
+            lang="es"
           />
           {q && <button className="icon-btn sm" onClick={(e) => { e.stopPropagation(); setQ(''); setSugg([]); setRes([]); }}><Icon name="close" size={14} /></button>}
         </div>
