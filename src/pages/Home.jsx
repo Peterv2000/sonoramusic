@@ -1,5 +1,5 @@
-import { useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../state/AppState.jsx';
 import { usePlayer } from '../player/PlayerContext.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
@@ -16,11 +16,18 @@ export default function Home() {
   const { state } = useApp();
   const p = usePlayer();
   const nav = useNavigate();
+  const loc = useLocation();
   const { t } = useI18n();
   const lib = useLibraryData();
   const all = Array.isArray(lib.tracks) && lib.tracks.length ? lib.tracks : TRACKS;
+  const [homeSeed, setHomeSeed] = useState(() => Date.now());
 
   useEffect(() => { refreshProfile(); }, []);
+  useEffect(() => {
+    if (loc.pathname === '/') {
+      setHomeSeed(Date.now());
+    }
+  }, [loc.pathname, loc.key]);
 
   const recent = useMemo(
     () => state.library.history.map((h) => trackById(h.id)).filter(Boolean).slice(0, 10),
@@ -39,14 +46,26 @@ export default function Home() {
     const arr = Array.isArray(all) ? all : [];
     try {
       refreshProfile();
-      return getPersonalizedFeed(arr, state, { limit: 40 });
+      const feed = getPersonalizedFeed(arr, state, { limit: 40 });
+      // Rotación dinámica por visita a Inicio
+      const shuffled = [...feed].sort(() => ((homeSeed + Math.random()) % 1) - 0.5);
+      return shuffled;
     } catch {
-      return weeklyDiscovery();
+      return [...weeklyDiscovery()].sort(() => Math.random() - 0.5);
     }
-  }, [all, state]);
-  const mixes = useMemo(() => dailyMixes(), []);
-  const releases = useMemo(() => newReleases(), []);
-  const charts = useMemo(() => topCharts('Global').slice(0, 5), []);
+  }, [all, state, homeSeed]);
+  const mixes = useMemo(() => {
+    const base = dailyMixes();
+    return [...base].sort(() => ((homeSeed * 131542391) % 9973) / 9973 - 0.5);
+  }, [homeSeed]);
+  const releases = useMemo(() => {
+    const base = newReleases();
+    return [...base].sort(() => Math.random() - 0.5);
+  }, [homeSeed]);
+  const charts = useMemo(() => {
+    const base = topCharts('Global').slice(0, 8);
+    return [...base].sort(() => Math.random() - 0.5);
+  }, [homeSeed]);
   const followed = useMemo(
     () => state.library.followedArtists
       .map((n) => ARTISTS.find((a) => a.name === n))
@@ -94,7 +113,7 @@ export default function Home() {
           <button className="btn small" onClick={() => nav('/explore')}>{t('seeAll')}</button>
         </div>
         <GenreGrid
-          genres={GENRES.slice(0, 6)}
+          genres={[...GENRES].sort(() => ((homeSeed + 12345) % 1) - 0.5).slice(0, 6)}
           countOf={(id) => (Array.isArray(all) ? all : TRACKS).filter((t) => t.genre === id).length}
           onPick={() => nav('/explore')}
           onPlay={(id) => { const l = (Array.isArray(all) ? all : TRACKS).filter((t) => t.genre === id); if (l.length) p.playList(l); }}

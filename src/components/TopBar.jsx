@@ -71,7 +71,7 @@ export default function TopBar() {
         <Logo size={26} />
       </button>
       <div className="search-pill-wrap" ref={ref}>
-        <div className={`search-pill search-pill-modern ${open ? 'open' : ''}`} onClick={() => setOpen(true)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(true); } }}>
+        <div className={`search-pill search-pill-modern ${open ? 'open' : ''}`} onClick={() => setOpen(true)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); setOpen(true); } }}>
           <Icon name="search" size={18} />
           <input
             className="search-pill-input"

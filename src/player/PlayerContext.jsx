@@ -324,28 +324,54 @@ export function PlayerProvider({ children }) {
     }
     const list = contextList;
     if (!list.length) return;
+    const current = list[index];
 
     let next;
     if (repeat === 'one' && !opts.force && dir > 0) next = index;
     else if (shuffle && dir > 0) {
       const visited = visitedRef.current;
-      // Aleatorio inteligente (PRO): prioriza no reproducidas
       const candidates = list.map((t, i) => i).filter((i) => i !== index);
-      const unplayed = candidates.filter((i) => !visited.has(list[i].id));
-      const pool = settings.smartShuffle && pro.active && unplayed.length ? unplayed : candidates;
-      next = pool[Math.floor(Math.random() * pool.length)] ?? index + 1;
+      // Priorizar mismo artista > mismo género si hay candidatos
+      if (current) {
+        const sameArtist = candidates.filter(i => list[i]?.artist && current.artist && list[i].artist.toLowerCase() === current.artist.toLowerCase());
+        if (sameArtist.length) {
+          next = sameArtist[Math.floor(Math.random() * sameArtist.length)];
+        } else {
+          const sameGenre = candidates.filter(i => list[i]?.genre && current.genre && list[i].genre === current.genre);
+          if (sameGenre.length) {
+            next = sameGenre[Math.floor(Math.random() * sameGenre.length)];
+          } else {
+            const unplayed = candidates.filter((i) => !visited.has(list[i].id));
+            const pool = settings.smartShuffle && pro.active && unplayed.length ? unplayed : candidates;
+            next = pool[Math.floor(Math.random() * pool.length)] ?? index + 1;
+          }
+        }
+      } else {
+        const unplayed = candidates.filter((i) => !visited.has(list[i].id));
+        const pool = settings.smartShuffle && pro.active && unplayed.length ? unplayed : candidates;
+        next = pool[Math.floor(Math.random() * pool.length)] ?? index + 1;
+      }
     } else next = index + dir;
 
     if (next >= list.length) {
       if (repeat === 'all') next = 0;
       else if (settings.autoplay && dir > 0) {
-        // Música relacionada infinita (estilo Spotify autoplay)
-        const seed = list[list.length - 1];
-        const related = relatedTracks(seed, 8).filter((t) => !list.some((x) => x.id === t.id));
+        // Música relacionada infinita (estilo Spotify autoplay) con afinidad
+        const seed = list[list.length - 1] || current;
+        const related = relatedTracks(seed, 12).filter((t) => !list.some((x) => x.id === t.id));
         if (related.length) {
-          setContextList((prev) => [...prev, ...related]);
+          // Ordenar por afinidad
+          const sorted = [...related].sort((a,b) => {
+            let sa=0,sb=0;
+            if(a.artist&&seed.artist&&a.artist.toLowerCase()===seed.artist.toLowerCase())sa+=3;
+            if(b.artist&&seed.artist&&b.artist.toLowerCase()===seed.artist.toLowerCase())sb+=3;
+            if(a.genre&&seed.genre&&a.genre===seed.genre)sa+=2;
+            if(b.genre&&seed.genre&&b.genre===seed.genre)sb+=2;
+            return sb-sa;
+          });
+          setContextList((prev) => [...prev, ...sorted]);
           setIndex(list.length);
-          playNow(related[0], [...list, ...related], list.length, []);
+          playNow(sorted[0], [...list, ...sorted], list.length, []);
           return;
         }
         setPlaying(false); ytRef.current?.pauseVideo?.(); return;

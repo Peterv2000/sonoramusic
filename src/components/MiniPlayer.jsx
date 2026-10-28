@@ -7,7 +7,7 @@ export default function MiniPlayer() {
   const frac = p.duration ? p.position / p.duration : 0;
 
   return (
-    <div className="mini-player">
+    <div className="mini-player mini-player-floating">
       <div
         className="mini-progress-wrap"
         onClick={(e) => {
@@ -31,15 +31,15 @@ export default function MiniPlayer() {
       <div className="mini-body" onClick={() => p.openFull(true)}>
         <img className="mini-thumb" src={p.track.thumb} alt="" loading="lazy" />
         <div className="mini-meta">
-          <strong>{p.track.title}</strong>
-          <small>{p.track.artist} · {p.track.live ? 'EN VIVO' : `${fmt(p.position)} / ${fmt(p.duration)}`}</small>
+          <strong title={p.track.title}>{p.track.title}</strong>
+          <small title={p.track.artist}>{p.track.artist} · {p.track.live ? 'EN VIVO' : `${fmt(p.position)} / ${fmt(p.duration)}`}</small>
         </div>
       </div>
       <div className="mini-controls">
         <button className="icon-btn" onClick={(e) => { e.stopPropagation(); p.prev(); }} aria-label="Anterior">
           <Icon name="prev" />
         </button>
-        <button className="icon-btn" onClick={(e) => { e.stopPropagation(); p.toggle(); }} aria-label={p.playing ? 'Pausar' : 'Reproducir'}>
+        <button className="icon-btn play-toggle" onClick={(e) => { e.stopPropagation(); p.toggle(); }} aria-label={p.playing ? 'Pausar' : 'Reproducir'}>
           <Icon name={p.playing ? 'pause' : 'play'} />
         </button>
         <button className="icon-btn" onClick={(e) => { e.stopPropagation(); p.next(); }} aria-label="Siguiente">
