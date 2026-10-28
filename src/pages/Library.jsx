@@ -66,6 +66,10 @@ export default function Library() {
           <span className="lib-ico"><Icon name="charts" size={22} /></span>
           <div><strong>{t('charts')}</strong><small>{t('top50')}</small></div>
         </div>
+        <div className="lib-tile" onClick={() => nav('/search')}>
+          <span className="lib-ico"><Icon name="search" size={22} /></span>
+          <div><strong>{t('search')}</strong><small>Descubrir más</small></div>
+        </div>
       </div>
 
       {/* Pestañas de biblioteca estilo Spotify / Apple Music */}

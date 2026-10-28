@@ -102,7 +102,7 @@ export default function Home() {
       </section>
 
       {/* Descubrimiento semanal (Spotify) — renueva cada lunes */}
-      <section className="spotlight" onClick={() => p.playList(discovery)}>
+      <section className="spotlight spotlight-modern" onClick={() => p.playList(discovery)}>
         <div className="spotlight-art">
           <img src={discovery[0]?.thumb} alt="" />
           <img src={discovery[4]?.thumb} alt="" />
@@ -110,9 +110,9 @@ export default function Home() {
           <img src={discovery[12]?.thumb} alt="" />
         </div>
         <div className="spotlight-body">
-          <span className="spotlight-tag">✦ {t('discoverWeekly')}</span>
-          <h2>{t('discoverWeekly')}</h2>
-          <p className="muted">{t('discoverSub')} · {discovery.length} {t('songs')}</p>
+          <span className="spotlight-tag">✦ {t('discoverWeekly') || 'Descubrimiento semanal'}</span>
+          <h2>{t('discoverWeekly') || 'Descubrimiento semanal'}</h2>
+          <p className="muted">{t('discoverSub') || 'Basado en lo que has escuchado'} · {discovery.length} {t('songs') || 'canciones'}</p>
           <div className="head-actions" onClick={(e) => e.stopPropagation()}>
             <button className="btn primary" onClick={() => p.playList(discovery)}><Icon name="play" size={15} /> {t('play')}</button>
             <button className="btn" onClick={() => p.playList([...discovery].sort(() => Math.random() - 0.5))}><Icon name="shuffle" size={15} /> {t('shuffle')}</button>
@@ -128,16 +128,24 @@ export default function Home() {
         </Shelf>
       )}
 
-      <Shelf title={t('quickPicks')}>
+      <Shelf title={t('quickPicks') || 'Selecciones rápidas'}>
         {quickPicks.map((tr) => (
           <Card
             key={tr.id} item={tr}
             onPlay={() => p.playList(quickPicks, tr.id)}
             onOpen={() => p.playRadio(tr)}
-            sub={`${tr.artist} · ${t('songs')}`}
+            sub={`${tr.artist}`}
           />
         ))}
       </Shelf>
+
+      {recent.length > 0 && (
+        <Shelf title={t('listenAgain') || 'Escuchar de nuevo'}>
+          {[...recent].reverse().slice(0, 12).map((tr) => (
+            <Card key={tr.id} item={tr} onPlay={() => p.playRadio(tr)} onOpen={() => p.playRadio(tr)} />
+          ))}
+        </Shelf>
+      )}
 
       {/* Mezclas diarias (Spotify) / Para ti (Apple) */}
       <Shelf title={t('dailyMixes')}>

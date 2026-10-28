@@ -186,10 +186,13 @@ a { color: inherit; text-decoration: none; }
 .mini-player {
   position: fixed; left: calc(var(--nav-w) + 12px); right: 12px;
   bottom: 12px; height: var(--mini-h); z-index: 50;
-  background: var(--bg-3); border-radius: 14px; box-shadow: var(--shadow);
+  background: linear-gradient(90deg, rgba(255,0,51,.12) 0%, var(--bg-3) 40%);
+  border:1px solid rgba(255,0,51,.35);
+  border-radius: 14px; box-shadow: var(--shadow);
   display: flex; align-items: center; padding: 0 10px; gap: 10px; overflow: hidden;
 }
 .mini-progress { position: absolute; top: 0; left: 0; height: 2px; background: var(--red); transition: width 0.5s linear; }
+.spotlight-modern{ background: radial-gradient(circle at top left, rgba(255,0,51,.18), transparent), linear-gradient(90deg, var(--bg-2) 0%, var(--bg) 100%); border:1px solid rgba(255,255,255,.06); }
 .mini-body { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; cursor: pointer; }
 .mini-thumb { width: 46px; height: 46px; border-radius: 8px; object-fit: cover; background: var(--bg-4); }
 .mini-meta { min-width: 0; }
