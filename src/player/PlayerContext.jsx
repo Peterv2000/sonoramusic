@@ -156,7 +156,7 @@ export function PlayerProvider({ children }) {
             if (e.data === 1) setError(null);
             if (e.data === 0) {
               if (audioMode) return;
-              handlersRef.current.handleEnded?.();
+              try { handlersRef.current.handleEnded?.(); } catch {}
             }
           },
           onError: async () => {
@@ -360,7 +360,8 @@ export function PlayerProvider({ children }) {
       try { ytRef.current?.seekTo?.(0, true); ytRef.current?.playVideo?.(); } catch { /* noop */ }
       return;
     }
-    advance(1, { force: true });
+    // Intentar avanzar con garantía de siguiente pista
+    try { advance(1, { force: true }); } catch {}
   }, [advance, repeat]);
 
   /* Mantén siempre a mano la última versión de advance/handleEnded para los
@@ -392,10 +393,10 @@ export function PlayerProvider({ children }) {
       if (!p || !track) return;
       try { playing ? p.pauseVideo() : p.playVideo(); } catch { /* noop */ }
     },
-    next: () => advance(1, { force: true }),
+    next: () => { try { advance(1, { force: true }); } catch {} },
     prev() {
       if (position > 4) { try { ytRef.current?.seekTo?.(0, true); } catch { /* noop */ } return; }
-      advance(-1, { force: true });
+      try { advance(-1, { force: true }); } catch {}
     },
     seek(frac) {
       if (audioMode && audioRef.current && audioRef.current.duration) {
