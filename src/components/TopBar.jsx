@@ -81,6 +81,7 @@ export default function TopBar() {
             placeholder={t('searchPlaceholder') || 'Buscar canciones, artistas...'}
             spellCheck={false}
             autoComplete="off"
+            inputMode="search"
           />
           {q && <button className="icon-btn sm" onClick={(e) => { e.stopPropagation(); setQ(''); setSugg([]); setRes([]); }}><Icon name="close" size={14} /></button>}
         </div>

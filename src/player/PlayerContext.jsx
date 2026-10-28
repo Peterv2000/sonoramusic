@@ -317,9 +317,9 @@ export function PlayerProvider({ children }) {
   const advance = useCallback((dir, opts = {}) => {
     // La cola "a continuación" tiene prioridad (también al terminar la canción)
     if (dir > 0 && queue.length > 0) {
-      const [next, ...rest] = queue;
-      const list = [...contextList.slice(0, index + 1), next, ...contextList.slice(index + 1)];
-      playNow(next, list, index + 1, rest);
+      const [nextTr, ...rest] = queue;
+      const list = [...contextList.slice(0, index + 1), nextTr, ...contextList.slice(index + 1)];
+      playNow(nextTr, list, index + 1, rest);
       return;
     }
     const list = contextList;
