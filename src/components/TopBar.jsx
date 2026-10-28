@@ -76,12 +76,18 @@ export default function TopBar() {
           <input
             className="search-pill-input"
             value={q}
-            onChange={(e) => { setQ(e.target.value); setOpen(true); }}
+            onChange={(e) => { 
+              const v = e.target.value;
+              setQ(v); 
+              setOpen(true); 
+            }}
             onFocus={() => setOpen(true)}
+            onKeyDown={(e) => { if (e.key === ' ') e.stopPropagation(); }}
             placeholder={t('searchPlaceholder') || 'Buscar canciones, artistas...'}
             spellCheck={false}
             autoComplete="off"
             inputMode="search"
+            type="text"
           />
           {q && <button className="icon-btn sm" onClick={(e) => { e.stopPropagation(); setQ(''); setSugg([]); setRes([]); }}><Icon name="close" size={14} /></button>}
         </div>
