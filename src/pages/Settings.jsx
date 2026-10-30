@@ -66,7 +66,7 @@ export default function Settings() {
             <div className="setting-row static">
               <span className="set-label">
                 <strong>{state.auth.name || state.profile.name}</strong>
-                <small>{state.auth.email || state.profile.email || 'Cuenta vinculada'}</small>
+                <small>{state.auth.email || state.profile.email || t('linkedAccount')}</small>
               </span>
               <span className={pro ? 'badge-pro' : 'chip'}>{pro ? `✦ ${state.pro.plan === 'family' ? t('family') : state.pro.plan === 'annual' ? t('annual') : t('monthly')}` : t('freePlan')}</span>
             </div>

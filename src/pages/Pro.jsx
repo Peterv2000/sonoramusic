@@ -56,7 +56,7 @@ export default function Pro() {
               <strong>{t('subActive')}</strong>
               <small className="muted">
                 {state.pro.plan} · {t('subSince')} {new Date(state.pro.since).toLocaleDateString()}
-                {state.pro.expires && ` · renovación ${new Date(state.pro.expires).toLocaleDateString()}`}
+                {state.pro.expires && ` · ${t('renewsOn')} ${new Date(state.pro.expires).toLocaleDateString()}`}
               </small>
             </div>
           </div>
@@ -110,20 +110,20 @@ export default function Pro() {
               >
                 {pl.popular && <span className="plan-tag">{t('mostPopular') || 'Más popular'}</span>}
                 <div className="plan-head">
-                  <strong>{pl.id === 'monthly' ? 'Mensual' : pl.id === 'annual' ? 'Anual' : 'Familiar'}</strong>
+                  <strong>{t(pl.id)}</strong>
                   {pl.id === 'annual' && <span className="plan-badge">-65%</span>}
                 </div>
                 <div className="plan-price-wrap">
                   <span className="plan-price">{pl.price}</span>
-                  <span className="plan-per">/{pl.id === 'annual' ? 'año' : 'mes'}</span>
+                  <span className="plan-per">{t(pl.id === 'annual' ? 'perYear' : 'perMonth')}</span>
                 </div>
-                {pl.id === 'annual' && <div className="plan-sub">~$3.325/mes</div>}
+                {pl.id === 'annual' && <div className="plan-sub">~$3.325{t('perMonth')}</div>}
                 <ul className="plan-list">
-                  <li>Sin anuncios</li>
-                  <li>Reproducción en segundo plano</li>
-                  <li>Audio de alta calidad</li>
-                  {pl.id === 'family' && <li>Hasta 6 cuentas</li>}
-                  {pl.id === 'annual' && <li>Ahorro garantizado</li>}
+                  <li>{t('planNoAds')}</li>
+                  <li>{t('planBackground')}</li>
+                  <li>{t('planHQ')}</li>
+                  {pl.id === 'family' && <li>{t('upTo6')}</li>}
+                  {pl.id === 'annual' && <li>{t('planSaving')}</li>}
                 </ul>
               </button>
             ))}
@@ -139,8 +139,7 @@ export default function Pro() {
       <section className="set-group">
         <h2>{t('about')}</h2>
         <p className="muted pad">
-          Este paywall es un simulacro completo: activa, cancela y restaura la suscripción localmente.
-          Para cobrar de verdad, conecta Google Play Billing (APK) y Stripe (web) en <code>src/pages/Pro.jsx</code>.
+          {t('proDemoNote')} <code>src/pages/Pro.jsx</code>.
         </p>
       </section>
     </div>

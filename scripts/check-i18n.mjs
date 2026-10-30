@@ -13,9 +13,11 @@ const keys = new Set();
 const tplKeys = new Set();
 for (const f of files.filter((f) => f.endsWith('.jsx') || f.endsWith('.js'))) {
   const src = fs.readFileSync(f, 'utf8');
-  for (const m of src.matchAll(/t\(\s*'([^']+)'/g)) keys.add(m[1]);
-  for (const m of src.matchAll(/t\(\s*"([^"]+)"/g)) keys.add(m[1]);
-  for (const m of src.matchAll(/t\(\s*`([^`]+)`/g)) tplKeys.add(m[1]);
+  /* Solo llamadas reales a `t(...)`. Sin el límite de palabra, `format(`, `split(`
+     o `set(` también encajaban y ensuciaban el informe con claves inventadas. */
+  for (const m of src.matchAll(/(?<![\w$])t\(\s*'([^']+)'/g)) keys.add(m[1]);
+  for (const m of src.matchAll(/(?<![\w$])t\(\s*"([^"]+)"/g)) keys.add(m[1]);
+  for (const m of src.matchAll(/(?<![\w$])t\(\s*`([^`]+)`/g)) tplKeys.add(m[1]);
 }
 
 const i18n = fs.readFileSync('src/i18n.js', 'utf8');

@@ -31,7 +31,9 @@ createRoot(document.getElementById('root')).render(
 /* PWA: registrar service worker solo en producción y en http(s) */
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && import.meta.env.PROD) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => { /* sin SW */ });
+    navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
+      .then((reg) => reg.update().catch(() => {}))
+      .catch(() => { /* sin SW */ });
   });
 }
 

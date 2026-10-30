@@ -3,6 +3,7 @@ import { usePlayer, fmt } from '../player/PlayerContext.jsx';
 import { useApp } from '../state/AppState.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
 import { useToast } from '../components/Toast.jsx';
+import Icon from '../components/Icon.jsx';
 import { TrackRow } from '../components/widgets.jsx';
 import { albumByTitle, ARTISTS } from '../data/catalog.js';
 

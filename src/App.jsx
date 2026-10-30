@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { useApp } from './state/AppState.jsx';
 import { usePlayer } from './player/PlayerContext.jsx';
 import Sidebar from './components/Sidebar.jsx';
@@ -26,6 +27,7 @@ import { I18nCtx } from './i18n/useI18n.jsx';
 export default function App() {
   const { state } = useApp();
   const { fullOpen } = usePlayer();
+  const location = useLocation();
 
   return (
     <I18nCtx.Provider value={state.settings.lang}>
@@ -35,7 +37,10 @@ export default function App() {
           <div className="main">
             <TopBar />
             <main className="content">
-              <Routes>
+              {/* La key reinicia el boundary al cambiar de ruta: un fallo en una
+                  página no deja atrapada al resto de la app. */}
+              <ErrorBoundary key={location.pathname}>
+                <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/explore" element={<Explore />} />
                 <Route path="/library" element={<Library />} />
@@ -51,7 +56,8 @@ export default function App() {
                 <Route path="/artist/:name" element={<Artist />} />
                 <Route path="/album/:id" element={<Album />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
+                </Routes>
+              </ErrorBoundary>
             </main>
           </div>
           <MiniPlayer />

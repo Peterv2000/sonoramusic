@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '../state/AppState.jsx';
 import { usePlayer } from '../player/PlayerContext.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
@@ -19,7 +19,7 @@ const FILTERS = ['all', 'songs', 'videos', 'albums', 'artists', 'playlists', 'st
 
 /* Resultados en vivo del catálogo global (búsqueda real, profunda).
    Si el servidor ya tiene esa búsqueda en caché caliente, aparece al instante. */
-function LiveResults({ query, deep, onPlay, onPlayAll }) {
+function LiveResults({ query, deep, onPlay, onPlayAll, showEmpty }) {
   const { t } = useI18n();
   const [items, setItems] = useState(null); // null = cargando
   const [instant, setInstant] = useState(false);
@@ -73,7 +73,15 @@ function LiveResults({ query, deep, onPlay, onPlayAll }) {
     );
   }
 
-  if (items.length === 0) return null;
+  if (items.length === 0) {
+    if (!showEmpty) return null;
+    return (
+      <div className="empty-box">
+        <p><Icon name="search" size={16} /> {t('noResults')}</p>
+        <small>{t('searchYouTubeHint')}</small>
+      </div>
+    );
+  }
 
   // Separa canales y playlists de las canciones para mostrarlos aparte.
   const songs = items.filter((x) => (x.kind || 'video') === 'video');
@@ -137,7 +145,8 @@ export default function Search() {
   const nav = useNavigate();
   const { t } = useI18n();
   const toast = useToast();
-  const [q, setQ] = useState('');
+  const [params] = useSearchParams();
+  const [q, setQ] = useState(() => params.get('q') || '');
   const [url, setUrl] = useState('');
   const [filter, setFilter] = useState('all');
   const [debounced, setDebounced] = useState('');
@@ -149,6 +158,12 @@ export default function Search() {
   const boxRef = useRef(null);
 
   const query = q.trim().toLowerCase();
+
+  /* La barra del TopBar navega a /search?q=…: mantenemos el término en sincronía. */
+  const urlQ = params.get('q') || '';
+  useEffect(() => {
+    if (urlQ) { setQ(urlQ); setDebounced(urlQ); }
+  }, [urlQ]);
 
   /* Carga el catálogo ampliado que refresca el servidor (si está disponible) */
   useEffect(() => {
@@ -257,7 +272,7 @@ export default function Search() {
 
   return (
     <div className="page search-page">
-      <div className="search-hero" style={{ display: 'none' }}>
+      <div className="search-hero">
         <h1 className="search-title">{t('search') || 'Buscar'}</h1>
         <form className="search-bar search-bar-hero" ref={boxRef} onSubmit={(e) => { e.preventDefault(); const v = q.trim(); if (!v) return; setDebounced(v); setSuggOpen(false); if (v.length > 1) { try { dispatch({ type: 'add-search', q: v }); } catch {} } }} autoComplete="off">
           <div className="search-input-wrap search-input-wrap-hero">
@@ -378,10 +393,9 @@ export default function Search() {
             ))}
           </div>
 
-          {totalHits === 0 && debounced === '' && (
+          {totalHits === 0 && query.length < 2 && (
             <div className="empty-box">
-              <p><Icon name="search" size={16} /> {t('noResults')}</p>
-              <small>{t('searchYouTubeHint')}</small>
+              <p><Icon name="search" size={16} /> {t('typeToSearch')}</p>
             </div>
           )}
 
@@ -472,6 +486,7 @@ export default function Search() {
             <LiveResults
               query={debounced}
               deep={deep}
+              showEmpty={totalHits === 0}
               onPlay={(list, id) => p.playList(list, id)}
               onPlayAll={(list) => p.playList(list)}
             />

@@ -51,11 +51,17 @@ export default function TopBar() {
   }, [q]);
 
   const pick = (val) => {
-    const v = (val || '').trim();
+    goSearch(val);
+  };
+
+  /* Enter en la barra: abrir la página de búsqueda con el término. */
+  const goSearch = (val) => {
+    const v = (val ?? q).trim();
     if (!v) return;
     setQ(v);
     setOpen(false);
     try { dispatch({ type: 'add-search', q: v }); } catch {}
+    nav(`/search?q=${encodeURIComponent(v)}`);
   };
 
   const playItem = (item) => {
@@ -82,7 +88,7 @@ export default function TopBar() {
               setOpen(true); 
             }}
             onFocus={() => setOpen(true)}
-            onKeyDown={(e) => { }}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); goSearch(); } }}
             placeholder={t('searchPlaceholder') || 'Buscar canciones, artistas...'}
             spellCheck={false}
             autoComplete="off"
@@ -128,6 +134,7 @@ export default function TopBar() {
                   </div>
                 )}
                 {loading && <div className="sd-loading">...</div>}
+                <button className="sd-all" onClick={() => goSearch()}><Icon name="search" size={14} /> {t('seeAllResults') || 'Ver todos los resultados'}</button>
               </>
             )}
           </div>
