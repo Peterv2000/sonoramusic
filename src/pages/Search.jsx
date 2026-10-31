@@ -301,10 +301,10 @@ export default function Search() {
               enterKeyHint="search"
               autoComplete="off"
               spellCheck={false}
-              lang="es"
+              lang={state.settings.lang || 'es'}
               name="q"
             />
-            {q && <button type="button" className="icon-btn clear-x" onClick={() => { setQ(''); setSugg([]); setSuggOpen(false); setDebounced(''); }}><Icon name="close" size={16} /></button>}
+            {q && <button type="button" className="icon-btn clear-x" aria-label={t('close')} onClick={() => { setQ(''); setSugg([]); setSuggOpen(false); setDebounced(''); }}><Icon name="close" size={16} /></button>}
           </div>
 
           <button
@@ -336,7 +336,7 @@ export default function Search() {
         <>
           {state.library.recentSearches.length > 0 && (
             <section className="list-section">
-              <h2><Icon name="history" size={16} /> </h2>
+              <h2><Icon name="history" size={16} /> {t('recentSearches')}</h2>
               <div className="chip-row">
                 {state.library.recentSearches.map((s) => (
                   <button key={s} className="chip" onClick={() => setQ(s)}>{s}</button>

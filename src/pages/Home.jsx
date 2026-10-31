@@ -90,7 +90,7 @@ export default function Home() {
 
   return (
     <div className="page">
-      <h1 className="greeting">{greeting}, {state.profile.name || 'Usuario'} {state.pro.active && <span className="badge-pro">✦ {t('proBadge')}</span>}</h1>
+      <h1 className="greeting">{greeting}, {state.profile.name || t('guest')} {state.pro.active && <span className="badge-pro">✦ {t('proBadge')}</span>}</h1>
 
       {/* Chips de estados de ánimo */}
       <div className="chip-row">

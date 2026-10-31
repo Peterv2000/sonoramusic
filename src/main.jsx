@@ -8,6 +8,7 @@ import { AuthProvider } from './auth/AuthContext.jsx';
 import { AdProvider } from './ads/AdManager.jsx';
 import './styles.css';
 import './styles-pro.css';
+import './styles-modern.css';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 
 createRoot(document.getElementById('root')).render(

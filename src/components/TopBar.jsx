@@ -73,7 +73,7 @@ export default function TopBar() {
 
   return (
     <header className="topbar">
-      <button className="icon-btn only-mobile" onClick={() => nav('/')} aria-label="Inicio">
+      <button className="icon-btn only-mobile" onClick={() => nav('/')} aria-label={t('home')}>
         <Logo size={26} />
       </button>
       <div className="search-pill-wrap" ref={ref}>
@@ -95,18 +95,22 @@ export default function TopBar() {
             inputMode="search"
             type="search"
             name="q"
-            lang="es"
+            lang={state.settings.lang || 'es'}
           />
-          {q && <button className="icon-btn sm" onClick={(e) => { e.stopPropagation(); setQ(''); setSugg([]); setRes([]); }}><Icon name="close" size={14} /></button>}
+          {q && <button className="icon-btn sm" onClick={(e) => { e.stopPropagation(); setQ(''); setSugg([]); setRes([]); }} aria-label={t('close')}><Icon name="close" size={14} /></button>}
         </div>
         {open && (
           <div className="search-dropdown search-dropdown-compact">
             {q.trim().length < 2 ? (
               <div className="sd-section">
-                <div className="sd-title">Recientes</div>
-                {(state.library?.recentSearches || []).slice(0,6).map((s) => (
-                  <button key={s} className="sd-item" onClick={() => pick(s)}><Icon name="history" size={14} /> <span>{s}</span></button>
-                ))}
+                <div className="sd-title">{t('recentSearches')}</div>
+                {(state.library?.recentSearches || []).length > 0 ? (
+                  (state.library?.recentSearches || []).slice(0, 6).map((s) => (
+                    <button key={s} className="sd-item" onClick={() => pick(s)}><Icon name="history" size={14} /> <span>{s}</span></button>
+                  ))
+                ) : (
+                  <div className="sd-empty">{t('typeToSearch')}</div>
+                )}
               </div>
             ) : (
               <>

@@ -97,7 +97,7 @@ export default function FullPlayer() {
           <div className="full-meta">
             <div className="full-titles">
               <h2>{track.title}</h2>
-              <p>{track.artist} · {track.album} {track.live && <span className="live-pill">EN VIVO</span>}</p>
+              <p>{track.artist} · {track.album} {track.live && <span className="live-pill">{t('liveNow')}</span>}</p>
             </div>
             <button
               className={`icon-btn like-btn ${liked ? 'on' : ''}`}
@@ -112,7 +112,7 @@ export default function FullPlayer() {
           }}>
             <div className="seek-track"><div className="seek-fill" style={{ width: `${frac * 100}%` }} /></div>
             <div className="seek-times">
-              <span>{p.track.live ? '● EN VIVO' : fmt(p.position)}</span>
+              <span>{p.track.live ? `● ${t('liveNow')}` : fmt(p.position)}</span>
               <span>{p.track.live ? '' : fmt(p.duration)}</span>
             </div>
           </div>

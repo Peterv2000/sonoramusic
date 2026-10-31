@@ -8,6 +8,7 @@ import Icon from './Icon.jsx';
 
 /* Tarjeta cuadrada estilo YouTube Music: carátula + título + subtítulo */
 export function Card({ item, onPlay, onOpen, sub, round, badge }) {
+  const { t } = useI18n();
   return (
     <div className={`card ${round ? 'round' : ''}`} onClick={onOpen || onPlay}>
       <div className="card-art">
@@ -16,7 +17,7 @@ export function Card({ item, onPlay, onOpen, sub, round, badge }) {
         {(onPlay || onOpen) && (
           <button
             className="card-play"
-            aria-label="Reproducir"
+            aria-label={t('play')}
             onClick={(e) => { e.stopPropagation(); if (onPlay) onPlay(); else if (onOpen) onOpen(); }}
           ><Icon name="play" size={22} /></button>
         )}
@@ -63,7 +64,7 @@ export function TrackRow({ track, list, index, onPlay, showAlbum }) {
         <button className={`icon-btn ${liked ? 'on' : ''}`} onClick={() => dispatch({ type: 'toggle-like', id: track.id })} aria-label={t('liked')}>
           <Icon name="heart" />
         </button>
-        <button className="icon-btn" onClick={() => setMenu(!menu)} aria-label="Más"><Icon name="more" /></button>
+        <button className="icon-btn" onClick={() => setMenu(!menu)} aria-label={t('more')}><Icon name="more" /></button>
       </div>
       {menu && (
         <div className="tr-menu" onMouseLeave={() => setMenu(false)}>

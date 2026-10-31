@@ -1,13 +1,18 @@
 import { usePlayer, fmt } from '../player/PlayerContext.jsx';
+import { useI18n } from '../i18n/useI18n.jsx';
 import Icon from './Icon.jsx';
 
 export default function MiniPlayer() {
   const p = usePlayer();
+  const { t } = useI18n();
   if (!p.track) return null;
   const frac = p.duration ? p.position / p.duration : 0;
 
   return (
-    <div className="mini-player mini-player-floating">
+    <div
+      className="mini-player mini-player-floating"
+      style={{ '--mini-art': `url(${p.track.thumb})` }}
+    >
       <div
         className="mini-progress-wrap"
         onClick={(e) => {
@@ -32,17 +37,17 @@ export default function MiniPlayer() {
         <img className="mini-thumb" src={p.track.thumb} alt="" loading="lazy" />
         <div className="mini-meta">
           <strong title={p.track.title}>{p.track.title}</strong>
-          <small title={p.track.artist}>{p.track.artist} · {p.track.live ? 'EN VIVO' : `${fmt(p.position)} / ${fmt(p.duration)}`}</small>
+          <small title={p.track.artist}>{p.track.artist} · {p.track.live ? t('liveNow') : `${fmt(p.position)} / ${fmt(p.duration)}`}</small>
         </div>
       </div>
       <div className="mini-controls">
-        <button className="icon-btn" onClick={(e) => { e.stopPropagation(); p.prev(); }} aria-label="Anterior">
+        <button className="icon-btn" onClick={(e) => { e.stopPropagation(); p.prev(); }} aria-label={t('previous')}>
           <Icon name="prev" />
         </button>
-        <button className="icon-btn play-toggle" onClick={(e) => { e.stopPropagation(); p.toggle(); }} aria-label={p.playing ? 'Pausar' : 'Reproducir'}>
+        <button className="icon-btn play-toggle" onClick={(e) => { e.stopPropagation(); p.toggle(); }} aria-label={p.playing ? t('pause') : t('play')}>
           <Icon name={p.playing ? 'pause' : 'play'} />
         </button>
-        <button className="icon-btn" onClick={(e) => { e.stopPropagation(); p.next(); }} aria-label="Siguiente">
+        <button className="icon-btn" onClick={(e) => { e.stopPropagation(); p.next(); }} aria-label={t('next')}>
           <Icon name="next" />
         </button>
       </div>
