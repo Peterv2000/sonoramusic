@@ -980,3 +980,101 @@ html[data-theme='light'] .mini-volume { background: rgba(0, 0, 0, 0.16); }
   .admin-gate h1 { font-size: 20px; }
   .mini-meta small { font-size: 10px; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Búsqueda: la fuente YouTube/global siempre visible
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.search-source-note {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 2px 0 14px;
+  color: var(--fg-2);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.search-source-note .icon { color: var(--red); flex: none; }
+
+.search-source-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(255, 0, 51, 0.14);
+  color: var(--red);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.search-query-chip {
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--bg-3);
+  color: var(--fg-2);
+  font-size: 12px;
+  font-weight: 500;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-youtube-section .shelf-head h2 .icon { color: #ff0033; }
+
+.search-youtube-section .shelf-head .head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.search-youtube-empty {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 10px 0 16px;
+  padding: 13px 15px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  color: var(--fg-2);
+  font-size: 13.5px;
+}
+
+.search-youtube-empty .icon { color: var(--red); flex: none; }
+.search-youtube-empty.compact { padding: 9px 12px; font-size: 12.5px; }
+.search-youtube-empty .btn { margin-left: auto; }
+
+.search-catalog-section { margin-top: 8px; }
+
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255, 0, 51, 0.13);
+  color: var(--red);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.sd-title .icon { vertical-align: -2px; margin-right: 5px; color: var(--red); }
+.sd-loading { display: flex; align-items: center; gap: 7px; }
+.sd-loading .icon { color: var(--red); }
+
+@media (max-width: 640px) {
+  .search-source-note { font-size: 12px; margin-bottom: 11px; }
+  .search-query-chip { max-width: 150px; }
+  .search-youtube-section .shelf-head { align-items: flex-start; }
+  .search-youtube-section .shelf-head .head-actions { width: 100%; }
+  .search-youtube-empty .btn { margin-left: 0; }
+}

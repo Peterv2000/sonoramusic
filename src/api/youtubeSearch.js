@@ -18,7 +18,7 @@
 const API = '/api/search';
 const CACHE_KEY = 'ritmo-ytsearch-v1';
 const CACHE_TTL = 1000 * 60 * 60 * 6; // 6 h
-const DEFAULT_TIMEOUT = 12000;
+const DEFAULT_TIMEOUT = 20000; // el scraper pagina YouTube; 12 s era demasiado justo
 
 const MEM = new Map();
 
@@ -85,7 +85,9 @@ export async function searchYouTubeDetailed(query, { deep = false, limit, timeou
   if (cached) return { items: cached, error: null, cached: true };
 
   const params = new URLSearchParams({ q });
-  if (deep) params.set('deep', '1');
+  // Enviar siempre el modo: sin esto el servidor hacía búsqueda profunda
+  // incluso cuando el usuario solo quería resultados rápidos.
+  params.set('deep', deep ? '1' : '0');
   if (limit) params.set('limit', String(limit));
 
   try {

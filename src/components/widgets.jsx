@@ -29,7 +29,7 @@ export function Card({ item, onPlay, onOpen, sub, round, badge }) {
 }
 
 /* Fila de canción con acciones: reproducir, like, menú completo */
-export function TrackRow({ track, list, index, onPlay, showAlbum }) {
+export function TrackRow({ track, list, index, onPlay, showAlbum, source }) {
   const p = usePlayer();
   const { state, dispatch } = useApp();
   const { t } = useI18n();
@@ -55,6 +55,7 @@ export function TrackRow({ track, list, index, onPlay, showAlbum }) {
             {showAlbum && track.album && track.album !== 'Ritmo' && <> · {track.album}</>}
             {track.explicit && <> · <span className="explicit-badge">E</span></>}
             {track.live && <> · <span className="live-pill">EN VIVO</span></>}
+            {source && <> · <span className="source-badge">{source}</span></>}
             {downloaded && <> · <span className="dl-badge">⬇ {t('downloadedFlag')}</span></>}
           </small>
         </div>

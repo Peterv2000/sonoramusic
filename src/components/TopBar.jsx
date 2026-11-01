@@ -19,6 +19,7 @@ export default function TopBar() {
   const [res, setRes] = useState([]);
   const [loading, setLoading] = useState(false);
   const ref = useRef(null);
+  const inputRef = useRef(null);
   const req = useRef(0);
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export default function TopBar() {
         ]);
         if (id !== req.current) return;
         setSugg(Array.isArray(s) ? s.filter(x => typeof x === 'string').slice(0, 6) : []);
-        setRes(Array.isArray(r) ? r.slice(0, 8) : []);
+        setRes(Array.isArray(r) ? r.filter(x => (x.kind || 'video') === 'video').slice(0, 8) : []);
       } catch {
         if (id === req.current) { setSugg([]); setRes([]); }
       } finally {
@@ -77,9 +78,10 @@ export default function TopBar() {
         <Logo size={26} />
       </button>
       <div className="search-pill-wrap" ref={ref}>
-        <div className={`search-pill search-pill-modern ${open ? 'open' : ''}`} onClick={() => setOpen(true)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); setOpen(true); } }}>
+        <div className={`search-pill search-pill-modern ${open ? 'open' : ''}`} onClick={() => { setOpen(true); inputRef.current?.focus(); }}>
           <Icon name="search" size={18} />
           <input
+            ref={inputRef}
             className="search-pill-input"
             value={q}
             onChange={(e) => { 
@@ -89,7 +91,8 @@ export default function TopBar() {
             }}
             onFocus={() => setOpen(true)}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); goSearch(); } }}
-            placeholder={t('searchPlaceholder') || 'Buscar canciones, artistas...'}
+            placeholder={t('searchGlobalPlaceholder') || 'Busca en YouTube o en tu catálogo'}
+            aria-label={t('searchGlobalPlaceholder') || 'Busca en YouTube o en tu catálogo'}
             spellCheck={false}
             autoComplete="off"
             inputMode="search"
@@ -124,20 +127,20 @@ export default function TopBar() {
                 )}
                 {res.length > 0 && (
                   <div className="sd-section">
-                    <div className="sd-title">{t('results') || 'Resultados'}</div>
+                    <div className="sd-title"><Icon name="youtube" size={14} /> {t('youtubeResults')}</div>
                     {res.map((it) => (
                       <button key={it.id} className="sd-track" onClick={() => playItem(it)}>
                         <img src={it.thumb} alt="" />
                         <div className="sd-track-meta">
                           <strong>{it.title}</strong>
-                          <small>{it.artist}</small>
+                          <small>{it.artist} · YouTube</small>
                         </div>
                         <Icon name="play" size={16} />
                       </button>
                     ))}
                   </div>
                 )}
-                {loading && <div className="sd-loading">...</div>}
+                {loading && <div className="sd-loading"><Icon name="youtube" size={14} /> {t('searchingYouTube')}</div>}
                 <button className="sd-all" onClick={() => goSearch()}><Icon name="search" size={14} /> {t('seeAllResults') || 'Ver todos los resultados'}</button>
               </>
             )}

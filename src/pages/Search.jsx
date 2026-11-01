@@ -66,9 +66,12 @@ function LiveResults({ query, deep, onPlay, onPlayAll, showEmpty }) {
 
   if (items === null) {
     return (
-      <section className="list-section">
+      <section className="list-section search-youtube-section">
         <div className="shelf-head">
-          <h2><Icon name="lightning" size={15} /> {t('searchYouTube')}</h2>
+          <h2>
+            <Icon name="youtube" size={18} /> {t('searchingYouTube')}
+            <span className="search-query-chip">“{query}”</span>
+          </h2>
         </div>
         <div className="yt-skel">
           {Array.from({ length: 5 }).map((_, i) => <div key={i} className="yt-skel-row" />)}
@@ -82,7 +85,7 @@ function LiveResults({ query, deep, onPlay, onPlayAll, showEmpty }) {
       return (
         <div className="empty-box search-fallback">
           <p>
-            <Icon name="globe" size={16} />{' '}
+            <Icon name="youtube" size={16} />{' '}
             {error === 'timeout' ? t('searchTimeout') : t('searchUnavailable')}
           </p>
           <small>{t('searchUnavailableHint')}</small>
@@ -96,17 +99,24 @@ function LiveResults({ query, deep, onPlay, onPlayAll, showEmpty }) {
               target="_blank"
               rel="noreferrer"
             >
-              <Icon name="globe" size={14} /> {t('openOnYouTube')}
+              <Icon name="external" size={14} /> {t('openOnYouTube')}
             </a>
           </div>
         </div>
       );
     }
-    if (!showEmpty) return null;
     return (
-      <div className="empty-box">
-        <p><Icon name="search" size={16} /> {t('noResults')}</p>
-        <small>{t('searchYouTubeHint')}</small>
+      <div className={`search-youtube-empty ${showEmpty ? '' : 'compact'}`}>
+        <Icon name="youtube" size={16} />
+        <span>{t('noYouTubeResults')}</span>
+        <a
+          className="btn tiny"
+          href={`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          {t('openOnYouTube')} <Icon name="external" size={12} />
+        </a>
       </div>
     );
   }
@@ -115,6 +125,16 @@ function LiveResults({ query, deep, onPlay, onPlayAll, showEmpty }) {
   const songs = items.filter((x) => (x.kind || 'video') === 'video');
   const channels = items.filter((x) => x.kind === 'channel');
   const lists = items.filter((x) => x.kind === 'playlist');
+  const openChannel = (ch) => window.open(
+    `https://www.youtube.com/channel/${String(ch.yt).replace(/^ch-/, '')}`,
+    '_blank',
+    'noopener,noreferrer',
+  );
+  const openPlaylist = (pl) => window.open(
+    `https://www.youtube.com/playlist?list=${encodeURIComponent(pl.playlistId || '')}`,
+    '_blank',
+    'noopener,noreferrer',
+  );
 
   return (
     <>
@@ -126,18 +146,28 @@ function LiveResults({ query, deep, onPlay, onPlayAll, showEmpty }) {
         </div>
       )}
       {songs.length > 0 && (
-        <section className="list-section">
+        <section className="list-section search-youtube-section">
           <div className="shelf-head">
             <h2>
-              <Icon name="lightning" size={15} /> {t('searchYouTube')}
+              <Icon name="youtube" size={18} /> {t('youtubeGlobalSearch')}
               <span className="count-badge">{songs.length}</span>
               {deep && <span className="live-badge deep"><Icon name="globe" size={12} /> {t('deepSearchOn')}</span>}
               {instant && !deep && <span className="live-badge"><Icon name="lightning" size={12} /> {t('instant')}</span>}
             </h2>
-            <button className="btn primary" onClick={() => onPlayAll(items)}><Icon name="play" size={15} /> {t('playAll')}</button>
+            <div className="head-actions">
+              <a
+                className="btn small"
+                href={`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <Icon name="external" size={14} /> {t('openOnYouTube')}
+              </a>
+              <button className="btn primary small" onClick={() => onPlayAll(songs)}><Icon name="play" size={15} /> {t('playAll')}</button>
+            </div>
           </div>
           {songs.map((tr, i) => (
-            <TrackRow key={tr.id} track={tr} index={i} list={items} onPlay={() => onPlay(items, tr.id)} />
+            <TrackRow key={tr.id} track={tr} index={i} list={songs} onPlay={() => onPlay(songs, tr.id)} source="YouTube" />
           ))}
         </section>
       )}
@@ -149,8 +179,8 @@ function LiveResults({ query, deep, onPlay, onPlayAll, showEmpty }) {
               key={ch.id}
               item={ch}
               round
-              onOpen={() => onPlay([ch], ch.id)}
-              onPlay={() => onPlay([ch], ch.id)}
+              onOpen={() => openChannel(ch)}
+              onPlay={() => openChannel(ch)}
               sub={t('officialVideo')}
             />
           ))}
@@ -163,8 +193,8 @@ function LiveResults({ query, deep, onPlay, onPlayAll, showEmpty }) {
             <Card
               key={pl.id}
               item={pl}
-              onOpen={() => onPlay([pl], pl.id)}
-              onPlay={() => onPlay([pl], pl.id)}
+              onOpen={() => openPlaylist(pl)}
+              onPlay={() => openPlaylist(pl)}
               sub={pl.artist && pl.artist !== 'Lista' ? pl.artist : t('playlists')}
             />
           ))}
@@ -330,7 +360,7 @@ export default function Search() {
                 }
                 if (e.key === 'Escape') setSuggOpen(false);
               }}
-              placeholder={t('searchPlaceholder') || '¿Qué quieres escuchar?'}
+              placeholder={t('searchGlobalPlaceholder') || 'Busca en YouTube o en tu catálogo'}
               autoFocus
               inputMode="search"
               enterKeyHint="search"
@@ -362,6 +392,12 @@ export default function Search() {
           )}
         </form>
       </div>
+
+      <p className="search-source-note">
+        <Icon name="youtube" size={16} />
+        <span>{t('searchSources')}</span>
+        <span className="search-source-pill">YouTube</span>
+      </p>
 
       {deep && (
         <p className="deep-hint"><Icon name="globe" size={13} /> {t('deepSearchHint')}</p>
@@ -396,7 +432,7 @@ export default function Search() {
           </section>
 
           <section className="list-section">
-            <h2>{t('searchYouTube')} <Icon name="globe" size={18} /></h2>
+            <h2><Icon name="youtube" size={18} /> {t('youtubeGlobalSearch')}</h2>
             <p className="muted">{t('searchYouTubeHint')}</p>
             <div className="chip-row">
               {['Bad Bunny', 'Metallica', 'Taylor Swift', 'Queen', 'Dua Lipa', 'Karol G', 'The Weeknd', 'Shakira'].map((s) => (
@@ -428,6 +464,17 @@ export default function Search() {
             ))}
           </div>
 
+          {/* ── Resultados reales de YouTube (global, primero como en YouTube) ── */}
+          {debounced && (filter === 'all' || filter === 'songs' || filter === 'videos') && (
+            <LiveResults
+              query={debounced}
+              deep={deep}
+              showEmpty={totalHits === 0}
+              onPlay={(list, id) => p.playList(list, id)}
+              onPlayAll={(list) => p.playList(list)}
+            />
+          )}
+
           {totalHits === 0 && query.length < 2 && (
             <div className="empty-box">
               <p><Icon name="search" size={16} /> {t('typeToSearch')}</p>
@@ -435,9 +482,9 @@ export default function Search() {
           )}
 
           {show('songs') && (
-            <section className="list-section">
+            <section className="list-section search-catalog-section">
               <div className="shelf-head">
-                <h2>{t('songs')}</h2>
+                <h2>{t('inCatalog')} <span className="count-badge">{results.songs.length}</span></h2>
                 <button className="btn primary" onClick={() => p.playList(results.songs)}><Icon name="play" size={15} /> {t('playAll')}</button>
               </div>
               {results.songs.map((tr, i) => <TrackRow key={tr.id} track={tr} index={i} list={results.songs} showAlbum />)}
@@ -514,17 +561,6 @@ export default function Search() {
                 />
               ))}
             </Shelf>
-          )}
-
-          {/* ── Búsqueda REAL en el catálogo global (cualquier canción/artista) ── */}
-          {debounced && (filter === 'all' || filter === 'songs' || filter === 'videos') && (
-            <LiveResults
-              query={debounced}
-              deep={deep}
-              showEmpty={totalHits === 0}
-              onPlay={(list, id) => p.playList(list, id)}
-              onPlayAll={(list) => p.playList(list)}
-            />
           )}
         </>
       )}

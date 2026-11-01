@@ -358,7 +358,7 @@ function parseSearchResults(data, { includeChannels = true } = {}) {
         moods: [],
         dur: 0,
         views: parseViews(runsText(node.videoCountText)),
-        thumb: pickThumb(node.thumbnail) || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+        thumb: pickThumb(node.thumbnail) || '/icon-192.png',
         external: true,
       };
       if (seen.has(tr.yt)) continue;
@@ -386,7 +386,7 @@ function parseSearchResults(data, { includeChannels = true } = {}) {
         moods: [],
         dur: 0,
         views: parseViews(runsText(node.videoCountText)),
-        thumb: pickThumb(node.thumbnail) || `https://i.ytimg.com/vi/${pickThumbId(node)}/hqdefault.jpg`,
+        thumb: pickThumb(node.thumbnail) || (node.videoId ? `https://i.ytimg.com/vi/${node.videoId}/hqdefault.jpg` : '/icon-192.png'),
         external: true,
       });
       continue;
@@ -427,10 +427,6 @@ function parseSearchResults(data, { includeChannels = true } = {}) {
 function pickThumb(node) {
   const thumbs = node?.thumbnail?.thumbnails || [];
   return thumbs.length ? thumbs[thumbs.length - 1].url : null;
-}
-
-function pickThumbId(node) {
-  return node?.videoId || 'default';
 }
 
 /** Busca el token de «cargar más» del árbol (para la página 2+).

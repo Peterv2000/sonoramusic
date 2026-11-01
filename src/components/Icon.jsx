@@ -53,6 +53,7 @@ const PATHS = {
   queue:
     '<path d="M4 6h10"/><path d="M4 12h10"/><path d="M4 18h7"/><path d="M16 12.5 21 15l-5 2.5z"/>',
   video: '<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10.5 5-3v9l-5-3z"/>',
+  youtube: '<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="m10 9.5 5 2.5-5 2.5z" fill="currentColor" stroke="none"/>',
   lyrics:
     '<path d="M5 5h14"/><path d="M5 10h9"/><path d="M5 15h11"/><path d="M5 20h6"/>',
   chevronDown: '<path d="m5 9 7 7 7-7"/>',
