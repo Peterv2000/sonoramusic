@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../state/AppState.jsx';
 import { recordPlay } from '../ai/personalize.js';
-import { radioFrom, relatedTracks, shuffle as shuffleArr } from '../data/catalog.js';
+import { mergeTracks, pickStrictNext, strictRelated, globalPool } from './queue.js';
 import { djLine as makeDjLine, djGreeting } from './dj.js';
 import VideoStage from './VideoStage.jsx';
 import { DJDrop } from '../components/DJ.jsx';
@@ -315,71 +315,74 @@ export function PlayerProvider({ children }) {
   }, [dispatch, emitDj, ads]);
 
   const advance = useCallback((dir, opts = {}) => {
-    // La cola "a continuación" tiene prioridad (también al terminar la canción)
+    // 1) La cola explícita del usuario ("Reproducir a continuación") manda.
+    //    No la filtramos: el usuario pidió esos temas a propósito.
     if (dir > 0 && queue.length > 0) {
       const [nextTr, ...rest] = queue;
-      const list = [...contextList.slice(0, index + 1), nextTr, ...contextList.slice(index + 1)];
-      playNow(nextTr, list, index + 1, rest);
+      const at = Math.max(0, index + 1);
+      const list = [...contextList.slice(0, at), nextTr, ...contextList.slice(at)];
+      playNow(nextTr, list, at, rest);
       return;
     }
+
     const list = contextList;
-    if (!list.length) return;
-    const current = list[index];
+    if (!list.length || !track) return;
+    const current = list[index] || track;
 
-    let next;
-    if (repeat === 'one' && !opts.force && dir > 0) next = index;
-    else if (shuffle && dir > 0) {
-      const visited = visitedRef.current;
-      const candidates = list.map((t, i) => i).filter((i) => i !== index);
-      // Priorizar mismo artista > mismo género si hay candidatos
-      if (current) {
-        const sameArtist = candidates.filter(i => list[i]?.artist && current.artist && list[i].artist.toLowerCase() === current.artist.toLowerCase());
-        if (sameArtist.length) {
-          next = sameArtist[Math.floor(Math.random() * sameArtist.length)];
-        } else {
-          const sameGenre = candidates.filter(i => list[i]?.genre && current.genre && list[i].genre === current.genre);
-          if (sameGenre.length) {
-            next = sameGenre[Math.floor(Math.random() * sameGenre.length)];
-          } else {
-            const unplayed = candidates.filter((i) => !visited.has(list[i].id));
-            const pool = settings.smartShuffle && pro.active && unplayed.length ? unplayed : candidates;
-            next = pool[Math.floor(Math.random() * pool.length)] ?? index + 1;
-          }
-        }
-      } else {
-        const unplayed = candidates.filter((i) => !visited.has(list[i].id));
-        const pool = settings.smartShuffle && pro.active && unplayed.length ? unplayed : candidates;
-        next = pool[Math.floor(Math.random() * pool.length)] ?? index + 1;
-      }
-    } else next = index + dir;
-
-    if (next >= list.length) {
-      if (repeat === 'all') next = 0;
-      else if (settings.autoplay && dir > 0) {
-        // Música relacionada infinita (estilo Spotify autoplay) con afinidad
-        const seed = list[list.length - 1] || current;
-        const related = relatedTracks(seed, 12).filter((t) => !list.some((x) => x.id === t.id));
-        if (related.length) {
-          // Ordenar por afinidad
-          const sorted = [...related].sort((a,b) => {
-            let sa=0,sb=0;
-            if(a.artist&&seed.artist&&a.artist.toLowerCase()===seed.artist.toLowerCase())sa+=3;
-            if(b.artist&&seed.artist&&b.artist.toLowerCase()===seed.artist.toLowerCase())sb+=3;
-            if(a.genre&&seed.genre&&a.genre===seed.genre)sa+=2;
-            if(b.genre&&seed.genre&&b.genre===seed.genre)sb+=2;
-            return sb-sa;
-          });
-          setContextList((prev) => [...prev, ...sorted]);
-          setIndex(list.length);
-          playNow(sorted[0], [...list, ...sorted], list.length, []);
-          return;
-        }
-        setPlaying(false); ytRef.current?.pauseVideo?.(); return;
-      } else { setPlaying(false); ytRef.current?.pauseVideo?.(); return; }
+    // Repetición de una sola canción: al terminar, vuelve a empezar.
+    if (repeat === 'one' && dir > 0 && !opts.force) {
+      try { ytRef.current?.seekTo?.(0, true); ytRef.current?.playVideo?.(); } catch { /* noop */ }
+      return;
     }
-    if (next < 0) next = 0;
-    playNow(list[next], list, next, dir > 0 ? queue : queue);
-  }, [contextList, index, repeat, shuffle, playNow, settings.autoplay, settings.smartShuffle, pro.active, queue]);
+
+    // 2) Anterior: respeta el orden de la lista en curso.
+    if (dir < 0) {
+      let prev = index - 1;
+      if (prev < 0) prev = repeat === 'all' ? list.length - 1 : 0;
+      playNow(list[prev], list, prev, []);
+      return;
+    }
+
+    // 3) Siguiente: SOLO mismo artista o mismo género. Si no hay, se detiene.
+    //    El aleatorio tampoco puede escapar del estilo.
+    const canAppend = settings.autoplay !== false;
+    const pool = shuffle && !canAppend
+      ? list
+      : mergeTracks(list, globalPool());
+    const pick = pickStrictNext({
+      current,
+      contextList: list,
+      index,
+      pool,
+      visited: visitedRef.current,
+      shuffleMode: shuffle,
+    });
+
+    if (pick) {
+      const at = list.findIndex((t) => t.id === pick.id);
+      if (at >= 0) {
+        playNow(pick, list, at, []);
+      } else if (canAppend) {
+        const merged = [...list, pick];
+        playNow(pick, merged, merged.length - 1, []);
+      } else {
+        setPlaying(false);
+        try { ytRef.current?.pauseVideo?.(); } catch { /* noop */ }
+      }
+      return;
+    }
+
+    // 4) Sin temas afines: solo repetimos la lista si el usuario lo pidió.
+    if (repeat === 'all') {
+      const first = list.findIndex((t) => t.id !== current.id);
+      const at = first >= 0 ? first : 0;
+      playNow(list[at], list, at, []);
+      return;
+    }
+
+    setPlaying(false);
+    try { ytRef.current?.pauseVideo?.(); } catch { /* noop */ }
+  }, [contextList, index, repeat, shuffle, playNow, settings.autoplay, queue, track]);
 
   const handleEnded = useCallback(() => {
     if (repeat === 'one') {
@@ -404,8 +407,9 @@ export function PlayerProvider({ children }) {
       playNow(list[idx], list, idx, []);
     },
     playRadio(seed) {
+      const related = strictRelated(seed, { pool: globalPool(), limit: 80 });
       visitedRef.current = new Set([seed.id]);
-      playNow(seed, radioFrom(seed), 0, []);
+      playNow(seed, [seed, ...related], 0, []);
     },
     toggle() {
       if (audioMode && audioRef.current) {
@@ -489,12 +493,15 @@ export function PlayerProvider({ children }) {
       if (!list[target]) return;
       playNow(list[target], list, target, liveRef.current.queue);
     },
-    /* Llena la cola con música relacionada (estilo autoplay) */
+    /* Reproduce música relacionada (mismo artista o género, nunca otro estilo) */
     playRelated() {
       if (!track) return;
-      const rel = relatedTracks(track, 10);
+      const rel = strictRelated(track, {
+        pool: mergeTracks(contextList, globalPool()),
+        limit: 30,
+      });
       if (!rel.length) return;
-      playNow(rel[0], rel, 0, []);
+      playNow(rel[0], [track, ...rel], 1, []);
     },
     /* Quitar la canción actual de la lista y saltar */
     removeCurrent() { advance(1, { force: true }); },
@@ -563,7 +570,10 @@ export function PlayerProvider({ children }) {
     ...api, track, queue, contextList, index, playing, position, duration,
     shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode,
     djText, djTag, djSpeaking, djOn: settings.dj, djVoiceURI,
-    related: track ? relatedTracks(track, 6) : [],
+    related: track ? strictRelated(track, {
+      pool: mergeTracks(contextList, globalPool()),
+      limit: 6,
+    }) : [],
     // Lo que sonará después, cuando la cola se vacíe (resto de la lista en curso)
     upcoming: (index >= 0 && contextList.length > index + 1) ? contextList.slice(index + 1) : [],
     audioMode,

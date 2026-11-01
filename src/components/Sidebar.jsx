@@ -1,12 +1,14 @@
 import { NavLink } from 'react-router-dom';
 import { useApp } from '../state/AppState.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
+import { useAuth } from '../auth/AuthContext.jsx';
 import Icon from './Icon.jsx';
 import Logo from './Logo.jsx';
 
 export default function Sidebar() {
   const { state } = useApp();
   const { t } = useI18n();
+  const { isAdmin } = useAuth();
   const pl = state.library.playlists;
 
   return (
@@ -17,11 +19,11 @@ export default function Sidebar() {
       </div>
 
       <nav className="side-nav">
-        <NavLink to="/" end><span className="ico"><Icon name="home" /></span>{t('home')}</NavLink>
-        <NavLink to="/explore"><span className="ico"><Icon name="explore" /></span>{t('explore')}</NavLink>
-        <NavLink to="/library"><span className="ico"><Icon name="library" /></span>{t('library')}</NavLink>
-        <NavLink to="/search"><span className="ico"><Icon name="search" /></span>{t('search')}</NavLink>
-        <NavLink to="/charts"><span className="ico"><Icon name="charts" /></span>{t('charts')}</NavLink>
+        <NavLink to="/" end title={t('home')}><span className="ico"><Icon name="home" /></span>{t('home')}</NavLink>
+        <NavLink to="/explore" title={t('explore')}><span className="ico"><Icon name="explore" /></span>{t('explore')}</NavLink>
+        <NavLink to="/library" title={t('library')}><span className="ico"><Icon name="library" /></span>{t('library')}</NavLink>
+        <NavLink to="/search" title={t('search')}><span className="ico"><Icon name="search" /></span>{t('search')}</NavLink>
+        <NavLink to="/charts" title={t('charts')}><span className="ico"><Icon name="charts" /></span>{t('charts')}</NavLink>
       </nav>
 
       <div className="side-section">
@@ -43,8 +45,8 @@ export default function Sidebar() {
       </div>
 
       <div className="side-section side-admin">
-        <NavLink to="/admin" className="side-link admin-link">
-          <span className="ico"><Icon name="settings" /></span>Admin
+        <NavLink to="/admin" className="side-link admin-link" title={t('admin')}>
+          <span className="ico"><Icon name={isAdmin ? 'settings' : 'lock'} /></span>{t('admin')}
         </NavLink>
       </div>
 

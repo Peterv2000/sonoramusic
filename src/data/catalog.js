@@ -240,20 +240,27 @@ export const dailyMixes = () => {
   }).filter((m) => m.tracks.length);
 };
 
-/* ── Canciones relacionadas (para "Reproducir a continuación") ────── */
+/* ── Canciones relacionadas (para "Reproducir a continuación") ──────
+   Solo mismo artista o mismo género. Sin listas de respaldo: si no hay
+   afinidad real, devolvemos una lista vacía y la reproducción se detiene. */
+const artistOf = (name) => String(name || '')
+  .toLowerCase()
+  .replace(/\s+(?:ft\.?|feat\.?|featuring)\s+.*$/, '')
+  .replace(/\s+&\s+.*$/, '')
+  .trim();
+
 export const relatedTracks = (seed, n = 10) => {
-  const same = TRACKS.filter((t) => t.id !== seed.id && t.genre === seed.genre);
-  const mood = TRACKS.filter((t) => t.id !== seed.id && Array.isArray(t.moods) && Array.isArray(seed.moods) && t.moods.some((m) => seed.moods.includes(m)) && !same.includes(t));
-  const rest = TRACKS.filter((t) => t.id !== seed.id && !same.includes(t) && !mood.includes(t));
-  return [...same, ...mood, ...rest].slice(0, n);
+  if (!seed) return [];
+  const artist = artistOf(seed.artist);
+  const sameArtist = TRACKS.filter((t) => t.id !== seed.id && artist && artistOf(t.artist) === artist);
+  const sameGenre = TRACKS.filter((t) => t.id !== seed.id && seed.genre && t.genre === seed.genre && !sameArtist.includes(t));
+  return [...sameArtist, ...sameGenre].slice(0, n);
 };
 
-/* ── Construye una emisora infinita a partir de una canción semilla ─ */
+/* ── Construye una emisora estricta a partir de una canción semilla ─ */
 export function radioFrom(seed) {
-  const same = TRACKS.filter((t) => t.genre === seed.genre && t.id !== seed.id);
-  const mood = TRACKS.filter((t) => Array.isArray(t.moods) && Array.isArray(seed.moods) && t.moods.some((m) => seed.moods.includes(m)) && t.id !== seed.id && !same.includes(t));
-  const rest = TRACKS.filter((t) => t.id !== seed.id && !same.includes(t) && !mood.includes(t));
-  return [seed, ...shuffle(same), ...shuffle(mood), ...shuffle(rest)];
+  if (!seed) return [];
+  return [seed, ...shuffle(relatedTracks(seed, 80))];
 }
 
 export function shuffle(arr) {

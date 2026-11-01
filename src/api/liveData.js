@@ -70,6 +70,13 @@ export function hasLiveData() {
   return Boolean(d && (d.catalog?.tracks?.length || d.charts?.tabs?.length));
 }
 
+/** Catálogo en vivo ya cacheado, de forma síncrona.
+ *  Lo usa la cola de reproducción para no limitarse al catálogo curado. */
+export function cachedCatalogTracks() {
+  const d = readAll();
+  return Array.isArray(d?.catalog?.tracks) ? d.catalog.tracks : [];
+}
+
 /** Fuerza volver a leer del servidor (ignora la caché en memoria). */
 export async function refreshLive() {
   mem = null;

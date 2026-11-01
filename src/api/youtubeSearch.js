@@ -18,8 +18,27 @@
 const API = '/api/search';
 const CACHE_KEY = 'ritmo-ytsearch-v1';
 const CACHE_TTL = 1000 * 60 * 60 * 6; // 6 h
+const DEFAULT_TIMEOUT = 12000;
 
 const MEM = new Map();
+
+/* Petición JSON con tiempo límite. Nunca deja una promesa colgada si el
+   servidor no responde (móvil con mala señal, API caída, etc.). */
+async function fetchJSON(path, { timeout = DEFAULT_TIMEOUT, ...opts } = {}) {
+  const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timer = ctrl ? setTimeout(() => ctrl.abort(), timeout) : null;
+  try {
+    const res = await fetch(path, {
+      ...opts,
+      headers: { Accept: 'application/json', ...(opts.headers || {}) },
+      signal: ctrl?.signal,
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
 
 /* ---------- caché ---------- */
 function readCache(q) {
@@ -50,41 +69,48 @@ function writeCache(q, v) {
   } catch { /* cuota */ }
 }
 
-/** Busca a través de nuestro servidor.
- *  `deep` pide una búsqueda profunda (varias páginas → muchos más resultados). */
-export async function searchYouTube(query, { deep = false, limit } = {}) {
+/**
+ * Busca a través de nuestro servidor y devuelve también el estado del error.
+ * `deep` pide una búsqueda profunda (varias páginas → muchos más resultados).
+ *
+ * Nunca lanza: si YouTube o el servidor fallan, devuelve `{ items: [], error }`
+ * para que la interfaz muestre un aviso limpio y pueda ofrecer reintentar.
+ */
+export async function searchYouTubeDetailed(query, { deep = false, limit, timeout } = {}) {
   const q = (query || '').trim();
-  if (!q) return [];
+  if (!q) return { items: [], error: null, cached: false };
 
   const key = deep ? q + '::deep' : q;
   const cached = readCache(key);
-  if (cached) return cached;
+  if (cached) return { items: cached, error: null, cached: true };
 
   const params = new URLSearchParams({ q });
   if (deep) params.set('deep', '1');
   if (limit) params.set('limit', String(limit));
 
   try {
-    const res = await fetch(`${API}?${params}`, { headers: { Accept: 'application/json' } });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    const list = Array.isArray(data.results) ? data.results : [];
+    const data = await fetchJSON(`${API}?${params}`, { timeout });
+    const list = Array.isArray(data?.results) ? data.results : [];
     if (list.length) writeCache(key, list);
-    return list;
-  } catch {
-    return [];
+    return { items: list, error: null, cached: false };
+  } catch (err) {
+    const error = err?.name === 'AbortError' ? 'timeout' : 'unavailable';
+    return { items: [], error, cached: false };
   }
 }
 
-/** Sugerencias de búsqueda (autocompletado en vivo). */
+/** Compatibilidad: devuelve solo la lista (siempre segura, nunca lanza). */
+export async function searchYouTube(query, opts = {}) {
+  return (await searchYouTubeDetailed(query, opts)).items;
+}
+
+/** Sugerencias de búsqueda (autocompletado en vivo). Nunca lanza. */
 export async function suggestYouTube(query) {
   const q = (query || '').trim();
   if (q.length < 2) return [];
   try {
-    const res = await fetch(`/api/suggest?q=${encodeURIComponent(q)}`, { headers: { Accept: 'application/json' } });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return Array.isArray(data.suggestions) ? data.suggestions : [];
+    const data = await fetchJSON(`/api/suggest?q=${encodeURIComponent(q)}`, { timeout: 7000 });
+    return Array.isArray(data?.suggestions) ? data.suggestions : [];
   } catch {
     return [];
   }

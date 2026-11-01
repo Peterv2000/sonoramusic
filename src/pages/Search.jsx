@@ -7,7 +7,7 @@ import { useToast } from '../components/Toast.jsx';
 import { Card, Shelf, TrackRow } from '../components/widgets.jsx';
 import { TRACKS, MIXES, STATIONS, ALBUMS, ARTISTS, trackById, nf } from '../data/catalog.js';
 import {
-  searchYouTube, suggestYouTube, parseYouTubeId, trackFromYouTubeId,
+  searchYouTubeDetailed, suggestYouTube, parseYouTubeId, trackFromYouTubeId,
 } from '../api/youtubeSearch.js';
 import { getCatalog, warmLookup } from '../api/liveData.js';
 import Icon from '../components/Icon.jsx';
@@ -23,6 +23,8 @@ function LiveResults({ query, deep, onPlay, onPlayAll, showEmpty }) {
   const { t } = useI18n();
   const [items, setItems] = useState(null); // null = cargando
   const [instant, setInstant] = useState(false);
+  const [error, setError] = useState(null); // null | timeout | unavailable
+  const [attempt, setAttempt] = useState(0);
   const reqRef = useRef(0);
   const aliveRef = useRef(true);
 
@@ -31,6 +33,7 @@ function LiveResults({ query, deep, onPlay, onPlayAll, showEmpty }) {
     const id = ++reqRef.current;
     setItems(null);
     setInstant(false);
+    setError(null);
     (async () => {
       try {
         // 1) caché caliente del servidor → respuesta inmediata (solo búsqueda normal)
@@ -42,23 +45,24 @@ function LiveResults({ query, deep, onPlay, onPlayAll, showEmpty }) {
               setInstant(true);
               return;
             }
-          } catch {}
+          } catch { /* seguimos con la búsqueda real */ }
         }
-        // 2) búsqueda real (profunda si se pidió)
-        try {
-          const list = await searchYouTube(query, { deep }).catch(() => []);
-          if (aliveRef.current && id === reqRef.current) {
-            setItems(Array.isArray(list) ? list : []);
-          }
-        } catch {
-          if (aliveRef.current && id === reqRef.current) setItems([]);
+        // 2) búsqueda real (profunda si se pidió). El cliente nunca lanza.
+        const result = await searchYouTubeDetailed(query, { deep });
+        if (aliveRef.current && id === reqRef.current) {
+          setItems(Array.isArray(result?.items) ? result.items : []);
+          setError(result?.error || null);
         }
       } catch {
-        if (aliveRef.current && id === reqRef.current) setItems([]);
+        // Último cortafuegos: un fallo inesperado se convierte en estado vacío.
+        if (aliveRef.current && id === reqRef.current) {
+          setItems([]);
+          setError('unavailable');
+        }
       }
     })();
     return () => { aliveRef.current = false; };
-  }, [query, deep]);
+  }, [query, deep, attempt]);
 
   if (items === null) {
     return (
@@ -74,6 +78,30 @@ function LiveResults({ query, deep, onPlay, onPlayAll, showEmpty }) {
   }
 
   if (items.length === 0) {
+    if (error) {
+      return (
+        <div className="empty-box search-fallback">
+          <p>
+            <Icon name="globe" size={16} />{' '}
+            {error === 'timeout' ? t('searchTimeout') : t('searchUnavailable')}
+          </p>
+          <small>{t('searchUnavailableHint')}</small>
+          <div className="head-actions">
+            <button className="btn small primary" onClick={() => setAttempt((n) => n + 1)}>
+              <Icon name="history" size={14} /> {t('retry')}
+            </button>
+            <a
+              className="btn small"
+              href={`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Icon name="globe" size={14} /> {t('openOnYouTube')}
+            </a>
+          </div>
+        </div>
+      );
+    }
     if (!showEmpty) return null;
     return (
       <div className="empty-box">
@@ -90,6 +118,13 @@ function LiveResults({ query, deep, onPlay, onPlayAll, showEmpty }) {
 
   return (
     <>
+      {error && (
+        <div className="search-inline-warn">
+          <Icon name="globe" size={14} />
+          <span>{error === 'timeout' ? t('searchTimeout') : t('searchUnavailable')}</span>
+          <button className="btn tiny" onClick={() => setAttempt((n) => n + 1)}>{t('retry')}</button>
+        </div>
+      )}
       {songs.length > 0 && (
         <section className="list-section">
           <div className="shelf-head">

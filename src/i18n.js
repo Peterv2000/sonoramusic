@@ -311,6 +311,13 @@ export const DICT = {
     results: 'Resultados',
     listenAgain: 'Escuchar de nuevo',
     typeToSearch: 'Escribe al menos 2 caracteres para buscar',
+    searchTimeout: 'La búsqueda tardó demasiado',
+    searchUnavailable: 'No se pudo conectar con la búsqueda',
+    searchUnavailableHint: 'Puedes reintentar o abrir YouTube. El catálogo local sigue disponible y la app no se detiene.',
+    retry: 'Reintentar',
+    openOnYouTube: 'Abrir en YouTube',
+    renew: 'Renovar',
+    playFirst: 'Elige una canción para ver la letra',
 
     /* ── Planes PRO ── */
     included: 'Incluido en tu plan',
@@ -678,6 +685,13 @@ export const DICT = {
     results: 'Results',
     listenAgain: 'Listen again',
     typeToSearch: 'Type at least 2 characters to search',
+    searchTimeout: 'Search took too long',
+    searchUnavailable: 'Could not connect to search',
+    searchUnavailableHint: 'Retry or open YouTube. The local catalog is still available and the app keeps working.',
+    retry: 'Retry',
+    openOnYouTube: 'Open on YouTube',
+    renew: 'Refresh',
+    playFirst: 'Choose a song to see the lyrics',
 
     /* ── PRO plans ── */
     included: 'Included in your plan',

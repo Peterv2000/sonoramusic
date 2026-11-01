@@ -6,6 +6,7 @@ import Sidebar from './components/Sidebar.jsx';
 import TopBar from './components/TopBar.jsx';
 import BottomNav from './components/BottomNav.jsx';
 import MiniPlayer from './components/MiniPlayer.jsx';
+import NowPlayingPanel from './components/NowPlayingPanel.jsx';
 import FullPlayer from './components/FullPlayer.jsx';
 import { ToastProvider } from './components/Toast.jsx';
 import Home from './pages/Home.jsx';
@@ -60,6 +61,7 @@ export default function App() {
               </ErrorBoundary>
             </main>
           </div>
+          <NowPlayingPanel />
           <MiniPlayer />
           <BottomNav />
           {fullOpen && <FullPlayer />}
