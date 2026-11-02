@@ -15,7 +15,7 @@ export default function Sidebar() {
     <aside className="sidebar">
       <div className="brand">
         <Logo size={30} />
-        <span className="brand-name">Ritmo<em>Music</em></span>
+        <span className="brand-name">Sonora<em>Music</em></span>
       </div>
 
       <nav className="side-nav">
@@ -55,7 +55,7 @@ export default function Sidebar() {
           <span className="pro-star"><Icon name="star" size={16} /></span>
           <span>
             <strong>{t('upgrade')}</strong>
-            <small>{state.pro.active ? t('subActive') : 'Ritmo · Demo'}</small>
+            <small>{state.pro.active ? t('subActive') : 'Sonora · Demo'}</small>
           </span>
         </NavLink>
       </div>

@@ -1,6 +1,6 @@
 {
   "appId": "com.ritmomusic.app",
-  "appName": "Ritmo Music",
+  "appName": "Sonora Music",
   "webDir": "dist",
   "android": {
     "allowMixedContent": true,

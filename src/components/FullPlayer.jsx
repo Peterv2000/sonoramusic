@@ -51,6 +51,9 @@ export default function FullPlayer() {
   const frac = p.duration ? p.position / p.duration : 0;
   const inPl = state.library.playlists;
   const panel = p.panel; // player | queue | lyrics
+  const auto = p.autoQueue || [];
+  const usingAuto = p.queue.length === 0 && auto.length > 0;
+  const upNext = p.queue.length ? p.queue : auto;
 
   return (
     <div className="full-player" style={{ '--art': `url(${track.thumb})` }}>
@@ -78,7 +81,7 @@ export default function FullPlayer() {
       <nav className="full-tabs" role="tablist">
         {[
           ['player', 'music', t('nowPlaying')],
-          ['queue', 'queue', `${t('queue')} (${p.queue.length + p.upcoming.length})`],
+          ['queue', 'queue', `${t('queue')} (${upNext.length + p.upcoming.length})`],
           ['lyrics', 'lyrics', t('lyrics')],
         ].map(([id, ico, label]) => (
           <button
@@ -206,6 +209,9 @@ export default function FullPlayer() {
           <div className="queue-head">
             <h3>{t('queue')}</h3>
             {p.queue.length > 0 && <button className="chip" onClick={p.clearQueue}><Icon name="trash" size={15} /> {t('clearQueue')}</button>}
+            {!p.queue.length && auto.length > 0 && (
+              <button className="chip" onClick={p.refreshRelated}><Icon name="sparkles" size={15} /> {t('refreshRecommendations')}</button>
+            )}
           </div>
 
           <div className="q-current">
@@ -217,10 +223,11 @@ export default function FullPlayer() {
           </div>
 
           <h4 className="q-next-title">
-            {t('upNext')} {p.queue.length > 0 && <span className="q-count">{p.queue.length}</span>}
+            {t('upNext')} {upNext.length > 0 && <span className="q-count">{upNext.length}</span>}
+            {usingAuto && <span className="live-badge"><Icon name="sparkles" size={12} /> {t('automaticQueue')}</span>}
           </h4>
 
-          {p.queue.length === 0 ? (
+          {upNext.length === 0 ? (
             <div className="q-empty">
               <p className="muted"><Icon name="music" size={16} /> {t('queueEmpty')}</p>
               <div className="q-empty-actions">
@@ -249,22 +256,39 @@ export default function FullPlayer() {
               )}
             </div>
           ) : (
-            p.queue.map((q, i) => (
-              <div key={q.id + i} className="q-row" onClick={() => p.playQueueAt(i)} draggable onDragStart={(e) => { e.dataTransfer.setData('text/plain', String(i)); }} onDragOver={(e) => e.preventDefault()} onDrop={(e) => {
-                e.preventDefault();
-                const from = Number(e.dataTransfer.getData('text/plain'));
-                if (Number.isNaN(from) || from === i) return;
-                if (p.reorderQueue) p.reorderQueue(from, i);
-              }}>
+            upNext.map((q, i) => (
+              <div
+                key={q.id + i}
+                className={`q-row ${usingAuto ? 'q-row-related' : ''}`}
+                onClick={() => (usingAuto ? p.playAutoAt(i) : p.playQueueAt(i))}
+                draggable={!usingAuto}
+                onDragStart={(e) => { if (!usingAuto) e.dataTransfer.setData('text/plain', String(i)); }}
+                onDragOver={(e) => { if (!usingAuto) e.preventDefault(); }}
+                onDrop={(e) => {
+                  if (usingAuto) return;
+                  e.preventDefault();
+                  const from = Number(e.dataTransfer.getData('text/plain'));
+                  if (Number.isNaN(from) || from === i) return;
+                  if (p.reorderQueue) p.reorderQueue(from, i);
+                }}
+              >
                 <img src={q.thumb} alt="" loading="lazy" />
                 <div>
                   <strong>{q.title}</strong><small>{q.artist}</small>
                 </div>
-                <button
-                  className="icon-btn"
-                  onClick={(e) => { e.stopPropagation(); p.removeFromQueue(i); }}
-                  aria-label={t('remove')}
-                ><Icon name="close" size={16} /></button>
+                {usingAuto ? (
+                  <button
+                    className="icon-btn q-add"
+                    onClick={(e) => { e.stopPropagation(); p.enqueue(q); }}
+                    aria-label={t('addToQueue')}
+                  ><Icon name="plus" size={16} /></button>
+                ) : (
+                  <button
+                    className="icon-btn"
+                    onClick={(e) => { e.stopPropagation(); p.removeFromQueue(i); }}
+                    aria-label={t('remove')}
+                  ><Icon name="close" size={16} /></button>
+                )}
               </div>
             ))
           )}

@@ -64,7 +64,7 @@ export default function Admin() {
   const [userQuery, setUserQuery] = useState('');
   const [planFilter, setPlanFilter] = useState('all');
   const [range, setRange] = useState(30);
-  const [email, setEmail] = useState('admin@ritmo.com');
+  const [email, setEmail] = useState('admin@sonora.com');
   const [pass, setPass] = useState('demo');
   const [loginError, setLoginError] = useState('');
 
@@ -121,7 +121,7 @@ export default function Admin() {
     try {
       const admin = (getAllUsers() || []).find((u) => u.role === 'admin');
       if (admin) updateUser?.(admin.id, { active: true, role: 'admin', plan: 'admin', adsFree: true });
-      login(admin?.email || 'admin@ritmo.com', 'demo');
+      login(admin?.email || 'admin@sonora.com', 'demo');
       toast('Sesión de administrador demo iniciada');
     } catch (err) {
       setLoginError(err?.message || 'No se pudo abrir la sesión demo');
@@ -227,7 +227,7 @@ export default function Admin() {
           <button className="btn admin-demo-btn" type="button" onClick={demoLogin}>
             <Icon name="sparkles" size={15} /> Entrar como administrador demo
           </button>
-          <small className="muted">Demo local: admin@ritmo.com · contraseña de demostración</small>
+          <small className="muted">Demo local: admin@sonora.com · contraseña de demostración</small>
           <button className="btn" type="button" onClick={() => nav('/')}>Volver al inicio</button>
         </div>
       </div>
@@ -469,7 +469,7 @@ export default function Admin() {
           <section className="admin-grid">
             <div className="admin-card stat"><span className="stat-label">Reproducciones</span><strong className="stat-value">{metrics.streams.toLocaleString('es-CO')}</strong><small className="muted">Últimos {range} días</small></div>
             <div className="admin-card stat"><span className="stat-label">Horas escuchadas</span><strong className="stat-value">{metrics.hours.toLocaleString('es-CO')}</strong><small className="muted">Tiempo acumulado</small></div>
-            <div className="admin-card stat"><span className="stat-label">Búsquedas</span><strong className="stat-value">{metrics.searches.toLocaleString('es-CO')}</strong><small className="muted">Global + YouTube</small></div>
+            <div className="admin-card stat"><span className="stat-label">Búsquedas</span><strong className="stat-value">{metrics.searches.toLocaleString('es-CO')}</strong><small className="muted">Global + Sonora</small></div>
             <div className="admin-card stat"><span className="stat-label">Skip rate</span><strong className="stat-value">{metrics.skip}%</strong><small className="muted">Cancelaciones tempranas</small></div>
           </section>
           <section className="admin-card">
@@ -667,7 +667,7 @@ export default function Admin() {
             <div className="card-head"><h2>Estado general</h2></div>
             <ul className="status-list">
               <li><span>Servidor API</span><span className="pill on">OK</span></li>
-              <li><span>Búsqueda YouTube</span><span className="pill on">Activa</span></li>
+              <li><span>Búsqueda Sonora</span><span className="pill on">Activa</span></li>
               <li><span>Resolver multi-fuente</span><span className="pill on">Activo</span></li>
               <li><span>Anuncios</span><span className={`pill ${cfg.ads.enabled ? 'on' : 'off'}`}>{cfg.ads.enabled ? 'Activos' : 'Desactivados'}</span></li>
             </ul>

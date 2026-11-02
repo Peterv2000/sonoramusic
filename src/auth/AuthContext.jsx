@@ -7,7 +7,7 @@ const LS_USERS = 'ritmo_users';
 
 const DEFAULT_ADMIN = {
   id: 'admin_001',
-  email: 'admin@ritmo.com',
+  email: 'admin@sonora.com',
   name: 'Administrador',
   role: 'admin',
   plan: 'admin',

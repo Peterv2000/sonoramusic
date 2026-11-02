@@ -59,8 +59,14 @@ export default function NowPlayingPanel() {
 
   const frac = p.duration ? Math.min(1, p.position / p.duration) : 0;
   const liked = state.library.liked.includes(track.id);
-  const queue = p.queue.length ? p.queue : p.upcoming;
   const usingQueue = p.queue.length > 0;
+  const usingAuto = !usingQueue && (p.autoQueue?.length || 0) > 0;
+  const queue = usingQueue ? p.queue : usingAuto ? p.autoQueue : p.upcoming;
+  const playAt = (i) => {
+    if (usingQueue) p.playQueueAt(i);
+    else if (usingAuto) p.playAutoAt(i);
+    else p.playContextAt(i);
+  };
 
   let lines = [];
   if (lyr?.synced?.length) {
@@ -163,7 +169,7 @@ export default function NowPlayingPanel() {
           <button
             key={`${tr.id}-${i}`}
             className="np-mini-row"
-            onClick={() => (usingQueue ? p.playQueueAt(i) : p.playContextAt(i))}
+            onClick={() => playAt(i)}
           >
             <img src={tr.thumb} alt="" loading="lazy" />
             <span><strong>{tr.title}</strong><small>{tr.artist}</small></span>

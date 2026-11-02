@@ -120,17 +120,17 @@ const MOOD_LINES_EN = {
 
 const FILLERS_ES = [
   'Seguimos con la música, sin pausas, parce.',
-  'Ritmo no para, y tú tampoco deberías, parce.',
-  'Aquí, en Ritmo, la buena música manda, parce.',
+  'Sonora no para, y tú tampoco deberías, parce.',
+  'Aquí, en Sonora, la buena música manda, parce.',
   'Directo a tus oídos, parce.',
   'Cierre los ojos y disfrute, parce.',
-  'Parce, esto es Ritmo Music. ¡Qué chimba!',
+  'Parce, esto es Sonora Music. ¡Qué chimba!',
 ];
 
 const FILLERS_EN = [
   'We keep the music going, no breaks.',
-  'Ritmo never stops — neither should you.',
-  'Here on Ritmo, great music rules.',
+  'Sonora never stops — neither should you.',
+  'Here on Sonora, great music rules.',
   'Straight to your ears.',
   'Close your eyes and enjoy.',
 ];
@@ -146,7 +146,7 @@ export function djLine({ track, prevTrack, seenGenres, lang = 'es', kind = 'intr
   const vars = {
     title: track.title,
     artist: track.artist,
-    album: track.album && track.album !== 'Ritmo' ? track.album : '',
+    album: track.album && track.album !== 'Sonora' && track.album !== 'Ritmo' ? track.album : '',
     prev: prevTrack?.title || '',
     year: track.year,
   };
@@ -189,21 +189,21 @@ export function djGreeting(lang = 'es') {
   const part = daypart(lang);
   const map = {
     es: {
-      madrugada: 'Buenas madrugadas, parce. Soy DJ Ritmo y esto apenas comienza.',
-      mañana: 'Buenos días, parce. Soy DJ Ritmo, vamos a despertar esos oídos.',
-      tarde: 'Buenas tardes, parce. Soy DJ Ritmo y traigo la mejor música.',
-      noche: 'Buenas noches, parce. Soy DJ Ritmo; la noche es nuestra.',
+      madrugada: 'Buenas madrugadas, parce. Soy DJ Sonora y esto apenas comienza.',
+      mañana: 'Buenos días, parce. Soy DJ Sonora, vamos a despertar esos oídos.',
+      tarde: 'Buenas tardes, parce. Soy DJ Sonora y traigo la mejor música.',
+      noche: 'Buenas noches, parce. Soy DJ Sonora; la noche es nuestra.',
     },
     en: {
-      'late night': 'Good late night. I’m DJ Ritmo, and we’re just getting started.',
-      morning: 'Good morning. I’m DJ Ritmo — let’s wake those ears up.',
-      afternoon: 'Good afternoon. I’m DJ Ritmo, bringing the good stuff.',
-      night: 'Good evening. I’m DJ Ritmo — the night is ours.',
+      'late night': 'Good late night. I’m DJ Sonora, and we’re just getting started.',
+      morning: 'Good morning. I’m DJ Sonora — let’s wake those ears up.',
+      afternoon: 'Good afternoon. I’m DJ Sonora, bringing the good stuff.',
+      night: 'Good evening. I’m DJ Sonora — the night is ours.',
     },
   };
   return (map[es ? 'es' : 'en'])[part];
 }
 
 export function djProfile() {
-  return { name: 'DJ Ritmo', avatar: '🎧', genres: [] };
+  return { name: 'DJ Sonora', avatar: '🎧', genres: [] };
 }

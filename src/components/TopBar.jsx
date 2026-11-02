@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../state/AppState.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
 import { usePlayer } from '../player/PlayerContext.jsx';
+import { GENRES } from '../data/catalog.js';
 import Icon from './Icon.jsx';
 import Logo from './Logo.jsx';
 import { suggestYouTube, searchYouTube } from '../api/youtubeSearch.js';
@@ -40,8 +41,8 @@ export default function TopBar() {
           searchYouTube(term, { deep: false }).catch(() => []),
         ]);
         if (id !== req.current) return;
-        setSugg(Array.isArray(s) ? s.filter(x => typeof x === 'string').slice(0, 6) : []);
-        setRes(Array.isArray(r) ? r.filter(x => (x.kind || 'video') === 'video').slice(0, 8) : []);
+        setSugg(Array.isArray(s) ? s.filter((x) => typeof x === 'string').slice(0, 6) : []);
+        setRes(Array.isArray(r) ? r.filter((x) => (x.kind || 'video') === 'video').slice(0, 8) : []);
       } catch {
         if (id === req.current) { setSugg([]); setRes([]); }
       } finally {
@@ -51,9 +52,7 @@ export default function TopBar() {
     return () => clearTimeout(tmr);
   }, [q]);
 
-  const pick = (val) => {
-    goSearch(val);
-  };
+  const pick = (val) => goSearch(val);
 
   /* Enter en la barra: abrir la página de búsqueda con el término. */
   const goSearch = (val) => {
@@ -69,8 +68,17 @@ export default function TopBar() {
     try {
       p.playList([item], item.id);
       setOpen(false);
-    } catch {}
+    } catch { /* noop */ }
   };
+
+  const queueItem = (item) => {
+    try {
+      p.enqueue(item);
+      setOpen(false);
+    } catch { /* noop */ }
+  };
+
+  const placeholders = ['Bad Bunny', 'Taylor Swift', 'Queen', 'Shakira', 'Dua Lipa', 'Karol G'];
 
   return (
     <header className="topbar">
@@ -84,15 +92,11 @@ export default function TopBar() {
             ref={inputRef}
             className="search-pill-input"
             value={q}
-            onChange={(e) => { 
-              const v = e.target.value;
-              setQ(v); 
-              setOpen(true); 
-            }}
+            onChange={(e) => { setQ(e.target.value); setOpen(true); }}
             onFocus={() => setOpen(true)}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); goSearch(); } }}
-            placeholder={t('searchGlobalPlaceholder') || 'Busca en YouTube o en tu catálogo'}
-            aria-label={t('searchGlobalPlaceholder') || 'Busca en YouTube o en tu catálogo'}
+            placeholder={t('searchGlobalPlaceholder')}
+            aria-label={t('searchGlobalPlaceholder')}
             spellCheck={false}
             autoComplete="off"
             inputMode="search"
@@ -100,48 +104,77 @@ export default function TopBar() {
             name="q"
             lang={state.settings.lang || 'es'}
           />
-          {q && <button className="icon-btn sm" onClick={(e) => { e.stopPropagation(); setQ(''); setSugg([]); setRes([]); }} aria-label={t('close')}><Icon name="close" size={14} /></button>}
+          {q && (
+            <button
+              className="icon-btn sm"
+              onClick={(e) => { e.stopPropagation(); setQ(''); setSugg([]); setRes([]); }}
+              aria-label={t('close')}
+            ><Icon name="close" size={14} /></button>
+          )}
         </div>
         {open && (
           <div className="search-dropdown search-dropdown-compact">
             {q.trim().length < 2 ? (
-              <div className="sd-section">
-                <div className="sd-title">{t('recentSearches')}</div>
-                {(state.library?.recentSearches || []).length > 0 ? (
-                  (state.library?.recentSearches || []).slice(0, 6).map((s) => (
-                    <button key={s} className="sd-item" onClick={() => pick(s)}><Icon name="history" size={14} /> <span>{s}</span></button>
-                  ))
-                ) : (
-                  <div className="sd-empty">{t('typeToSearch')}</div>
-                )}
-              </div>
+              <>
+                <div className="sd-section">
+                  <div className="sd-title"><Icon name="history" size={13} /> {t('recentSearches')}</div>
+                  {(state.library?.recentSearches || []).length > 0 ? (
+                    (state.library?.recentSearches || []).slice(0, 4).map((s) => (
+                      <button key={s} className="sd-item" onClick={() => pick(s)}><Icon name="history" size={14} /> <span>{s}</span></button>
+                    ))
+                  ) : (
+                    <div className="sd-empty">{t('typeToSearch')}</div>
+                  )}
+                </div>
+                <div className="sd-section">
+                  <div className="sd-title"><Icon name="sparkles" size={13} /> {t('genresToExplore')}</div>
+                  <div className="sd-chips">
+                    {GENRES.slice(0, 6).map((g) => (
+                      <button key={g.id} className="chip" onClick={() => pick(g.id)}>{g.id}</button>
+                    ))}
+                  </div>
+                  <div className="sd-chips">
+                    {placeholders.slice(0, 4).map((s) => (
+                      <button key={s} className="chip" onClick={() => pick(s)}>{s}</button>
+                    ))}
+                  </div>
+                </div>
+              </>
             ) : (
               <>
                 {sugg.length > 0 && (
                   <div className="sd-section">
-                    <div className="sd-title">{t('suggestions') || 'Sugerencias'}</div>
+                    <div className="sd-title">{t('suggestions')}</div>
                     {sugg.map((s, i) => (
-                      <button key={i} className="sd-item" onClick={() => pick(s)}><Icon name="search" size={14} /> <span>{s}</span></button>
+                      <button key={`${s}-${i}`} className="sd-item" onClick={() => pick(s)}><Icon name="search" size={14} /> <span>{s}</span></button>
                     ))}
                   </div>
                 )}
                 {res.length > 0 && (
                   <div className="sd-section">
-                    <div className="sd-title"><Icon name="youtube" size={14} /> {t('youtubeResults')}</div>
+                    <div className="sd-title"><Icon name="music" size={13} /> {t('sonoraResults')}</div>
                     {res.map((it) => (
-                      <button key={it.id} className="sd-track" onClick={() => playItem(it)}>
+                      <div key={it.id} className="sd-track" onClick={() => playItem(it)}>
                         <img src={it.thumb} alt="" />
                         <div className="sd-track-meta">
                           <strong>{it.title}</strong>
-                          <small>{it.artist} · YouTube</small>
+                          <small>{it.artist}</small>
                         </div>
+                        <button
+                          className="icon-btn sm"
+                          onClick={(e) => { e.stopPropagation(); queueItem(it); }}
+                          aria-label={t('addToQueue')}
+                          title={t('addToQueue')}
+                        ><Icon name="plus" size={15} /></button>
                         <Icon name="play" size={16} />
-                      </button>
+                      </div>
                     ))}
                   </div>
                 )}
-                {loading && <div className="sd-loading"><Icon name="youtube" size={14} /> {t('searchingYouTube')}</div>}
-                <button className="sd-all" onClick={() => goSearch()}><Icon name="search" size={14} /> {t('seeAllResults') || 'Ver todos los resultados'}</button>
+                {loading && <div className="sd-loading"><Icon name="sparkles" size={14} /> {t('searchingSonora')}</div>}
+                <button className="sd-all" onClick={() => goSearch()}>
+                  <Icon name="search" size={14} /> {t('seeAllResults')}
+                </button>
               </>
             )}
           </div>

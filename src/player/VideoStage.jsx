@@ -160,7 +160,7 @@ export default function VideoStage({ hostRef, videoMode }) {
           <div className="vstage-head">
             <div className="vstage-brand">
               <span className="vstage-dot" />
-              <strong>Ritmo</strong>
+              <strong>Sonora</strong>
               <span className="vstage-sep">·</span>
               <span className="vstage-sub">{t('videoTitle') || 'Vídeo'}</span>
             </div>

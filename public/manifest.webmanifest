@@ -1,7 +1,7 @@
 {
-  "name": "Ritmo Music",
-  "short_name": "Ritmo",
-  "description": "Tu música, tu ritmo. Streaming al estilo YouTube Music.",
+  "name": "Sonora Music",
+  "short_name": "Sonora",
+  "description": "Tu música, tu ritmo. Streaming en alta calidad.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

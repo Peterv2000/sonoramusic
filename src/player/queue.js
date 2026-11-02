@@ -14,7 +14,7 @@
 import { TRACKS } from '../data/catalog.js';
 import { cachedCatalogTracks } from '../api/liveData.js';
 
-const GENERIC_GENRES = new Set(['', 'ritmo', 'otros', 'other', 'music', 'música', 'varios']);
+const GENERIC_GENRES = new Set(['', 'ritmo', 'sonora', 'otros', 'other', 'music', 'música', 'varios']);
 
 export const norm = (value) => String(value || '').trim().toLowerCase();
 

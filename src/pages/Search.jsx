@@ -3,204 +3,23 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '../state/AppState.jsx';
 import { usePlayer } from '../player/PlayerContext.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
-import { useToast } from '../components/Toast.jsx';
 import { Card, Shelf, TrackRow } from '../components/widgets.jsx';
-import { TRACKS, MIXES, STATIONS, ALBUMS, ARTISTS, trackById, nf } from '../data/catalog.js';
-import {
-  searchYouTubeDetailed, suggestYouTube, parseYouTubeId, trackFromYouTubeId,
-} from '../api/youtubeSearch.js';
+import { TRACKS, MIXES, STATIONS, ALBUMS, ARTISTS, GENRES, trackById, nf } from '../data/catalog.js';
+import { searchYouTubeDetailed, suggestYouTube } from '../api/youtubeSearch.js';
 import { getCatalog, warmLookup } from '../api/liveData.js';
 import Icon from '../components/Icon.jsx';
-import ErrorBoundary from '../components/ErrorBoundary.jsx';
 
-export { parseYouTubeId };
+const TABS = ['all', 'songs', 'artists', 'albums', 'playlists'];
 
-const FILTERS = ['all', 'songs', 'videos', 'albums', 'artists', 'playlists', 'stations'];
-
-/* Resultados en vivo del catálogo global (búsqueda real, profunda).
-   Si el servidor ya tiene esa búsqueda en caché caliente, aparece al instante. */
-function LiveResults({ query, deep, onPlay, onPlayAll, showEmpty }) {
-  const { t } = useI18n();
-  const [items, setItems] = useState(null); // null = cargando
-  const [instant, setInstant] = useState(false);
-  const [error, setError] = useState(null); // null | timeout | unavailable
-  const [attempt, setAttempt] = useState(0);
-  const reqRef = useRef(0);
-  const aliveRef = useRef(true);
-
-  useEffect(() => {
-    aliveRef.current = true;
-    const id = ++reqRef.current;
-    setItems(null);
-    setInstant(false);
-    setError(null);
-    (async () => {
-      try {
-        // 1) caché caliente del servidor → respuesta inmediata (solo búsqueda normal)
-        if (!deep) {
-          try {
-            const warm = await warmLookup(query).catch(() => null);
-            if (aliveRef.current && id === reqRef.current && Array.isArray(warm) && warm.length) {
-              setItems(warm);
-              setInstant(true);
-              return;
-            }
-          } catch { /* seguimos con la búsqueda real */ }
-        }
-        // 2) búsqueda real (profunda si se pidió). El cliente nunca lanza.
-        const result = await searchYouTubeDetailed(query, { deep });
-        if (aliveRef.current && id === reqRef.current) {
-          setItems(Array.isArray(result?.items) ? result.items : []);
-          setError(result?.error || null);
-        }
-      } catch {
-        // Último cortafuegos: un fallo inesperado se convierte en estado vacío.
-        if (aliveRef.current && id === reqRef.current) {
-          setItems([]);
-          setError('unavailable');
-        }
-      }
-    })();
-    return () => { aliveRef.current = false; };
-  }, [query, deep, attempt]);
-
-  if (items === null) {
-    return (
-      <section className="list-section search-youtube-section">
-        <div className="shelf-head">
-          <h2>
-            <Icon name="youtube" size={18} /> {t('searchingYouTube')}
-            <span className="search-query-chip">“{query}”</span>
-          </h2>
-        </div>
-        <div className="yt-skel">
-          {Array.from({ length: 5 }).map((_, i) => <div key={i} className="yt-skel-row" />)}
-        </div>
-      </section>
-    );
-  }
-
-  if (items.length === 0) {
-    if (error) {
-      return (
-        <div className="empty-box search-fallback">
-          <p>
-            <Icon name="youtube" size={16} />{' '}
-            {error === 'timeout' ? t('searchTimeout') : t('searchUnavailable')}
-          </p>
-          <small>{t('searchUnavailableHint')}</small>
-          <div className="head-actions">
-            <button className="btn small primary" onClick={() => setAttempt((n) => n + 1)}>
-              <Icon name="history" size={14} /> {t('retry')}
-            </button>
-            <a
-              className="btn small"
-              href={`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <Icon name="external" size={14} /> {t('openOnYouTube')}
-            </a>
-          </div>
-        </div>
-      );
-    }
-    return (
-      <div className={`search-youtube-empty ${showEmpty ? '' : 'compact'}`}>
-        <Icon name="youtube" size={16} />
-        <span>{t('noYouTubeResults')}</span>
-        <a
-          className="btn tiny"
-          href={`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {t('openOnYouTube')} <Icon name="external" size={12} />
-        </a>
-      </div>
-    );
-  }
-
-  // Separa canales y playlists de las canciones para mostrarlos aparte.
-  const songs = items.filter((x) => (x.kind || 'video') === 'video');
-  const channels = items.filter((x) => x.kind === 'channel');
-  const lists = items.filter((x) => x.kind === 'playlist');
-  const openChannel = (ch) => window.open(
-    `https://www.youtube.com/channel/${String(ch.yt).replace(/^ch-/, '')}`,
-    '_blank',
-    'noopener,noreferrer',
-  );
-  const openPlaylist = (pl) => window.open(
-    `https://www.youtube.com/playlist?list=${encodeURIComponent(pl.playlistId || '')}`,
-    '_blank',
-    'noopener,noreferrer',
-  );
-
+function SectionHead({ icon, title, count, children }) {
   return (
-    <>
-      {error && (
-        <div className="search-inline-warn">
-          <Icon name="globe" size={14} />
-          <span>{error === 'timeout' ? t('searchTimeout') : t('searchUnavailable')}</span>
-          <button className="btn tiny" onClick={() => setAttempt((n) => n + 1)}>{t('retry')}</button>
-        </div>
-      )}
-      {songs.length > 0 && (
-        <section className="list-section search-youtube-section">
-          <div className="shelf-head">
-            <h2>
-              <Icon name="youtube" size={18} /> {t('youtubeGlobalSearch')}
-              <span className="count-badge">{songs.length}</span>
-              {deep && <span className="live-badge deep"><Icon name="globe" size={12} /> {t('deepSearchOn')}</span>}
-              {instant && !deep && <span className="live-badge"><Icon name="lightning" size={12} /> {t('instant')}</span>}
-            </h2>
-            <div className="head-actions">
-              <a
-                className="btn small"
-                href={`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <Icon name="external" size={14} /> {t('openOnYouTube')}
-              </a>
-              <button className="btn primary small" onClick={() => onPlayAll(songs)}><Icon name="play" size={15} /> {t('playAll')}</button>
-            </div>
-          </div>
-          {songs.map((tr, i) => (
-            <TrackRow key={tr.id} track={tr} index={i} list={songs} onPlay={() => onPlay(songs, tr.id)} source="YouTube" />
-          ))}
-        </section>
-      )}
-
-      {channels.length > 0 && (
-        <Shelf title={t('artists')}>
-          {channels.map((ch) => (
-            <Card
-              key={ch.id}
-              item={ch}
-              round
-              onOpen={() => openChannel(ch)}
-              onPlay={() => openChannel(ch)}
-              sub={t('officialVideo')}
-            />
-          ))}
-        </Shelf>
-      )}
-
-      {lists.length > 0 && (
-        <Shelf title={t('playlists')}>
-          {lists.map((pl) => (
-            <Card
-              key={pl.id}
-              item={pl}
-              onOpen={() => openPlaylist(pl)}
-              onPlay={() => openPlaylist(pl)}
-              sub={pl.artist && pl.artist !== 'Lista' ? pl.artist : t('playlists')}
-            />
-          ))}
-        </Shelf>
-      )}
-    </>
+    <div className="shelf-head">
+      <h2>
+        {icon && <Icon name={icon} size={18} />} {title}
+        {count != null && <span className="count-badge">{count}</span>}
+      </h2>
+      {children && <div className="head-actions">{children}</div>}
+    </div>
   );
 }
 
@@ -209,159 +28,216 @@ export default function Search() {
   const p = usePlayer();
   const nav = useNavigate();
   const { t } = useI18n();
-  const toast = useToast();
   const [params] = useSearchParams();
-  const [q, setQ] = useState(() => params.get('q') || '');
-  const [url, setUrl] = useState('');
+
+  const urlQ = params.get('q') || '';
+  const [q, setQ] = useState(urlQ);
+  const [submitted, setSubmitted] = useState(urlQ);
   const [filter, setFilter] = useState('all');
-  const [debounced, setDebounced] = useState('');
   const [deep, setDeep] = useState(false);
-  const [liveTracks, setLiveTracks] = useState([]);
+  const [discovery, setDiscovery] = useState(false);
   const [sugg, setSugg] = useState([]);
-  const [suggOpen, setSuggOpen] = useState(false);
+  const [liveTracks, setLiveTracks] = useState([]);
+  const [liveItems, setLiveItems] = useState(null); // null = cargando
+  const [liveError, setLiveError] = useState(null);
+  const [liveInstant, setLiveInstant] = useState(false);
+  const [liveAttempt, setLiveAttempt] = useState(0);
+
   const suggReq = useRef(0);
+  const liveReq = useRef(0);
   const boxRef = useRef(null);
 
-  const query = q.trim().toLowerCase();
-
-  /* La barra del TopBar navega a /search?q=…: mantenemos el término en sincronía. */
-  const urlQ = params.get('q') || '';
+  /* La barra superior navega a /search?q=…: mantenemos el término en sincronía. */
   useEffect(() => {
-    if (urlQ) { setQ(urlQ); setDebounced(urlQ); }
+    if (urlQ) { setQ(urlQ); setSubmitted(urlQ); }
   }, [urlQ]);
 
-  /* Carga el catálogo ampliado que refresca el servidor (si está disponible) */
+  /* Catálogo ampliado que refresca el servidor (si está disponible). */
   useEffect(() => {
     let alive = true;
     getCatalog().then((c) => { if (alive && c?.tracks?.length) setLiveTracks(c.tracks); });
     return () => { alive = false; };
   }, []);
 
-  /* Retardo de 250 ms: búsqueda en vivo sin irse de la página */
+  /* Sugerencias mientras se escribe (solo con el panel de descubrimiento abierto). */
   useEffect(() => {
     const term = q.trim();
-    if (term.length < 2) { setDebounced(''); return; }
-    const id = setTimeout(() => setDebounced(term), 250);
-    return () => clearTimeout(id);
-  }, [q]);
-
-  /* Sugerencias en vivo (autocompletado) mientras se escribe */
-  useEffect(() => {
-    const term = (q || '').trim();
-    if (term.length < 2) { setSugg([]); setSuggOpen(false); return; }
+    if (!discovery || term.length < 2) { setSugg([]); return undefined; }
     const id = ++suggReq.current;
-    setSuggOpen(true);
     const timer = setTimeout(async () => {
       try {
-        const list = await suggestYouTube(term).catch(() => []);
+        const list = await suggestYouTube(term);
         if (id === suggReq.current) {
-          if (Array.isArray(list)) {
-            setSugg(list.filter((x) => typeof x === 'string'));
-          } else {
-            setSugg([]);
-          }
-          setSuggOpen(true);
+          setSugg(Array.isArray(list) ? list.filter((x) => typeof x === 'string' && x.trim()) : []);
         }
       } catch {
-        if (id === suggReq.current) { setSugg([]); }
+        if (id === suggReq.current) setSugg([]);
       }
-    }, 150);
+    }, 160);
     return () => clearTimeout(timer);
-  }, [q]);
+  }, [q, discovery]);
 
-  /* Cierra el desplegable al tocar fuera */
+  /* Cierra el panel al tocar fuera. */
   useEffect(() => {
-    const onDoc = (e) => { if (boxRef.current && !boxRef.current.contains(e.target)) setSuggOpen(false); };
+    const onDoc = (e) => { if (boxRef.current && !boxRef.current.contains(e.target)) setDiscovery(false); };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
 
-  const results = useMemo(() => {
-    try {
-      const empty = { songs: [], videos: [], mixes: [], albums: [], artists: [], playlists: [], stations: [] };
-      if (!query) return empty;
-      const hit = (s) => (s || '').toString().toLowerCase().includes(query);
-      // Catálogo curado + catálogo en vivo (sin duplicar por id)
-      const all = [...(Array.isArray(TRACKS) ? TRACKS : []), ...(Array.isArray(liveTracks) ? liveTracks.filter((tr) => !(Array.isArray(TRACKS) && TRACKS.some((x) => x?.id === tr?.id))) : [])];
-      const songs = all.filter((tr) => {
-        try {
-          const moods = Array.isArray(tr?.moods) ? tr.moods : [];
-          return [tr?.title, tr?.artist, tr?.album, tr?.genre, ...moods].join(' ').toLowerCase().includes(query);
-        } catch { return false; }
-      });
-      return {
-        songs,
-        videos: songs.filter((tr) => !tr?.live),
-        mixes: Array.isArray(MIXES) ? MIXES.filter((mx) => hit(`${mx?.title || ''} ${mx?.desc || ''}`)) : [],
-        albums: Array.isArray(ALBUMS) ? ALBUMS.filter((al) => hit(`${al?.title || ''} ${al?.artist || ''} ${al?.year || ''}`)) : [],
-        artists: Array.isArray(ARTISTS) ? ARTISTS.filter((a) => hit(`${a?.name || ''} ${a?.genre || ''}`)) : [],
-        playlists: Array.isArray(state?.library?.playlists) ? state.library.playlists.filter((pl) => hit(`${pl?.name || ''} ${pl?.desc || ''}`)) : [],
-        stations: Array.isArray(STATIONS) ? STATIONS.filter((st) => hit(`${st?.title || ''} ${st?.desc || ''}`)) : [],
-      };
-    } catch {
-      return { songs: [], videos: [], mixes: [], albums: [], artists: [], playlists: [], stations: [] };
+  /* Búsqueda global: se ejecuta al pulsar Enter o el botón, no al teclear. */
+  useEffect(() => {
+    const term = submitted.trim();
+    if (!term) {
+      setLiveItems(null);
+      setLiveError(null);
+      setLiveInstant(false);
+      return undefined;
     }
-  }, [query, state?.library?.playlists, liveTracks]);
+    let alive = true;
+    const id = ++liveReq.current;
+    setLiveItems(null);
+    setLiveError(null);
+    setLiveInstant(false);
+    (async () => {
+      try {
+        if (!deep) {
+          const warm = await warmLookup(term).catch(() => null);
+          if (alive && id === liveReq.current && Array.isArray(warm) && warm.length) {
+            setLiveItems(warm);
+            setLiveInstant(true);
+            return;
+          }
+        }
+        const result = await searchYouTubeDetailed(term, { deep });
+        if (alive && id === liveReq.current) {
+          setLiveItems(Array.isArray(result?.items) ? result.items : []);
+          setLiveError(result?.error || null);
+        }
+      } catch {
+        if (alive && id === liveReq.current) {
+          setLiveItems([]);
+          setLiveError('unavailable');
+        }
+      }
+    })();
+    return () => { alive = false; };
+  }, [submitted, deep, liveAttempt]);
 
-  const totalHits = results.songs.length + results.mixes.length + results.albums.length +
-    results.artists.length + results.playlists.length + results.stations.length;
+  const local = useMemo(() => {
+    const term = submitted.trim().toLowerCase();
+    const empty = { songs: [], albums: [], artists: [], playlists: [], mixes: [], stations: [] };
+    if (!term) return empty;
+    const hit = (s) => (s || '').toString().toLowerCase().includes(term);
+    const all = [
+      ...(Array.isArray(TRACKS) ? TRACKS : []),
+      ...(Array.isArray(liveTracks)
+        ? liveTracks.filter((tr) => !(Array.isArray(TRACKS) && TRACKS.some((x) => x?.id === tr?.id)))
+        : []),
+    ];
+    const songs = all.filter((tr) => {
+      try {
+        const moods = Array.isArray(tr?.moods) ? tr.moods : [];
+        return [tr?.title, tr?.artist, tr?.album, tr?.genre, ...moods].join(' ').toLowerCase().includes(term);
+      } catch { return false; }
+    });
+    return {
+      songs,
+      albums: Array.isArray(ALBUMS) ? ALBUMS.filter((al) => hit(`${al?.title} ${al?.artist} ${al?.year}`)) : [],
+      artists: Array.isArray(ARTISTS) ? ARTISTS.filter((a) => hit(`${a?.name} ${a?.genre}`)) : [],
+      playlists: Array.isArray(state?.library?.playlists) ? state.library.playlists.filter((pl) => hit(`${pl?.name} ${pl?.desc}`)) : [],
+      mixes: Array.isArray(MIXES) ? MIXES.filter((mx) => hit(`${mx?.title} ${mx?.desc}`)) : [],
+      stations: Array.isArray(STATIONS) ? STATIONS.filter((st) => hit(`${st?.title} ${st?.desc}`)) : [],
+    };
+  }, [submitted, liveTracks, state?.library?.playlists]);
 
-  const show = (k) => (filter === 'all' || filter === k) && results[k]?.length > 0;
+  const liveSongs = useMemo(
+    () => (liveItems || []).filter((x) => (x.kind || 'video') === 'video'),
+    [liveItems],
+  );
+  const liveArtists = useMemo(() => (liveItems || []).filter((x) => x.kind === 'channel'), [liveItems]);
+  const livePlaylists = useMemo(() => (liveItems || []).filter((x) => x.kind === 'playlist'), [liveItems]);
 
-  const onSearch = (value) => {
-    const v = value === undefined || value === null ? '' : String(value);
+  const counts = {
+    all: liveSongs.length + liveArtists.length + livePlaylists.length +
+      local.songs.length + local.albums.length + local.artists.length +
+      local.playlists.length + local.mixes.length + local.stations.length,
+    songs: liveSongs.length + local.songs.length,
+    artists: liveArtists.length + local.artists.length,
+    albums: local.albums.length,
+    playlists: livePlaylists.length + local.playlists.length + local.mixes.length + local.stations.length,
+  };
+
+  const visible = (tab) => filter === 'all' || filter === tab;
+  const loading = submitted.trim().length > 0 && liveItems === null;
+
+  const runSearch = (value) => {
+    const v = (value ?? q).trim();
+    if (!v) { setDiscovery(true); return; }
     setQ(v);
-    const tval = v.trim();
-    setSuggOpen(tval.length >= 2);
-    if (tval.length > 1) {
-      try { dispatch({ type: 'add-search', q: tval }); } catch {}
+    setSubmitted(v);
+    setDiscovery(false);
+    setFilter('all');
+    if (v.length > 1) { try { dispatch({ type: 'add-search', q: v }); } catch { /* noop */ } }
+    nav(`/search?q=${encodeURIComponent(v)}`, { replace: true });
+  };
+
+  const onInputChange = (value) => {
+    setQ(value);
+    setDiscovery(true);
+  };
+
+  const pickSuggestion = (s) => runSearch(s);
+
+  const playAll = (list) => { if (list?.length) p.playList(list); };
+  const queueAll = (list) => { if (list?.length) p.enqueueList(list); };
+
+  /* Artistas y playlists del buscador no traen sus pistas en la respuesta:
+     al pulsar reproducir o añadir a la cola, pedimos sus canciones y actuamos. */
+  const [pendingGroup, setPendingGroup] = useState(null);
+  const playGroup = async (item, toQueue = false) => {
+    const term = String(item?.title || '').trim();
+    if (!term) return;
+    setPendingGroup(item.id);
+    try {
+      const result = await searchYouTubeDetailed(term, { limit: 30 });
+      const songs = (result?.items || []).filter((x) => (x.kind || 'video') === 'video');
+      if (!songs.length) return;
+      if (toQueue) queueAll(songs);
+      else playAll(songs);
+    } catch {
+      /* silencio: el buscador sigue disponible */
+    } finally {
+      setPendingGroup(null);
     }
   };
 
-  const pickSuggestion = (s) => {
-    const val = s.trim();
-    setQ(val);
-    setSuggOpen(false);
-    setDebounced(val);
-    if (val) dispatch({ type: 'add-search', q: val });
-  };
+  const albumTracks = (al) => (Array.isArray(al?.tracks) ? al.tracks : []);
+  const playlistTracks = (pl) => (Array.isArray(pl?.tracks) ? pl.tracks.map(trackById).filter(Boolean) : []);
 
-  const playPasted = () => {
-    const id = parseYouTubeId(url);
-    if (!id) { toast(t('urlHint')); return; }
-    const tk = trackFromYouTubeId(id, `${id}`, t('searchYouTube'));
-    p.playList([tk], tk.id);
-    setUrl('');
-    toast('▶ ' + tk.title);
-  };
+  const showDiscovery = discovery && (!submitted.trim() || q.trim() !== submitted.trim() || q.trim().length >= 2);
 
   return (
     <div className="page search-page">
       <div className="search-hero">
-        <h1 className="search-title">{t('search') || 'Buscar'}</h1>
-        <form className="search-bar search-bar-hero" ref={boxRef} onSubmit={(e) => { e.preventDefault(); const v = q.trim(); if (!v) return; setDebounced(v); setSuggOpen(false); if (v.length > 1) { try { dispatch({ type: 'add-search', q: v }); } catch {} } }} autoComplete="off">
+        <h1 className="search-title">{t('search')}</h1>
+        <form
+          className="search-bar search-bar-hero"
+          ref={boxRef}
+          onSubmit={(e) => { e.preventDefault(); runSearch(); }}
+          autoComplete="off"
+        >
           <div className="search-input-wrap search-input-wrap-hero">
             <Icon name="search" size={20} className="search-lead" />
             <input
               className="search-input search-input-hero"
               type="search"
               value={q}
-              onChange={(e) => { onSearch(e.target.value); setSuggOpen((e.target.value || '').trim().length >= 2); }}
-              onFocus={() => setSuggOpen((q || '').trim().length >= 2)}
-              onClick={() => setSuggOpen((q || '').trim().length >= 2)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  const v = q.trim();
-                  if (!v) return;
-                  setDebounced(v);
-                  setSuggOpen(false);
-                  if (v.length > 1) { try { dispatch({ type: 'add-search', q: v }); } catch {} }
-                }
-                if (e.key === 'Escape') setSuggOpen(false);
-              }}
-              placeholder={t('searchGlobalPlaceholder') || 'Busca en YouTube o en tu catálogo'}
-              autoFocus
+              onChange={(e) => onInputChange(e.target.value)}
+              onFocus={() => setDiscovery(true)}
+              onClick={() => setDiscovery(true)}
+              onKeyDown={(e) => { if (e.key === 'Escape') setDiscovery(false); }}
+              placeholder={t('searchGlobalPlaceholder')}
+              aria-label={t('searchGlobalPlaceholder')}
               inputMode="search"
               enterKeyHint="search"
               autoComplete="off"
@@ -369,7 +245,14 @@ export default function Search() {
               lang={state.settings.lang || 'es'}
               name="q"
             />
-            {q && <button type="button" className="icon-btn clear-x" aria-label={t('close')} onClick={() => { setQ(''); setSugg([]); setSuggOpen(false); setDebounced(''); }}><Icon name="close" size={16} /></button>}
+            {q && (
+              <button
+                type="button"
+                className="icon-btn clear-x"
+                aria-label={t('close')}
+                onClick={() => { setQ(''); setSugg([]); setDiscovery(true); setSubmitted(''); nav('/search', { replace: true }); }}
+              ><Icon name="close" size={16} /></button>
+            )}
           </div>
 
           <button
@@ -378,189 +261,309 @@ export default function Search() {
             onClick={() => setDeep((v) => !v)}
             title={t('deepSearchHint')}
           >
-            <Icon name="globe" size={15} /> {t('deepSearch') || 'Búsqueda profunda'}
+            <Icon name="sparkles" size={15} /> {t('deepSearchOn')}
+          </button>
+          <button type="submit" className="btn primary search-submit">
+            <Icon name="search" size={15} /> {t('search')}
           </button>
 
-          {suggOpen && Array.isArray(sugg) && sugg.filter(x => typeof x === 'string' && x.trim().length > 0).length > 0 && (
-            <div className="sugg-list sugg-list-hero">
-              {sugg.filter(x => typeof x === 'string' && x.trim().length > 0).slice(0, 8).map((s, idx) => (
-                <button type="button" key={s + '-' + idx} className="sugg-item sugg-item-hero" onClick={() => pickSuggestion(s)}>
-                  <Icon name="search" size={16} /> <span>{s}</span>
-                </button>
-              ))}
+          {showDiscovery && (
+            <div className="sugg-list sugg-list-hero search-discovery">
+              {q.trim().length < 2 ? (
+                <>
+                  {state.library.recentSearches.length > 0 && (
+                    <div className="discover-block">
+                      <div className="discover-title"><Icon name="history" size={14} /> {t('recentSearches')}</div>
+                      <div className="chip-row">
+                        {state.library.recentSearches.slice(0, 8).map((s) => (
+                          <button type="button" key={s} className="chip" onClick={() => runSearch(s)}>{s}</button>
+                        ))}
+                        <button
+                          type="button"
+                          className="chip danger"
+                          onClick={() => dispatch({ type: 'clear-searches' })}
+                        ><Icon name="close" size={14} /> {t('clearSearches')}</button>
+                      </div>
+                    </div>
+                  )}
+                  <div className="discover-block">
+                    <div className="discover-title"><Icon name="sparkles" size={14} /> {t('genresToExplore')}</div>
+                    <div className="discover-genres">
+                      {GENRES.map((g) => (
+                        <button
+                          type="button"
+                          key={g.id}
+                          className="discover-genre"
+                          style={{ '--g': g.color }}
+                          onClick={() => runSearch(g.id)}
+                        >
+                          <img src={g.cover} alt="" loading="lazy" />
+                          <span className="discover-genre-shade" />
+                          <strong>{g.id}</strong>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="discover-block">
+                    <div className="discover-title"><Icon name="fire" size={14} /> {t('quickPicks')}</div>
+                    <div className="chip-row">
+                      {['Bad Bunny', 'Taylor Swift', 'Queen', 'Shakira', 'Dua Lipa', 'Karol G', 'The Weeknd', 'Metallica'].map((s) => (
+                        <button type="button" key={s} className="chip" onClick={() => runSearch(s)}>{s}</button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {sugg.length > 0 && sugg.slice(0, 8).map((s, idx) => (
+                    <button
+                      type="button"
+                      key={`${s}-${idx}`}
+                      className="sugg-item sugg-item-hero"
+                      onClick={() => pickSuggestion(s)}
+                    >
+                      <Icon name="search" size={16} /> <span>{s}</span>
+                    </button>
+                  ))}
+                  <button type="button" className="sugg-item sugg-item-hero search-run-item" onClick={() => runSearch()}>
+                    <Icon name="sparkles" size={16} /> <span>{t('searchFor')} “{q.trim()}”</span>
+                    <Icon name="next" size={15} />
+                  </button>
+                </>
+              )}
             </div>
           )}
         </form>
       </div>
 
-      <p className="search-source-note">
-        <Icon name="youtube" size={16} />
-        <span>{t('searchSources')}</span>
-        <span className="search-source-pill">YouTube</span>
-      </p>
-
-      {deep && (
-        <p className="deep-hint"><Icon name="globe" size={13} /> {t('deepSearchHint')}</p>
+      {!submitted.trim() && (
+        <section className="search-empty-state">
+          <div className="search-empty-art"><Icon name="search" size={34} /></div>
+          <strong>{t('searchStartTitle')}</strong>
+          <p className="muted">{t('searchHintSonora')}</p>
+          <div className="chip-row">
+            {['Pop', 'Rock', 'Latino', 'Electrónica', 'Lo-Fi'].map((g) => (
+              <button key={g} className="chip" onClick={() => runSearch(g)}>{g}</button>
+            ))}
+          </div>
+        </section>
       )}
 
-      {!query && (
+      {submitted.trim() && (
         <>
-          {state.library.recentSearches.length > 0 && (
-            <section className="list-section">
-              <h2><Icon name="history" size={16} /> {t('recentSearches')}</h2>
-              <div className="chip-row">
-                {state.library.recentSearches.map((s) => (
-                  <button key={s} className="chip" onClick={() => setQ(s)}>{s}</button>
-                ))}
-                <button className="chip danger" onClick={() => dispatch({ type: 'clear-searches' })}><Icon name="close" size={14} /> {t('clearSearches')}</button>
-              </div>
-            </section>
-          )}
-
-          <section className="paste-box">
-            <h3><Icon name="link" size={16} /> {t('pasteURL')}</h3>
-            <p className="muted">{t('urlHint')}</p>
-            <div className="paste-row">
-              <input
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') playPasted(); }}
-                placeholder="https://…"
-              />
-              <button className="btn primary" onClick={playPasted}><Icon name="play" size={15} /></button>
+          <div className="search-results-head">
+            <div className="search-results-title">
+              <Icon name="search" size={17} />
+              <span>{t('resultsFor')} “{submitted.trim()}”</span>
+              {liveInstant && !deep && (
+                <span className="live-badge"><Icon name="lightning" size={12} /> {t('instant')}</span>
+              )}
+              {deep && <span className="live-badge deep"><Icon name="sparkles" size={12} /> {t('deepSearchOn')}</span>}
             </div>
-          </section>
+            {counts.all > 0 && <span className="count-badge">{counts.all} {t('resultCount')}</span>}
+          </div>
 
-          <section className="list-section">
-            <h2><Icon name="youtube" size={18} /> {t('youtubeGlobalSearch')}</h2>
-            <p className="muted">{t('searchYouTubeHint')}</p>
-            <div className="chip-row">
-              {['Bad Bunny', 'Metallica', 'Taylor Swift', 'Queen', 'Dua Lipa', 'Karol G', 'The Weeknd', 'Shakira'].map((s) => (
-                <button key={s} className="chip" onClick={() => setQ(s)}>{s}</button>
-              ))}
-            </div>
-          </section>
-
-          <section className="list-section">
-            <h2>{t('topCharts')}</h2>
-            <div className="chip-row">
-              {['Pop', 'Rock', 'Latino', 'Electrónica', 'Lo-Fi', 'Adele', 'Ed Sheeran'].map((s) => (
-                <button key={s} className="chip" onClick={() => setQ(s)}>{s}</button>
-              ))}
-            </div>
-          </section>
-        </>
-      )}
-
-      {query && (
-        <>
-          <div className="chip-row search-filters">
-            {FILTERS.map((f) => (
+          <div className="chip-row search-filters" role="tablist">
+            {TABS.map((tab) => (
               <button
-                key={f}
-                className={`chip ${filter === f ? 'on' : ''}`}
-                onClick={() => setFilter(f)}
-              >{t(`filter_${f}`)}</button>
+                key={tab}
+                role="tab"
+                aria-selected={filter === tab}
+                className={`chip search-tab ${filter === tab ? 'on' : ''}`}
+                onClick={() => setFilter(tab)}
+              >
+                {t(`filter_${tab}`)}
+                {counts[tab] > 0 && <span className="search-tab-count">{counts[tab]}</span>}
+              </button>
             ))}
           </div>
 
-          {/* ── Resultados reales de YouTube (global, primero como en YouTube) ── */}
-          {debounced && (filter === 'all' || filter === 'songs' || filter === 'videos') && (
-            <LiveResults
-              query={debounced}
-              deep={deep}
-              showEmpty={totalHits === 0}
-              onPlay={(list, id) => p.playList(list, id)}
-              onPlayAll={(list) => p.playList(list)}
-            />
-          )}
-
-          {totalHits === 0 && query.length < 2 && (
-            <div className="empty-box">
-              <p><Icon name="search" size={16} /> {t('typeToSearch')}</p>
-            </div>
-          )}
-
-          {show('songs') && (
-            <section className="list-section search-catalog-section">
+          {loading && (
+            <section className="list-section search-youtube-section">
               <div className="shelf-head">
-                <h2>{t('inCatalog')} <span className="count-badge">{results.songs.length}</span></h2>
-                <button className="btn primary" onClick={() => p.playList(results.songs)}><Icon name="play" size={15} /> {t('playAll')}</button>
+                <h2><Icon name="sparkles" size={18} /> {t('searchingSonora')} <span className="search-query-chip">“{submitted.trim()}”</span></h2>
               </div>
-              {results.songs.map((tr, i) => <TrackRow key={tr.id} track={tr} index={i} list={results.songs} showAlbum />)}
+              <div className="yt-skel">
+                {Array.from({ length: 5 }).map((_, i) => <div key={i} className="yt-skel-row" />)}
+              </div>
             </section>
           )}
 
-          {show('videos') && (
-            <Shelf title={t('videos')}>
-              {results.videos.map((tr) => (
-                <Card
+          {liveError && liveItems?.length > 0 && (
+            <div className="search-inline-warn">
+              <Icon name="warning" size={14} />
+              <span>{liveError === 'timeout' ? t('searchTimeout') : t('searchUnavailable')}</span>
+              <button className="btn tiny" onClick={() => setLiveAttempt((n) => n + 1)}>{t('retry')}</button>
+            </div>
+          )}
+
+          {liveError && liveItems?.length === 0 && (
+            <div className="empty-box search-fallback">
+              <p><Icon name="warning" size={16} /> {liveError === 'timeout' ? t('searchTimeout') : t('searchUnavailable')}</p>
+              <small>{t('searchUnavailableHint')}</small>
+              <div className="head-actions">
+                <button className="btn small primary" onClick={() => setLiveAttempt((n) => n + 1)}>
+                  <Icon name="history" size={14} /> {t('retry')}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {visible('songs') && liveSongs.length > 0 && (
+            <section className="list-section search-youtube-section">
+              <SectionHead icon="music" title={t('sonoraSongs')} count={liveSongs.length}>
+                <button className="btn small" onClick={() => queueAll(liveSongs)}>
+                  <Icon name="plus" size={14} /> {t('addToQueue')}
+                </button>
+                <button className="btn primary small" onClick={() => playAll(liveSongs)}>
+                  <Icon name="play" size={15} /> {t('playAll')}
+                </button>
+              </SectionHead>
+              {liveSongs.map((tr, i) => (
+                <TrackRow
                   key={tr.id}
-                  item={tr}
-                  badge="▶"
-                  onPlay={() => p.playList(results.videos, tr.id)}
-                  onOpen={() => p.playList(results.videos, tr.id)}
-                  sub={tr.artist}
+                  track={tr}
+                  index={i}
+                  list={liveSongs}
+                  onPlay={() => p.playList(liveSongs, tr.id)}
+                  onQueue={() => p.enqueue(tr)}
                 />
               ))}
-            </Shelf>
+            </section>
           )}
 
-          {show('albums') && (
-            <Shelf title={t('albums')}>
-              {results.albums.map((al) => (
+          {visible('artists') && liveArtists.length > 0 && (
+            <Shelf title={t('sonoraArtists')}>
+              {liveArtists.map((ch) => (
                 <Card
-                  key={al.id}
-                  item={{ title: al.title, thumb: al.cover }}
-                  onPlay={() => p.playList(al.tracks)}
-                  onOpen={() => nav(`/album/${encodeURIComponent(al.title)}`)}
-                  sub={`${al.artist} · ${al.year}`}
+                  key={ch.id}
+                  item={ch}
+                  round
+                  onOpen={() => runSearch(ch.title)}
+                  onPlay={() => playGroup(ch)}
+                  onQueue={() => playGroup(ch, true)}
+                  sub={pendingGroup === ch.id ? t('searchingSonora') : t('filter_artists')}
                 />
               ))}
             </Shelf>
           )}
 
-          {show('artists') && (
+          {visible('playlists') && livePlaylists.length > 0 && (
+            <Shelf title={t('sonoraPlaylists')}>
+              {livePlaylists.map((pl) => (
+                <Card
+                  key={pl.id}
+                  item={pl}
+                  onOpen={() => runSearch(pl.title)}
+                  onPlay={() => playGroup(pl)}
+                  onQueue={() => playGroup(pl, true)}
+                  sub={pendingGroup === pl.id ? t('searchingSonora') : (pl.artist && pl.artist !== 'Sonora' ? pl.artist : t('filter_playlists'))}
+                />
+              ))}
+            </Shelf>
+          )}
+
+          {visible('songs') && local.songs.length > 0 && (
+            <section className="list-section search-catalog-section">
+              <SectionHead icon="library" title={t('inCatalog')} count={local.songs.length}>
+                <button className="btn small" onClick={() => queueAll(local.songs)}>
+                  <Icon name="plus" size={14} /> {t('addToQueue')}
+                </button>
+                <button className="btn primary small" onClick={() => playAll(local.songs)}>
+                  <Icon name="play" size={15} /> {t('playAll')}
+                </button>
+              </SectionHead>
+              {local.songs.map((tr, i) => (
+                <TrackRow
+                  key={tr.id}
+                  track={tr}
+                  index={i}
+                  list={local.songs}
+                  showAlbum
+                  onQueue={() => p.enqueue(tr)}
+                />
+              ))}
+            </section>
+          )}
+
+          {visible('artists') && local.artists.length > 0 && (
             <Shelf title={t('artists')}>
-              {results.artists.map((a) => (
+              {local.artists.map((a) => (
                 <Card
                   key={a.name}
                   item={{ title: a.name, thumb: a.thumb }}
                   round
                   onPlay={() => p.playList(a.tracks)}
                   onOpen={() => nav(`/artist/${encodeURIComponent(a.name)}`)}
+                  onQueue={() => queueAll(a.tracks)}
                   sub={`${nf.format(a.listeners)} ${t('listeners')}`}
                 />
               ))}
             </Shelf>
           )}
 
-          {show('playlists') && (
-            <Shelf title={t('playlists')}>
-              {results.playlists.map((pl) => (
+          {visible('albums') && local.albums.length > 0 && (
+            <Shelf title={t('albums')}>
+              {local.albums.map((al) => (
                 <Card
-                  key={pl.id}
-                  item={{ title: pl.name, thumb: pl.cover }}
-                  onPlay={() => p.playList(pl.tracks.map(trackById).filter(Boolean))}
-                  onOpen={() => nav(`/playlist/${pl.id}`)}
-                  sub={`${pl.tracks.length} ${t('songs')}`}
+                  key={al.id}
+                  item={{ title: al.title, thumb: al.cover }}
+                  onPlay={() => playAll(albumTracks(al))}
+                  onOpen={() => nav(`/album/${encodeURIComponent(al.title)}`)}
+                  onQueue={() => queueAll(albumTracks(al))}
+                  sub={`${al.artist} · ${al.year}`}
                 />
               ))}
             </Shelf>
           )}
 
-          {show('stations') && (
-            <Shelf title={t('stations')}>
-              {results.stations.map((st) => (
+          {visible('playlists') && (local.playlists.length > 0 || local.mixes.length > 0 || local.stations.length > 0) && (
+            <Shelf title={t('playlists')}>
+              {local.playlists.map((pl) => {
+                const tracks = playlistTracks(pl);
+                return (
+                  <Card
+                    key={pl.id}
+                    item={{ title: pl.name, thumb: pl.cover }}
+                    onPlay={() => playAll(tracks)}
+                    onOpen={() => nav(`/playlist/${pl.id}`)}
+                    onQueue={() => queueAll(tracks)}
+                    sub={`${pl.tracks.length} ${t('songs')}`}
+                  />
+                );
+              })}
+              {local.mixes.map((mx) => (
+                <Card
+                  key={mx.id}
+                  item={{ title: mx.title, thumb: mx.cover }}
+                  onPlay={() => playAll(mx.tracks)}
+                  onOpen={() => playAll(mx.tracks)}
+                  onQueue={() => queueAll(mx.tracks)}
+                  sub={mx.desc}
+                />
+              ))}
+              {local.stations.map((st) => (
                 <Card
                   key={st.id}
                   item={{ title: st.title, thumb: st.cover }}
-                  onPlay={() => p.playList(st.tracks)}
-                  onOpen={() => p.playList(st.tracks)}
+                  onPlay={() => playAll(st.tracks)}
+                  onOpen={() => playAll(st.tracks)}
+                  onQueue={() => queueAll(st.tracks)}
                   sub={st.desc}
                 />
               ))}
             </Shelf>
+          )}
+
+          {!loading && !liveError && counts.all === 0 && (
+            <div className="empty-box search-empty">
+              <div className="search-empty-art"><Icon name="search" size={30} /></div>
+              <strong>{t('noResults')}</strong>
+              <p className="muted">{t('noSonoraResults')}</p>
+              <button className="btn small" onClick={() => setDiscovery(true)}>
+                <Icon name="search" size={14} /> {t('openSearch')}
+              </button>
+            </div>
           )}
         </>
       )}

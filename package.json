@@ -1,8 +1,8 @@
 {
   "name": "ritmo-music",
   "version": "1.0.0",
-  "description": "Ritmo Music - Clone estilo YouTube Music: PWA instalable + APK (Capacitor), reproducción vía YouTube embebido, biblioteca, playlists, configuración completa y versión PRO.",
-  "author": "Ritmo Music",
+  "description": "Sonora Music - Streaming de audio con PWA instalable, biblioteca, playlists, recomendaciones automaticas y version PRO.",
+  "author": "Sonora Music",
   "license": "MIT",
   "private": true,
   "type": "module",

@@ -6,21 +6,31 @@ import { useI18n } from '../i18n/useI18n.jsx';
 import { useToast } from './Toast.jsx';
 import Icon from './Icon.jsx';
 
-/* Tarjeta cuadrada estilo YouTube Music: carátula + título + subtítulo */
-export function Card({ item, onPlay, onOpen, sub, round, badge }) {
+/* Tarjeta de carátula + título + subtítulo, con acciones rápidas. */
+export function Card({ item, onPlay, onOpen, onQueue, sub, round, badge }) {
   const { t } = useI18n();
   return (
     <div className={`card ${round ? 'round' : ''}`} onClick={onOpen || onPlay}>
       <div className="card-art">
         <img src={item.thumb || item.cover} alt="" loading="lazy" />
         {badge && <span className="card-badge">{badge}</span>}
-        {(onPlay || onOpen) && (
-          <button
-            className="card-play"
-            aria-label={t('play')}
-            onClick={(e) => { e.stopPropagation(); if (onPlay) onPlay(); else if (onOpen) onOpen(); }}
-          ><Icon name="play" size={22} /></button>
-        )}
+        <div className="card-actions">
+          {onQueue && (
+            <button
+              className="card-queue"
+              aria-label={t('addToQueue')}
+              title={t('addToQueue')}
+              onClick={(e) => { e.stopPropagation(); onQueue(); }}
+            ><Icon name="plus" size={18} /></button>
+          )}
+          {(onPlay || onOpen) && (
+            <button
+              className="card-play"
+              aria-label={t('play')}
+              onClick={(e) => { e.stopPropagation(); if (onPlay) onPlay(); else if (onOpen) onOpen(); }}
+            ><Icon name="play" size={22} /></button>
+          )}
+        </div>
       </div>
       <strong className="card-title">{item.title || item.name}</strong>
       <small className="card-sub">{sub || item.desc || item.artist}</small>
@@ -28,8 +38,8 @@ export function Card({ item, onPlay, onOpen, sub, round, badge }) {
   );
 }
 
-/* Fila de canción con acciones: reproducir, like, menú completo */
-export function TrackRow({ track, list, index, onPlay, showAlbum, source }) {
+/* Fila de canción con acciones: reproducir, añadir a la cola, like y menú. */
+export function TrackRow({ track, list, index, onPlay, onQueue, showAlbum }) {
   const p = usePlayer();
   const { state, dispatch } = useApp();
   const { t } = useI18n();
@@ -52,16 +62,27 @@ export function TrackRow({ track, list, index, onPlay, showAlbum, source }) {
           <strong>{track.title}</strong>
           <small>
             {track.artist}
-            {showAlbum && track.album && track.album !== 'Ritmo' && <> · {track.album}</>}
+            {showAlbum && track.album && track.album !== 'Sonora' && track.album !== 'Ritmo' && <> · {track.album}</>}
             {track.explicit && <> · <span className="explicit-badge">E</span></>}
             {track.live && <> · <span className="live-pill">EN VIVO</span></>}
-            {source && <> · <span className="source-badge">{source}</span></>}
             {downloaded && <> · <span className="dl-badge">⬇ {t('downloadedFlag')}</span></>}
           </small>
         </div>
       </div>
       <div className="tr-right">
         <span className="tr-dur">{track.live ? '—' : fmt(track.dur)}</span>
+        <button
+          className="icon-btn tr-queue"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onQueue) onQueue();
+            else { p.enqueue(track); toast(t('addToQueue')); }
+          }}
+          aria-label={t('addToQueue')}
+          title={t('addToQueue')}
+        >
+          <Icon name="plus" size={17} />
+        </button>
         <button className={`icon-btn ${liked ? 'on' : ''}`} onClick={() => dispatch({ type: 'toggle-like', id: track.id })} aria-label={t('liked')}>
           <Icon name="heart" />
         </button>

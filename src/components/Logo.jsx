@@ -9,7 +9,7 @@ export default function Logo({ size = 32, className = '' }) {
       viewBox="0 0 48 48"
       fill="none"
       role="img"
-      aria-label="Ritmo Music"
+      aria-label="Sonora Music"
     >
       <defs>
         <linearGradient id="ritmoGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">

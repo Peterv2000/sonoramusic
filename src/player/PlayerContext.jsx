@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { useApp } from '../state/AppState.jsx';
 import { recordPlay } from '../ai/personalize.js';
 import { mergeTracks, pickStrictNext, strictRelated, globalPool } from './queue.js';
+import { fetchRelatedTracks } from '../api/related.js';
 import { djLine as makeDjLine, djGreeting } from './dj.js';
 import VideoStage from './VideoStage.jsx';
 import { DJDrop } from '../components/DJ.jsx';
@@ -36,6 +37,7 @@ export function PlayerProvider({ children }) {
   const [track, setTrack] = useState(null);
   const [contextList, setContextList] = useState([]);   // lista completa que se está reproduciendo
   const [queue, setQueue] = useState([]);               // "a continuación" (insertable)
+  const [autoQueue, setAutoQueue] = useState([]);       // recomendaciones dinámicas (cola automática)
   const [index, setIndex] = useState(-1);
   const [playing, setPlaying] = useState(false);
   const [position, setPosition] = useState(0);
@@ -63,8 +65,12 @@ export function PlayerProvider({ children }) {
   const seekingRef = useRef(false);
   const visitedRef = useRef(new Set()); // para aleatorio inteligente
   const handlersRef = useRef({});        // siempre el último advance/handleEnded
-  const liveRef = useRef({ contextList: [], queue: [], index: -1 });
-  liveRef.current = { contextList, queue, index }; // reflejo síncrono del estado
+  const autoQueueRef = useRef([]);       // copia síncrona de las recomendaciones
+  const relatedTokenRef = useRef(0);     // descarta respuestas viejas
+  const pendingAdvanceRef = useRef(false); // esperando recomendaciones para seguir
+  const playAutoRef = useRef(null);      // reproduce una recomendación (se asigna abajo)
+  const liveRef = useRef({ contextList: [], queue: [], index: -1, autoQueue: [] });
+  liveRef.current = { contextList, queue, index, autoQueue }; // reflejo síncrono del estado
   const audioRef = useRef(null);
   const sameSongLockRef = useRef(false);
   const triedResolveRef = useRef(new Set());
@@ -278,6 +284,33 @@ export function PlayerProvider({ children }) {
     setDjSpeaking(false);
   }, []);
 
+  /* ---------- Recomendaciones dinámicas ---------- */
+  /* Busca en segundo plano pistas afines a la canción actual y rellena la
+     cola automática. Si la reproducción se había quedado esperando, arranca
+     en cuanto llegan los resultados. */
+  const refreshRelated = useCallback(async (tk) => {
+    if (!tk) return [];
+    const token = ++relatedTokenRef.current;
+    try {
+      const list = await fetchRelatedTracks(tk, { limit: 24 });
+      if (token !== relatedTokenRef.current) return [];
+      const clean = Array.isArray(list) ? list.filter((x) => x && x.id !== tk.id) : [];
+      autoQueueRef.current = clean;
+      setAutoQueue(clean);
+      if (pendingAdvanceRef.current && clean.length) {
+        pendingAdvanceRef.current = false;
+        playAutoRef.current?.(clean[0], clean.slice(1));
+      }
+      return clean;
+    } catch {
+      if (token === relatedTokenRef.current) {
+        autoQueueRef.current = [];
+        setAutoQueue([]);
+      }
+      return [];
+    }
+  }, []);
+
   /* ---------- Motor de reproducción ---------- */
   const playNow = useCallback((tk, list, idx, extraQueue = []) => {
     const p = ytRef.current;
@@ -287,6 +320,11 @@ export function PlayerProvider({ children }) {
     setContextList(list);
     setIndex(idx);
     setQueue(extraQueue);
+    // Cada canción nueva renueva sus recomendaciones.
+    pendingAdvanceRef.current = false;
+    autoQueueRef.current = [];
+    setAutoQueue([]);
+    refreshRelated(tk);
     setPosition(0);
     setPlaying(true);
     setAudioMode(false);
@@ -307,12 +345,23 @@ export function PlayerProvider({ children }) {
     if ('mediaSession' in navigator) {
       try {
         navigator.mediaSession.metadata = new window.MediaMetadata({
-          title: tk.title, artist: tk.artist, album: tk.album || 'Ritmo Music',
+          title: tk.title, artist: tk.artist, album: tk.album || 'Sonora Music',
           artwork: [{ src: tk.thumb, sizes: '480x360', type: 'image/jpeg' }],
         });
       } catch { /* noop */ }
     }
-  }, [dispatch, emitDj, ads]);
+  }, [dispatch, emitDj, ads, refreshRelated]);
+
+  /* Reproduce una recomendación de la cola automática. */
+  const playAutoFromQueue = useCallback((item, rest = []) => {
+    if (!item) return;
+    const { contextList: list, index: idx } = liveRef.current;
+    const at = idx + 1;
+    const merged = [...list.slice(0, at), item, ...list.slice(at)];
+    playNow(item, merged, at, Array.isArray(rest) ? rest : []);
+  }, [playNow]);
+
+  playAutoRef.current = playAutoFromQueue;
 
   const advance = useCallback((dir, opts = {}) => {
     // 1) La cola explícita del usuario ("Reproducir a continuación") manda.
@@ -372,7 +421,7 @@ export function PlayerProvider({ children }) {
       return;
     }
 
-    // 4) Sin temas afines: solo repetimos la lista si el usuario lo pidió.
+    // 4) Sin temas afines en el catálogo: repetimos la lista si se pidió.
     if (repeat === 'all') {
       const first = list.findIndex((t) => t.id !== current.id);
       const at = first >= 0 ? first : 0;
@@ -380,9 +429,40 @@ export function PlayerProvider({ children }) {
       return;
     }
 
+    // 5) Cola automática: recomendaciones traídas en segundo plano. Se evitan
+    //    las ya escuchadas; si todas lo están, seguimos con la primera para
+    //    que la música nunca se corte.
+    const dynamic = autoQueueRef.current || [];
+    if (dynamic.length) {
+      const fresh = dynamic.find((x) => x && x.id !== current.id && !visitedRef.current.has(x.id)) ||
+        dynamic.find((x) => x && x.id !== current.id) || dynamic[0];
+      if (fresh) {
+        const rest = dynamic.filter((x) => x && x.id !== fresh.id);
+        playAutoFromQueue(fresh, rest);
+        return;
+      }
+    }
+
+    // 6) Aún no hay recomendaciones: esperamos a que lleguen y continuamos.
+    //    Si el servidor no devuelve nada, seguimos con el catálogo local para
+    //    que la música nunca se detenga.
+    pendingAdvanceRef.current = true;
     setPlaying(false);
     try { ytRef.current?.pauseVideo?.(); } catch { /* noop */ }
-  }, [contextList, index, repeat, shuffle, playNow, settings.autoplay, queue, track]);
+    const localFallback = () => {
+      if (!pendingAdvanceRef.current) return;
+      const pool = mergeTracks(list, globalPool()).filter(
+        (t) => t && t.id !== current.id && !visitedRef.current.has(t.id),
+      );
+      const any = pool[0];
+      if (!any) return;
+      pendingAdvanceRef.current = false;
+      playNow(any, [...list, any], list.length, []);
+    };
+    refreshRelated(current)
+      .then((items) => { if (!items?.length) localFallback(); })
+      .catch(() => localFallback());
+  }, [contextList, index, repeat, shuffle, playNow, playAutoFromQueue, refreshRelated, settings.autoplay, queue, track]);
 
   const handleEnded = useCallback(() => {
     if (repeat === 'one') {
@@ -462,9 +542,14 @@ export function PlayerProvider({ children }) {
     toggleShuffle() { setShuffle((s) => !s); },
     cycleRepeat() { setRepeat((r) => (r === 'off' ? 'all' : r === 'all' ? 'one' : 'off')); },
 
-    /* ── Cola estilo Spotify: "Reproducir a continuación" ── */
+    /* ── Cola: "Reproducir a continuación" y "Añadir a la cola" ── */
     playNext(t) { setQueue((q) => [t, ...q]); },
-    enqueue(t) { setQueue((q) => [...q, t]); },
+    enqueue(t) { if (t) setQueue((q) => [...q, t]); },
+    enqueueList(list) {
+      if (!Array.isArray(list)) return;
+      const clean = list.filter((t) => t && t.id);
+      if (clean.length) setQueue((q) => [...q, ...clean]);
+    },
     removeFromQueue(pos) { setQueue((q) => q.filter((_, i) => i !== pos)); },
     clearQueue() { setQueue([]); },
     reorderQueue(from, to) {
@@ -492,6 +577,17 @@ export function PlayerProvider({ children }) {
       const target = idx + 1 + pos;
       if (!list[target]) return;
       playNow(list[target], list, target, liveRef.current.queue);
+    },
+    /* Reproduce una recomendación dinámica por posición */
+    playAutoAt(pos) {
+      const items = autoQueueRef.current || [];
+      const item = items[pos];
+      if (!item) return;
+      playAutoFromQueue(item, items.slice(pos + 1));
+    },
+    /* Vuelve a pedir recomendaciones para la canción actual */
+    refreshRelated() {
+      if (track) refreshRelated(track);
     },
     /* Reproduce música relacionada (mismo artista o género, nunca otro estilo) */
     playRelated() {
@@ -530,7 +626,7 @@ export function PlayerProvider({ children }) {
       if (typeof window === 'undefined' || !window.speechSynthesis) return [];
       return window.speechSynthesis.getVoices?.() || [];
     },
-  }), [track, playing, position, duration, advance, playNow, djText, speak, stopDjSpeech, settings.lang, djVoiceURI]);
+  }), [track, playing, position, duration, advance, playNow, playAutoFromQueue, refreshRelated, contextList, djText, speak, stopDjSpeech, settings.lang, djVoiceURI]);
 
   /* Acciones de MediaSession */
   useEffect(() => {
@@ -566,18 +662,26 @@ export function PlayerProvider({ children }) {
     return () => window.speechSynthesis.removeEventListener?.('voiceschanged', load);
   }, []);
 
-  const value = useMemo(() => ({
-    ...api, track, queue, contextList, index, playing, position, duration,
-    shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode,
-    djText, djTag, djSpeaking, djOn: settings.dj, djVoiceURI,
-    related: track ? strictRelated(track, {
-      pool: mergeTracks(contextList, globalPool()),
-      limit: 6,
-    }) : [],
+  const value = useMemo(() => {
     // Lo que sonará después, cuando la cola se vacíe (resto de la lista en curso)
-    upcoming: (index >= 0 && contextList.length > index + 1) ? contextList.slice(index + 1) : [],
-    audioMode,
-  }), [api, track, queue, contextList, index, playing, position, duration, shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode, djText, djTag, djSpeaking, settings.dj, djVoiceURI, audioMode]);
+    const upcoming = (index >= 0 && contextList.length > index + 1) ? contextList.slice(index + 1) : [];
+    // Recomendaciones dinámicas si ya llegaron; si no, afinidad local inmediata.
+    const fallbackRelated = track ? strictRelated(track, {
+      pool: mergeTracks(contextList, globalPool()),
+      limit: 8,
+    }) : [];
+    const recommended = autoQueue.length ? autoQueue : fallbackRelated;
+    return {
+      ...api, track, queue, autoQueue, recommended, contextList, index, playing, position, duration,
+      shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode,
+      djText, djTag, djSpeaking, djOn: settings.dj, djVoiceURI,
+      related: recommended.slice(0, 6),
+      upcoming,
+      // La cola visible: primero lo que el usuario encoló, después las recomendaciones.
+      upNext: queue.length ? queue : (recommended.length ? recommended : upcoming),
+      audioMode,
+    };
+  }, [api, track, queue, autoQueue, contextList, index, playing, position, duration, shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode, djText, djTag, djSpeaking, settings.dj, djVoiceURI, audioMode]);
 
   return (
     <PlayerCtx.Provider value={value}>

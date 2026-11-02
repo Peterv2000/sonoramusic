@@ -62,7 +62,7 @@ export function DJDrop({ text, tag, onClose, onRepeat }) {
       <div className="dj-drop-body">
         <div className="dj-drop-head">
           <Bars />
-          <strong>DJ Ritmo</strong>
+          <strong>DJ Sonora</strong>
           {tag && <span className="dj-drop-tag">{t(tag)}</span>}
         </div>
         <p>{text}</p>

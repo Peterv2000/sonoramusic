@@ -1,26 +1,110 @@
 /* ══════════════════════════════════════════════════════════════════════════
-   Cliente de búsqueda real en YouTube.
+   Cliente de búsqueda global de Sonora.
 
-   La web no puede leer youtube.com (CORS) ni incrustar su página de
-   resultados (X-Frame-Options). Por eso la app habla con nuestro propio
-   servidor, que scrapea YouTube:
+   La app habla con nuestro propio servidor, que devuelve un contrato neutro
+   de marca blanca:
 
-       GET /api/search?q=…   →  { query, count, results: [pista, …] }
+       GET /api/search?q=…  →  { query, count, results: [
+         { track_id, title, artist, album, cover_url, stream_url }, …
+       ] }
 
-   Ese servidor es `server/index.mjs` (npm run serve) y es el mismo que sirve
-   la app. En la APK (Capacitor) se apunta a la misma ruta `/api/search`, así
-   que el comportamiento es idéntico.
+   Aquí esos objetos se convierten en las pistas internas que ya usan el
+   reproductor, la cola y el catálogo. El origen del audio nunca se muestra
+   en la interfaz.
 
    Si el API no está disponible (por ejemplo abriendo `dist` como fichero
-   suelto), se degrada con elegancia: se avisa y se ofrece abrir YouTube.
+   suelto), se degrada con elegancia: se avisa y se puede reintentar.
    ══════════════════════════════════════════════════════════════════════════ */
 
 const API = '/api/search';
 const CACHE_KEY = 'ritmo-ytsearch-v1';
 const CACHE_TTL = 1000 * 60 * 60 * 6; // 6 h
-const DEFAULT_TIMEOUT = 20000; // el scraper pagina YouTube; 12 s era demasiado justo
+const DEFAULT_TIMEOUT = 20000; // el buscador pagina resultados; 12 s era demasiado justo
 
 const MEM = new Map();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Contrato neutro → pista interna.
+
+   El servidor devuelve `track_id · title · artist · album · cover_url ·
+   stream_url`. Aquí se reconstruye la forma que ya usan el reproductor, la
+   cola y el catálogo (`yt`, `id`, `thumb`…). Esa traducción es interna: la
+   interfaz nunca muestra el origen.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+function b64urlDecode(value) {
+  const raw = String(value || '');
+  if (!raw) return '';
+  try {
+    const s = raw.replace(/-/g, '+').replace(/_/g, '/');
+    return atob(s + '='.repeat((4 - (s.length % 4)) % 4));
+  } catch {
+    return '';
+  }
+}
+
+function b64urlEncode(value) {
+  try {
+    return btoa(String(value || '')).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  } catch {
+    return '';
+  }
+}
+
+/** Convierte un resultado ya saneado en una pista interna. */
+export function mapSearchResult(item) {
+  if (!item) return null;
+
+  // Compatibilidad: elementos guardados en caché con la forma antigua.
+  if (item.yt && item.id) {
+    return {
+      ...item,
+      thumb: item.thumb || item.cover_url || '',
+      dur: Number(item.dur || item.duration || 0),
+      source: 'sonora',
+    };
+  }
+
+  const trackId = String(item.track_id || item.id || '');
+  const kind = item.kind || 'video';
+  let encoded = trackId;
+  let idPrefix = 'yt-';
+  let ytPrefix = '';
+  if (trackId.startsWith('snr-ch_')) { encoded = trackId.slice(7); idPrefix = 'yt-ch-'; ytPrefix = 'ch-'; }
+  else if (trackId.startsWith('snr-pl_')) { encoded = trackId.slice(7); idPrefix = 'yt-pl-'; ytPrefix = 'pl-'; }
+  else if (trackId.startsWith('snr_')) { encoded = trackId.slice(4); }
+
+  const source = b64urlDecode(encoded) || encoded;
+  if (!source) return null;
+
+  const thumb = item.cover_url || item.thumb ||
+    (kind === 'video' ? `/api/cover/${b64urlEncode(`https://i.ytimg.com/vi/${source}/hqdefault.jpg`)}` : '');
+
+  return {
+    yt: ytPrefix + source,
+    id: idPrefix + source,
+    playlistId: kind === 'playlist' ? source : undefined,
+    kind,
+    title: item.title || 'Sonora',
+    artist: item.artist || 'Sonora Music',
+    album: item.album || 'Sonora',
+    genre: item.genre || 'Sonora',
+    moods: Array.isArray(item.moods) ? item.moods : [],
+    dur: Number(item.duration || item.dur || 0),
+    duration: Number(item.duration || item.dur || 0),
+    views: item.views || 0,
+    thumb,
+    cover_url: item.cover_url || thumb,
+    stream_url: item.stream_url || '',
+    source: 'sonora',
+    external: true,
+  };
+}
+
+export function mapSearchResults(list) {
+  if (!Array.isArray(list)) return [];
+  return list.map(mapSearchResult).filter(Boolean);
+}
 
 /* Petición JSON con tiempo límite. Nunca deja una promesa colgada si el
    servidor no responde (móvil con mala señal, API caída, etc.). */
@@ -92,7 +176,7 @@ export async function searchYouTubeDetailed(query, { deep = false, limit, timeou
 
   try {
     const data = await fetchJSON(`${API}?${params}`, { timeout });
-    const list = Array.isArray(data?.results) ? data.results : [];
+    const list = mapSearchResults(Array.isArray(data?.results) ? data.results : []);
     if (list.length) writeCache(key, list);
     return { items: list, error: null, cached: false };
   } catch (err) {
@@ -126,18 +210,19 @@ export function parseYouTubeId(input) {
   return m ? m[1] : null;
 }
 
-/** Metadatos mínimos de una pista externa de YouTube. */
+/** Metadatos mínimos de una pista externa (enlace o referencia directa). */
 export function trackFromYouTubeId(id, title, artist, thumb) {
   return {
     yt: id,
     id: 'yt-' + id,
     title: title || `Audio · ${id}`,
-    artist: artist || 'Ritmo',
-    album: 'Ritmo',
-    genre: 'Ritmo',
+    artist: artist || 'Sonora Music',
+    album: 'Sonora',
+    genre: 'Sonora',
     moods: [],
     dur: 0,
-    thumb: thumb || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+    thumb: thumb || `/api/cover/${b64urlEncode(`https://i.ytimg.com/vi/${id}/hqdefault.jpg`)}`,
+    source: 'sonora',
     external: true,
   };
 }

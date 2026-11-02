@@ -16,6 +16,8 @@
    arranque al instante y no repita peticiones grandes en cada navegación.
    ══════════════════════════════════════════════════════════════════════════ */
 
+import { mapSearchResults } from './youtubeSearch.js';
+
 const TTL = 1000 * 60 * 60 * 12; // 12 h
 const KEY = 'ritmo-livedata-v1';
 
@@ -149,7 +151,8 @@ export async function warmLookup(query) {
   if (!q) return null;
   try {
     const data = await fetchJSON(`/api/warm?q=${encodeURIComponent(q)}`);
-    return data?.found && data.results?.length ? data.results : null;
+    if (!data?.found || !data.results?.length) return null;
+    return mapSearchResults(data.results);
   } catch {
     return null;
   }

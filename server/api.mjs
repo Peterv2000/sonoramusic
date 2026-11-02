@@ -87,7 +87,122 @@ const cache = new Map();
 const TTL = 5 * 60 * 1000;
 
 /* ══════════════════════════════════════════════════════════════════════════
-   Búsqueda real en YouTube
+   Marca blanca: el cliente solo recibe referencias internas de Sonora.
+
+   Los resultados del proveedor se transforman en un contrato neutro:
+     track_id · title · artist · album · cover_url · stream_url
+
+   Las carátulas se sirven a través de `/api/cover/…` para que el navegador
+   nunca muestre el dominio del proveedor, y `stream_url` es una referencia
+   opaca que el reproductor resuelve internamente.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+const b64url = (value) => Buffer.from(String(value), 'utf8').toString('base64url');
+
+function decodeRef(value) {
+  try {
+    return Buffer.from(String(value || ''), 'base64url').toString('utf8');
+  } catch {
+    return '';
+  }
+}
+
+function proxyCover(url) {
+  if (!url) return '/icon-192.png';
+  if (String(url).startsWith('/')) return url;
+  if (!/^https:\/\//i.test(String(url))) return '/icon-192.png';
+  return `/api/cover/${b64url(url)}`;
+}
+
+function sanitizeSearchResults(list) {
+  if (!Array.isArray(list)) return [];
+  return list.map((item) => {
+    if (!item) return null;
+    const kind = item.kind || 'video';
+
+    if (kind === 'channel') {
+      const source = String(item.yt || '').replace(/^ch-/, '');
+      if (!source) return null;
+      return {
+        track_id: `snr-ch_${b64url(source)}`,
+        title: item.title || '',
+        artist: 'Artista',
+        album: 'Sonora',
+        cover_url: proxyCover(item.thumb),
+        stream_url: '',
+        kind: 'channel',
+        views: item.views || 0,
+      };
+    }
+
+    if (kind === 'playlist') {
+      const source = String(item.playlistId || item.yt || '').replace(/^pl-/, '');
+      if (!source) return null;
+      return {
+        track_id: `snr-pl_${b64url(source)}`,
+        title: item.title || '',
+        artist: item.artist && item.artist !== 'Lista' ? item.artist : 'Sonora',
+        album: 'Sonora',
+        cover_url: proxyCover(item.thumb),
+        stream_url: '',
+        kind: 'playlist',
+        views: item.views || 0,
+      };
+    }
+
+    const source = String(item.yt || '').replace(/^yt-/, '');
+    if (!source) return null;
+    const artist = !item.artist || item.artist === 'Ritmo' ? 'Sonora Music' : item.artist;
+    return {
+      track_id: `snr_${b64url(source)}`,
+      title: item.title || '',
+      artist,
+      album: 'Sonora',
+      cover_url: proxyCover(item.thumb || `https://i.ytimg.com/vi/${source}/hqdefault.jpg`),
+      stream_url: `/api/stream/${b64url(source)}`,
+      kind: 'video',
+      duration: item.dur || item.duration || 0,
+      views: item.views || 0,
+    };
+  }).filter(Boolean);
+}
+
+/* Carátula proxificada: el navegador solo ve `/api/cover/…`. */
+function apiCover(res, pathname) {
+  const remote = decodeRef(pathname.slice('/api/cover/'.length));
+  let allowed = false;
+  try {
+    const u = new URL(remote);
+    allowed = u.protocol === 'https:' &&
+      /(^|\.)(ytimg\.com|ggpht\.com|googleusercontent\.com)$/i.test(u.hostname);
+  } catch { /* referencia no válida */ }
+  if (!allowed) {
+    res.writeHead(302, { Location: '/icon-192.png' });
+    res.end();
+    return;
+  }
+  res.writeHead(302, {
+    Location: remote,
+    'Cache-Control': 'public, max-age=86400',
+    'Access-Control-Allow-Origin': '*',
+  });
+  res.end();
+}
+
+/* Referencia de reproducción opaca. El cliente la usa solo como identificador;
+   nunca contiene una URL visible del proveedor. */
+function apiStream(res, pathname) {
+  const token = pathname.slice('/api/stream/'.length);
+  const source = decodeRef(token);
+  if (!/^[\w-]{11}$/.test(source)) {
+    sendJson(res, 404, { error: 'referencia no válida' });
+    return;
+  }
+  sendJson(res, 200, { ok: true, track_id: `snr_${token}` });
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Búsqueda real (global)
    ══════════════════════════════════════════════════════════════════════════ */
 
 async function apiSearch(res, url) {
@@ -102,7 +217,8 @@ async function apiSearch(res, url) {
 
   const hit = cache.get(key);
   if (hit && Date.now() - hit.t < TTL) {
-    return sendJson(res, 200, { query: q, deep, cached: true, source: 'youtube', count: hit.v.length, results: hit.v });
+    const results = sanitizeSearchResults(hit.v);
+    return sendJson(res, 200, { query: q, deep, cached: true, source: 'sonora', count: results.length, results });
   }
 
   // Caché caliente del actualizador (solo para búsquedas normales)
@@ -111,7 +227,8 @@ async function apiSearch(res, url) {
     const warmHit = warm?.cache?.[q];
     if (warmHit?.v?.length) {
       cache.set(key, { t: warmHit.t, v: warmHit.v });
-      return sendJson(res, 200, { query: q, deep, cached: true, warm: true, source: 'youtube', count: warmHit.v.length, results: warmHit.v });
+      const results = sanitizeSearchResults(warmHit.v);
+      return sendJson(res, 200, { query: q, deep, cached: true, warm: true, source: 'sonora', count: results.length, results });
     }
   }
 
@@ -119,9 +236,10 @@ async function apiSearch(res, url) {
     const results = await searchYouTube(q, { limit, pages, music: true, retries: 3 });
     cache.set(key, { t: Date.now(), v: results });
     if (cache.size > 200) cache.delete(cache.keys().next().value);
-    sendJson(res, 200, { query: q, deep, source: 'youtube', count: results.length, results });
+    const clean = sanitizeSearchResults(results);
+    sendJson(res, 200, { query: q, deep, source: 'sonora', count: clean.length, results: clean });
   } catch (err) {
-    sendJson(res, 502, { error: 'no se pudo consultar YouTube', detail: String(err.message || err) });
+    sendJson(res, 502, { error: 'no se pudo completar la búsqueda', detail: String(err.message || err) });
   }
 }
 
@@ -131,9 +249,9 @@ async function apiSuggest(res, url) {
   if (q.length < 2) return sendJson(res, 200, { query: q, suggestions: [] });
   try {
     const suggestions = await searchSuggestions(q);
-    sendJson(res, 200, { query: q, source: 'youtube', suggestions });
+    sendJson(res, 200, { query: q, source: 'sonora', suggestions });
   } catch {
-    sendJson(res, 200, { query: q, source: 'youtube', suggestions: [] });
+    sendJson(res, 200, { query: q, source: 'sonora', suggestions: [] });
   }
 }
 
@@ -373,6 +491,8 @@ export async function handleApi(req, res, url) {
     if (!checkAdmin(req, res)) return true;
   }
 
+  if (pathname.startsWith('/api/cover/')) { apiCover(res, pathname); return true; }
+  if (pathname.startsWith('/api/stream/')) { apiStream(res, pathname); return true; }
   if (pathname === '/api/search') { await apiSearch(res, url); return true; }
   if (pathname === '/api/suggest') { await apiSuggest(res, url); return true; }
   if (pathname === '/api/lyrics') { await apiLyrics(res, url); return true; }
@@ -405,7 +525,7 @@ export async function handleApi(req, res, url) {
         updatedAt: data.updatedAt,
         query: q,
         found: Boolean(hit?.v?.length),
-        results: hit?.v || [],
+        results: sanitizeSearchResults(hit?.v || []),
       });
       return true;
     }
@@ -433,7 +553,7 @@ export async function handleApi(req, res, url) {
       ok: true,
       dist: fs.existsSync(DIST),
       uptime: Math.round(process.uptime()),
-      source: 'youtube',
+      source: 'sonora',
       updater: {
         intervalHours: +(CONFIG.intervalMs / 3600000).toFixed(2),
         runs: updaterStatus.runs,
