@@ -143,6 +143,29 @@ reflejan **al instante** en `/api/catalog` y `/api/charts`, sin reiniciar el ser
 > El panel necesita el servidor encendido (`npm start`). Si abres solo el `dist` como fichero,
 > la página lo avisa y muestra el comando para arrancarlo.
 
+### Categorías dinámicas, QA Robot y soporte
+
+- `GET /api/v1/categories` y `GET /api/v1/tracks?category_id=…` alimentan la Web y la APK desde
+  un almacén central (`server/data/categories.json`), sin listas hardcodeadas en el cliente.
+- `GET /api/v1/events` (SSE) avisa al instante cuando el administrador crea, oculta o elimina
+  una categoría. La pestaña **Categorías** del panel las gestiona en vivo.
+- El **QA Robot** registra errores de reproducción, carátulas y latencia en
+  `/api/v1/telemetry/errors`. Se revisan en `#/admin` → **QA Robot**.
+- El botón flotante de ayuda ofrece FAQs, diagnóstico de conexión y reporte de canciones con
+  un toque, sin interrumpir la reproducción.
+
+---
+
+## ☁️ Despliegue 24/7 y alta disponibilidad
+
+La guía completa está en [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md): API redundante, PostgreSQL
+con réplica, Redis Pub/Sub para SSE, CDN de medios, variables de entorno, Docker y
+actualizaciones en vivo de la APK.
+
+```bash
+docker compose up --build   # API + web estática con volumen persistente
+```
+
 ---
 
 ## 📱 APK Android (Capacitor)

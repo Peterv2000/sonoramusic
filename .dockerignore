@@ -1,0 +1,9 @@
+node_modules
+dist
+build.out
+update-run.log
+*.log
+.git
+.gitignore
+android
+docs

@@ -1,0 +1,27 @@
+services:
+  sonora:
+    build: .
+    image: sonora-music:latest
+    restart: unless-stopped
+    ports:
+      - "4173:4173"
+    environment:
+      PORT: "4173"
+      NODE_ENV: production
+      # Cambia este token en producción; protege /api/v1/admin/* y /api/update
+      ADMIN_TOKEN: "${ADMIN_TOKEN:-}"
+      # En producción apunta a PostgreSQL/Redis y a tu CDN
+      # DATABASE_URL: "${DATABASE_URL}"
+      # REDIS_URL: "${REDIS_URL}"
+      # CDN_BASE_URL: "${CDN_BASE_URL}"
+    volumes:
+      - sonora-data:/app/server/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4173/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
+
+volumes:
+  sonora-data:
