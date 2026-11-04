@@ -15,6 +15,7 @@
     "preview": "vite preview --port 4173",
     "icons": "node scripts/gen-icons.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
+    "check:queue": "node scripts/check-smart-queue.mjs",
     "apk:prepare": "vite build && cap sync android",
     "apk:build": "vite build && cap sync android && cd android && gradlew assembleDebug",
     "apk:release": "vite build && cap sync android && cd android && gradlew assembleRelease"

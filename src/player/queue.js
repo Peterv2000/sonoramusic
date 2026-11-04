@@ -42,6 +42,54 @@ export function isStrictMatch(candidate, seed) {
   return meaningfulGenre(seed.genre) && norm(candidate.genre) === norm(seed.genre);
 }
 
+/* ── Filtro de candidatas para la radio ────────────────────────────────────
+   El catálogo en vivo mezcla canciones con recopilatorios, mixes de horas y
+   vídeos de letras. Nada de eso debe entrar en «A continuación»: rompe la
+   experiencia y además hace imposible mantener el estilo. */
+const JUNK_TITLE = /\b(?:top\s*\d+|top\s+(?:global|songs|hits|canciones|music|m[úu]sica)|megamix|non-?stop|compilation|recopilaci[oó]n|best of|greatest hits|full album|album completo|playlist|grandes\s+[eé]xitos|viejitas|medley|popurr[ií]|mix|old\s*school|#mix|\d+\s*(?:hour|hours|hora|horas)|(?:las?\s+)?\d+\s+(?:mejores|best)|making\s+of|vevo\s+footnotes|detr[áa]s\s+de\s+c[áa]maras|behind\s+the\s+scenes)\b/i;
+const LOW_VALUE_TITLE = /\b(?:tutorial|how to|como hacer|review|unboxing|podcast|vlog|reaction|reacts|gameplay|walkthrough|trailer|karaoke|tribute)\b/i;
+const LYRIC_TITLE = /\b(?:lyrics?|letra|letras|sub\s*(?:espa[ñn]ol|esp|english|ingl[ée]s)|traducid[oa]|subtitulad[oa])\b/i;
+const JUNK_ARTIST = /(?:\bletras?\.?\s*4k\b|\blyrics?\s*(?:4k|channel|music)\b|\btop\s*lau\b|\bmixes?\s+(?:para|de)\b|\bdj\s*(?:carloss|vj)\b|\bhear this music\b|\bproducciones\b|\bcompilations?\b|\bplaylists?\b)/i;
+const PLACEHOLDER_ARTISTS = new Set(['', 'sonora', 'sonora music', 'artista', 'artista desconocido', 'canal', 'lista', 'ritmo']);
+
+/* El título es en realidad una lista de artistas del canal, no una canción. */
+function looksLikeArtistOnly(title, artist) {
+  const sides = title.split(/\sx\s/i);
+  if (sides.length === 2 && title.length <= 48) {
+    const words = (s) => norm(s).split(' ').filter((w) => w.length > 1);
+    if (words(sides[0]).length + words(sides[1]).length >= 3) return true;
+  }
+  const titleTokens = norm(title).split(' ').filter((w) => w.length > 1);
+  if (titleTokens.length < 2) return false;
+  const artistNorm = norm(artist);
+  if (!artistNorm) return false;
+  return titleTokens.every((w) => artistNorm.includes(w));
+}
+
+/** ¿Sirve como pista reproducible de una cola automática? */
+export function isQueueCandidate(track, { maxDuration = 900 } = {}) {
+  if (!track) return false;
+  const id = String(track.id || '');
+  const yt = String(track.yt || '');
+  if (!id && !yt) return false;
+  if (/^(?:ch|pl)-/.test(yt) || /^yt-(?:ch|pl)-/.test(id)) return false;
+  if (track.kind && track.kind !== 'video') return false;
+
+  const title = String(track.title || '').trim();
+  if (title.length < 2) return false;
+  const rawArtist = String(track.artist || '');
+  if (PLACEHOLDER_ARTISTS.has(norm(rawArtist)) || JUNK_ARTIST.test(rawArtist)) return false;
+
+  if (JUNK_TITLE.test(title) || LOW_VALUE_TITLE.test(title) || LYRIC_TITLE.test(title)) return false;
+  if (looksLikeArtistOnly(title, rawArtist)) return false;
+  // Medleys con tres o más canciones en el título.
+  if ((title.match(/\s\/\s/g) || []).length >= 2) return false;
+
+  const dur = Number(track.dur || track.duration || 0);
+  if (dur && (dur < 25 || dur > maxDuration)) return false;
+  return true;
+}
+
 /* Une listas sin duplicar por id y descarta entradas incompletas. */
 export function mergeTracks(...lists) {
   const out = [];
