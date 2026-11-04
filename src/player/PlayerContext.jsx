@@ -1,12 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../state/AppState.jsx';
 import { recordPlay } from '../ai/personalize.js';
-import { mergeTracks, pickStrictNext, strictRelated, globalPool } from './queue.js';
-import { fetchRelatedTracks } from '../api/related.js';
+import { mergeTracks, globalPool } from './queue.js';
+import { fetchSmartRelatedQueue } from '../api/related.js';
+import { pickSmartNext, smartRelated } from './smartQueue.js';
 import { djLine as makeDjLine, djGreeting } from './dj.js';
 import VideoStage from './VideoStage.jsx';
 import { DJDrop } from '../components/DJ.jsx';
 import { useAds } from '../ads/AdManager.jsx';
+import { reportIssue } from '../api/telemetry.js';
 
 const PlayerCtx = createContext(null);
 
@@ -64,6 +66,7 @@ export function PlayerProvider({ children }) {
 
   const seekingRef = useRef(false);
   const visitedRef = useRef(new Set()); // para aleatorio inteligente
+  const playedHistoryRef = useRef([]);   // historial reciente para diversidad de artistas
   const handlersRef = useRef({});        // siempre el último advance/handleEnded
   const autoQueueRef = useRef([]);       // copia síncrona de las recomendaciones
   const relatedTokenRef = useRef(0);     // descarta respuestas viejas
@@ -71,10 +74,15 @@ export function PlayerProvider({ children }) {
   const playAutoRef = useRef(null);      // reproduce una recomendación (se asigna abajo)
   const liveRef = useRef({ contextList: [], queue: [], index: -1, autoQueue: [] });
   liveRef.current = { contextList, queue, index, autoQueue }; // reflejo síncrono del estado
+  const trackRef = useRef(null);        // el callback onError del iframe se crea una vez
+  trackRef.current = track;
   const audioRef = useRef(null);
+  const loadStartedRef = useRef(null);   // QA Robot: latencia hasta el primer play
   const sameSongLockRef = useRef(false);
   const triedResolveRef = useRef(new Set());
   const [audioMode, setAudioMode] = useState(false);
+  const audioModeRef = useRef(false);
+  audioModeRef.current = audioMode;
   const audioSyncRef = useRef(null);
 
   const playSameSongGuaranteed = useCallback(async (failedTrack) => {
@@ -93,6 +101,12 @@ export function PlayerProvider({ children }) {
             audioRef.current = new Audio();
             audioRef.current.preload = 'auto';
             audioRef.current.playsInline = true;
+            audioRef.current.onerror = () => reportIssue({
+              type: 'playback', severity: 'error',
+              message: 'la fuente alternativa de audio también falló',
+              code: String(audioRef.current?.error?.code || ''),
+              track: failedTrack, source: 'audio',
+            });
           }
           audioRef.current.src = res.audioUrl;
           audioRef.current.volume = Math.max(0, Math.min(1, volume / 100));
@@ -159,18 +173,45 @@ export function PlayerProvider({ children }) {
           onReady: (e) => { setReady(true); try { e.target.setVolume(volume); } catch { /* noop */ } },
           onStateChange: (e) => {
             setPlaying(e.data === 1 || e.data === 3);
-            if (e.data === 1) setError(null);
+            if (e.data === 1) {
+              setError(null);
+              const started = loadStartedRef.current;
+              const current = trackRef.current;
+              if (started && started.id === current?.id) {
+                const latency = Date.now() - started.at;
+                loadStartedRef.current = null;
+                if (latency > 6000) {
+                  reportIssue({
+                    type: 'latency', severity: 'warning',
+                    message: `inicio lento (${latency} ms)`,
+                    track: current, source: 'youtube', latencyMs: latency,
+                  });
+                }
+              }
+            }
             if (e.data === 0) {
               if (audioMode) return;
               try { handlersRef.current.handleEnded?.(); } catch {}
             }
           },
-          onError: async () => {
-            if (sameSongLockRef.current || audioMode) return;
-            const cur = track;
+          onError: async (e) => {
+            if (sameSongLockRef.current || audioModeRef.current) return;
+            const cur = trackRef.current;
+            reportIssue({
+              type: 'playback', severity: 'error',
+              message: 'el reproductor no pudo cargar el audio',
+              code: String(e?.data ?? ''),
+              track: cur, source: 'youtube',
+              context: { audioMode: audioModeRef.current, code: e?.data },
+            });
             if (cur) {
               const ok = await playSameSongGuaranteed(cur);
               if (ok) {
+                reportIssue({
+                  type: 'recovery', severity: 'info',
+                  message: 'recuperado con una fuente alternativa',
+                  track: cur, source: 'resolver',
+                });
                 setError(null);
                 return;
               }
@@ -179,7 +220,7 @@ export function PlayerProvider({ children }) {
             setError('Reintentando...');
             setTimeout(async () => {
               if (sameSongLockRef.current) return;
-              const ok2 = await playSameSongGuaranteed(track).catch(() => false);
+              const ok2 = await playSameSongGuaranteed(trackRef.current).catch(() => false);
               if (!ok2) {
                 setError('No disponible. Saltando...');
                 sameSongLockRef.current = false;
@@ -285,21 +326,21 @@ export function PlayerProvider({ children }) {
   }, []);
 
   /* ---------- Recomendaciones dinámicas ---------- */
-  /* Busca en segundo plano pistas afines a la canción actual y rellena la
-     cola automática. Si la reproducción se había quedado esperando, arranca
-     en cuanto llegan los resultados. */
+  /* Calcula en segundo plano la radio de la canción actual (misma vibra,
+     variedad de artistas) y rellena la cola automática. Si la reproducción se
+     había quedado esperando, arranca en cuanto llegan los resultados. */
   const refreshRelated = useCallback(async (tk) => {
     if (!tk) return [];
     const token = ++relatedTokenRef.current;
     try {
-      const list = await fetchRelatedTracks(tk, { limit: 24 });
+      const list = await fetchSmartRelatedQueue(tk, { limit: 18 });
       if (token !== relatedTokenRef.current) return [];
       const clean = Array.isArray(list) ? list.filter((x) => x && x.id !== tk.id) : [];
       autoQueueRef.current = clean;
       setAutoQueue(clean);
       if (pendingAdvanceRef.current && clean.length) {
         pendingAdvanceRef.current = false;
-        playAutoRef.current?.(clean[0], clean.slice(1));
+        playAutoRef.current?.(clean[0]);
       }
       return clean;
     } catch {
@@ -335,7 +376,9 @@ export function PlayerProvider({ children }) {
       if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; audioRef.current.load?.(); }
     } catch {}
     visitedRef.current.add(tk.id);
+    playedHistoryRef.current = [...playedHistoryRef.current, tk].slice(-8);
     try { ads?.incrementPlay?.(); } catch {}
+    loadStartedRef.current = { id: tk.id, at: Date.now() };
     try { p.loadVideoById({ videoId: tk.yt, startSeconds: 0 }); } catch { /* noop */ }
     dispatch({ type: 'add-history', id: tk.id });
     try { recordPlay(tk); } catch { /* noop */ }
@@ -352,13 +395,15 @@ export function PlayerProvider({ children }) {
     }
   }, [dispatch, emitDj, ads, refreshRelated]);
 
-  /* Reproduce una recomendación de la cola automática. */
-  const playAutoFromQueue = useCallback((item, rest = []) => {
+  /* Reproduce una recomendación de la cola automática. La cola siguiente se
+     recalcula sola para la nueva canción; no arrastramos la anterior. */
+  const playAutoFromQueue = useCallback((item) => {
     if (!item) return;
     const { contextList: list, index: idx } = liveRef.current;
-    const at = idx + 1;
-    const merged = [...list.slice(0, at), item, ...list.slice(at)];
-    playNow(item, merged, at, Array.isArray(rest) ? rest : []);
+    const existing = list.findIndex((t) => t && t.id === item.id);
+    const at = existing >= 0 ? existing : idx + 1;
+    const merged = existing >= 0 ? list : [...list.slice(0, at), item, ...list.slice(at)];
+    playNow(item, merged, at, []);
   }, [playNow]);
 
   playAutoRef.current = playAutoFromQueue;
@@ -392,28 +437,20 @@ export function PlayerProvider({ children }) {
       return;
     }
 
-    // 3) Siguiente: SOLO mismo artista o mismo género. Si no hay, se detiene.
-    //    El aleatorio tampoco puede escapar del estilo.
-    const canAppend = settings.autoplay !== false;
-    const pool = shuffle && !canAppend
-      ? list
-      : mergeTracks(list, globalPool());
-    const pick = pickStrictNext({
-      current,
-      contextList: list,
-      index,
-      pool,
-      visited: visitedRef.current,
-      shuffleMode: shuffle,
-    });
+    // 3) Siguiente de una lista explícita (álbum, playlist o radio ya montada).
+    //    Respetamos el orden que el usuario eligió antes de saltar a la radio.
+    const following = list[index + 1];
+    if (following && following.id !== current.id) {
+      playNow(following, list, index + 1, []);
+      return;
+    }
 
-    if (pick) {
-      const at = list.findIndex((t) => t.id === pick.id);
-      if (at >= 0) {
-        playNow(pick, list, at, []);
-      } else if (canAppend) {
-        const merged = [...list, pick];
-        playNow(pick, merged, merged.length - 1, []);
+    const canAppend = settings.autoplay !== false;
+    if (!canAppend) {
+      if (repeat === 'all') {
+        const first = list.findIndex((t) => t.id !== current.id);
+        const at = first >= 0 ? first : 0;
+        playNow(list[at], list, at, []);
       } else {
         setPlaying(false);
         try { ytRef.current?.pauseVideo?.(); } catch { /* noop */ }
@@ -421,7 +458,47 @@ export function PlayerProvider({ children }) {
       return;
     }
 
-    // 4) Sin temas afines en el catálogo: repetimos la lista si se pidió.
+    // 4) «Radio de la canción»: la cola recalculada en segundo plano manda.
+    //    Se evitan las ya escuchadas; si todas lo están, seguimos con la
+    //    primera para que la música nunca se corte.
+    const dynamic = autoQueueRef.current || [];
+    if (dynamic.length) {
+      const fresh = dynamic.find((x) => x && x.id !== current.id && !visitedRef.current.has(x.id)) ||
+        dynamic.find((x) => x && x.id !== current.id) || dynamic[0];
+      if (fresh) {
+        playAutoFromQueue(fresh);
+        return;
+      }
+    }
+
+    // 5) Sin cola dinámica todavía: siguiente por afinidad del catálogo.
+    //    La puntuación usa género, BPM, energía y variedad de artistas.
+    const pool = mergeTracks(list, globalPool()).filter(
+      (t) => t && t.id !== current.id && !visitedRef.current.has(t.id),
+    );
+    const smart = shuffle
+      ? smartRelated(current, { pool, limit: 32, recent: playedHistoryRef.current })
+      : [];
+    const pick = shuffle
+      ? (smart[Math.floor(Math.random() * smart.length)] || smart[0] || null)
+      : pickSmartNext({
+        current,
+        candidates: pool,
+        recent: playedHistoryRef.current,
+        exclude: [current.id],
+      });
+
+    if (pick) {
+      const at = list.findIndex((t) => t.id === pick.id);
+      if (at >= 0) playNow(pick, list, at, []);
+      else {
+        const merged = [...list, pick];
+        playNow(pick, merged, merged.length - 1, []);
+      }
+      return;
+    }
+
+    // 6) Sin temas afines en el catálogo: repetimos la lista si se pidió.
     if (repeat === 'all') {
       const first = list.findIndex((t) => t.id !== current.id);
       const at = first >= 0 ? first : 0;
@@ -429,21 +506,7 @@ export function PlayerProvider({ children }) {
       return;
     }
 
-    // 5) Cola automática: recomendaciones traídas en segundo plano. Se evitan
-    //    las ya escuchadas; si todas lo están, seguimos con la primera para
-    //    que la música nunca se corte.
-    const dynamic = autoQueueRef.current || [];
-    if (dynamic.length) {
-      const fresh = dynamic.find((x) => x && x.id !== current.id && !visitedRef.current.has(x.id)) ||
-        dynamic.find((x) => x && x.id !== current.id) || dynamic[0];
-      if (fresh) {
-        const rest = dynamic.filter((x) => x && x.id !== fresh.id);
-        playAutoFromQueue(fresh, rest);
-        return;
-      }
-    }
-
-    // 6) Aún no hay recomendaciones: esperamos a que lleguen y continuamos.
+    // 7) Aún no hay recomendaciones: esperamos a que lleguen y continuamos.
     //    Si el servidor no devuelve nada, seguimos con el catálogo local para
     //    que la música nunca se detenga.
     pendingAdvanceRef.current = true;
@@ -451,13 +514,20 @@ export function PlayerProvider({ children }) {
     try { ytRef.current?.pauseVideo?.(); } catch { /* noop */ }
     const localFallback = () => {
       if (!pendingAdvanceRef.current) return;
-      const pool = mergeTracks(list, globalPool()).filter(
+      const fallbackPool = mergeTracks(list, globalPool()).filter(
         (t) => t && t.id !== current.id && !visitedRef.current.has(t.id),
       );
-      const any = pool[0];
-      if (!any) return;
+      const next = pickSmartNext({
+        current,
+        candidates: fallbackPool,
+        recent: playedHistoryRef.current,
+        exclude: [current.id],
+      }) || fallbackPool[0];
+      if (!next) return;
       pendingAdvanceRef.current = false;
-      playNow(any, [...list, any], list.length, []);
+      const at = list.findIndex((t) => t.id === next.id);
+      if (at >= 0) playNow(next, list, at, []);
+      else playNow(next, [...list, next], list.length, []);
     };
     refreshRelated(current)
       .then((items) => { if (!items?.length) localFallback(); })
@@ -484,12 +554,16 @@ export function PlayerProvider({ children }) {
       let idx = startId ? list.findIndex((t) => t.id === startId) : 0;
       if (idx < 0) idx = 0;
       visitedRef.current = new Set();
+      playedHistoryRef.current = [];
       playNow(list[idx], list, idx, []);
     },
     playRadio(seed) {
-      const related = strictRelated(seed, { pool: globalPool(), limit: 80 });
+      if (!seed) return;
       visitedRef.current = new Set([seed.id]);
-      playNow(seed, [seed, ...related], 0, []);
+      playedHistoryRef.current = [seed];
+      // El contexto empieza solo con la semilla: la radio se recalcula para
+      // cada canción en segundo plano, en vez de arrastrar una lista fija.
+      playNow(seed, [seed], 0, []);
     },
     toggle() {
       if (audioMode && audioRef.current) {
@@ -583,18 +657,19 @@ export function PlayerProvider({ children }) {
       const items = autoQueueRef.current || [];
       const item = items[pos];
       if (!item) return;
-      playAutoFromQueue(item, items.slice(pos + 1));
+      playAutoFromQueue(item);
     },
     /* Vuelve a pedir recomendaciones para la canción actual */
     refreshRelated() {
       if (track) refreshRelated(track);
     },
-    /* Reproduce música relacionada (mismo artista o género, nunca otro estilo) */
+    /* Reproduce la radio de la canción (misma vibra, varios artistas) */
     playRelated() {
       if (!track) return;
-      const rel = strictRelated(track, {
+      const rel = smartRelated(track, {
         pool: mergeTracks(contextList, globalPool()),
         limit: 30,
+        recent: playedHistoryRef.current,
       });
       if (!rel.length) return;
       playNow(rel[0], [track, ...rel], 1, []);
@@ -665,10 +740,12 @@ export function PlayerProvider({ children }) {
   const value = useMemo(() => {
     // Lo que sonará después, cuando la cola se vacíe (resto de la lista en curso)
     const upcoming = (index >= 0 && contextList.length > index + 1) ? contextList.slice(index + 1) : [];
-    // Recomendaciones dinámicas si ya llegaron; si no, afinidad local inmediata.
-    const fallbackRelated = track ? strictRelated(track, {
+    // Recomendaciones dinámicas si ya llegaron; si no, radio local inmediata
+    // calculada con el mismo motor (género, BPM, energía y diversidad).
+    const fallbackRelated = track ? smartRelated(track, {
       pool: mergeTracks(contextList, globalPool()),
       limit: 8,
+      recent: playedHistoryRef.current,
     }) : [];
     const recommended = autoQueue.length ? autoQueue : fallbackRelated;
     return {

@@ -6,7 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../components/Icon.jsx';
 import Logo from '../components/Logo.jsx';
 import { DJAvatar } from '../components/DJ.jsx';
-import { GENRES, ARTISTS } from '../data/catalog.js';
+import { ARTISTS } from '../data/catalog.js';
+import { useCategories } from '../api/categories.js';
 
 /* Fila de interruptor (toggle) */
 function Toggle({ on, onChange, label, sub, pro }) {
@@ -42,6 +43,7 @@ export default function Settings() {
   const { state, dispatch } = useApp();
   const p = usePlayer();
   const { t } = useI18n();
+  const { categories } = useCategories();
   const toast = useToast();
   const nav = useNavigate();
   const s = state.settings;
@@ -243,7 +245,7 @@ export default function Settings() {
         <h2><Icon name="sparkles" size={16} /> {t('favoriteGenres')}</h2>
         <p className="muted pad small">{t('favoriteGenresHint')}</p>
         <div className="taste-grid">
-          {GENRES.map((g) => {
+          {categories.map((g) => {
             const on = (state.library.favoriteGenres || []).includes(g.id);
             return (
               <button

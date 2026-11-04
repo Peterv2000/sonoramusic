@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { useApp } from './state/AppState.jsx';
@@ -8,7 +9,9 @@ import BottomNav from './components/BottomNav.jsx';
 import MiniPlayer from './components/MiniPlayer.jsx';
 import NowPlayingPanel from './components/NowPlayingPanel.jsx';
 import FullPlayer from './components/FullPlayer.jsx';
+import SupportBot from './components/SupportBot.jsx';
 import { ToastProvider } from './components/Toast.jsx';
+import { installErrorGuard } from './api/telemetry.js';
 import Home from './pages/Home.jsx';
 import Explore from './pages/Explore.jsx';
 import Library from './pages/Library.jsx';
@@ -29,6 +32,9 @@ export default function App() {
   const { state } = useApp();
   const { fullOpen } = usePlayer();
   const location = useLocation();
+
+  // QA Robot: registra carátulas/recursos caídos sin interrumpir la app.
+  useEffect(() => installErrorGuard(), []);
 
   return (
     <I18nCtx.Provider value={state.settings.lang}>
@@ -64,6 +70,7 @@ export default function App() {
           <NowPlayingPanel />
           <MiniPlayer />
           <BottomNav />
+          <SupportBot />
           {fullOpen && <FullPlayer />}
         </div>
       </ToastProvider>

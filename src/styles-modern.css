@@ -668,6 +668,7 @@ html[data-theme='light'] .mini-volume { background: rgba(0, 0, 0, 0.16); }
 }
 .np-card-head button:hover { color: var(--fg); text-decoration: underline; }
 .np-muted { margin: 4px 0; font-size: 12px; color: var(--fg-2); }
+.np-radio-hint { margin: 0 0 6px; font-size: 11px; opacity: 0.8; }
 .np-lyric-lines { display: flex; flex-direction: column; gap: 4px; }
 .np-lyric-lines p {
   margin: 0;
@@ -1257,3 +1258,161 @@ html[data-theme='light'] .mini-volume { background: rgba(0, 0, 0, 0.16); }
   .search-empty-state { padding: 38px 16px; }
 }
 
+
+/* ── Asistente de soporte flotante (QA Robot) ─────────────────────────── */
+.support-fab {
+  position: fixed;
+  right: 22px;
+  bottom: calc(var(--mini-h) + var(--bottom-h) + 22px);
+  z-index: 70;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: var(--grad-accent, linear-gradient(135deg, #ff0033, #ff7a00));
+  box-shadow: 0 14px 34px rgba(255, 0, 51, 0.38);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.support-fab:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 18px 40px rgba(255, 0, 51, 0.5); }
+.support-fab.is-open { transform: rotate(90deg); }
+.support-fab-dot {
+  position: absolute;
+  top: 5px; right: 5px;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: #4ade80;
+  border: 2px solid var(--bg);
+}
+.support-panel {
+  position: fixed;
+  right: 22px;
+  bottom: calc(var(--mini-h) + var(--bottom-h) + 82px);
+  z-index: 71;
+  width: min(380px, calc(100vw - 24px));
+  max-height: min(560px, calc(100vh - 170px));
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--bg-2) 94%, transparent);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+.support-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 15px 16px 10px;
+}
+.support-head strong { display: block; font-size: 15px; }
+.support-head small { color: var(--fg-2); font-size: 12px; }
+.support-x { padding: 4px; border-radius: 8px; color: var(--fg-2); }
+.support-x:hover { background: var(--bg-3); color: var(--fg); }
+.support-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 12px 10px;
+  border-bottom: 1px solid var(--line);
+}
+.support-tabs button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 6px;
+  border-radius: 9px;
+  color: var(--fg-2);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.support-tabs button.active { color: #fff; background: var(--grad-accent, linear-gradient(135deg, #ff0033, #ff7a00)); }
+.support-body { padding: 12px 14px 16px; overflow-y: auto; }
+.support-faq details { border-bottom: 1px solid var(--line); padding: 9px 0; }
+.support-faq summary { cursor: pointer; font-size: 13px; font-weight: 700; }
+.support-faq p { margin: 8px 0 2px; color: var(--fg-2); font-size: 12.5px; line-height: 1.5; }
+.support-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--bg-3);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.support-status.ok { color: #4ade80; }
+.support-status.warn { color: #fbbf24; }
+.support-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 7px 12px;
+  margin: 12px 0;
+  font-size: 12px;
+}
+.support-grid span { color: var(--fg-2); }
+.support-grid b { text-align: right; font-weight: 600; }
+.support-err { color: #fbbf24; font-size: 11.5px; word-break: break-word; }
+.support-report .muted { font-size: 12.5px; line-height: 1.5; }
+.support-track { display: flex; align-items: center; gap: 10px; margin: 10px 0; padding: 8px; border-radius: 10px; background: var(--bg-3); }
+.support-track img { width: 42px; height: 34px; border-radius: 6px; object-fit: cover; }
+.support-track strong { display: block; font-size: 12.5px; }
+.support-track small { color: var(--fg-2); font-size: 11px; }
+.support-report textarea {
+  width: 100%;
+  margin: 6px 0 10px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--bg-3);
+  color: var(--fg);
+  resize: vertical;
+}
+.support-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.support-thanks { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 26px 10px; text-align: center; color: #4ade80; }
+.support-thanks p { margin: 0; color: var(--fg); font-size: 13px; }
+@media (max-width: 860px) {
+  .support-fab { right: 14px; bottom: calc(var(--mini-h) + var(--bottom-h) + 16px); }
+  .support-panel { right: 10px; bottom: calc(var(--mini-h) + var(--bottom-h) + 74px); }
+}
+
+/* ── Admin: categorías dinámicas y QA Robot ────────────────────────────── */
+.admin-live-list { display: flex; flex-direction: column; gap: 7px; margin-top: 10px; }
+.admin-live-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 9px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-2, var(--bg-2));
+  flex-wrap: wrap;
+}
+.admin-live-row.is-off { opacity: 0.56; }
+.admin-live-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.admin-live-info { flex: 1; min-width: 120px; }
+.admin-live-info strong { display: block; font-size: 12.5px; }
+.admin-live-info small { display: block; color: var(--fg-2); font-size: 10.5px; }
+.admin-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin: 10px 0; }
+.admin-check { display: flex; align-items: center; gap: 8px; font-size: 12.5px; margin: 4px 0 10px; }
+.admin-errors-table { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; max-height: 520px; overflow-y: auto; }
+.admin-error-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 8px 9px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2, var(--bg-2));
+}
+.admin-error-main { flex: 1; min-width: 0; }
+.admin-error-main strong { display: block; font-size: 12.5px; overflow-wrap: anywhere; }
+.admin-error-main small { display: block; color: var(--fg-2); font-size: 10.5px; overflow-wrap: anywhere; }
+.admin-live .field span { font-size: 11px; }
+@media (max-width: 860px) {
+  .admin-form-grid { grid-template-columns: 1fr; }
+}

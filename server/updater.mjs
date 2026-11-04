@@ -240,11 +240,13 @@ async function updateCatalog(log) {
     const found = await consultar(q, CONFIG.perQuery, log);
     if (found.length) {
       const genre = guessGenre(q);
-      const fresh = dedupe(found, seen).map((tr) => ({
+      /* `guessMoods` es asíncrona: sin `await` se guardaba una promesa y el
+         JSON acababa con `moods: {}`, perdiendo la pista de estado de ánimo. */
+      const fresh = await Promise.all(dedupe(found, seen).map(async (tr) => ({
         ...tr,
         genre,
-        moods: guessMoods(`${tr.title} ${tr.artist}`, genre),
-      }));
+        moods: await guessMoods(`${tr.title} ${tr.artist}`, genre),
+      })));
       tracks.push(...fresh);
       log(`  · catálogo «${q}» → +${fresh.length} (total ${tracks.length})`);
     }

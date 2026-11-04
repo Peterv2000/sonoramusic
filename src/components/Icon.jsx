@@ -102,6 +102,10 @@ const PATHS = {
   equalizer: '<path d="M6 4v16"/><path d="M6 9h2.5"/><path d="M12 4v16"/><path d="M12 14h2.5"/><path d="M18 4v16"/><path d="M18 7h2.5"/>',
   wave: '<path d="M4 12h2l2-5 3 10 3-14 3 9h3"/>',
   edit: '<path d="M4 20h4l10-10-4-4L4 16z"/><path d="m14 6 4 4"/>',
+  help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.6 2.6 0 1 1 3.8 2.3c-.8.4-1.3 1-1.3 1.9"/><circle cx="12" cy="17" r="0.9" fill="currentColor" stroke="none"/>',
+  flag: '<path d="M5 21V4"/><path d="M5 5h10.5l-1.5 3 1.5 3H5"/>',
+  pulse: '<path d="M3 12h3.5l2-5 3.5 10 2.5-7 1.5 2H21"/>',
+  refresh: '<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>',
 };
 
 /** Emoji de reserva para nombres sin icono SVG (compatibilidad). */

@@ -1,0 +1,207 @@
+{
+ "version": 1,
+ "updatedAt": 1793674424135,
+ "categories": [
+  {
+   "id": "Pop",
+   "label": "Pop",
+   "tag": "Hits que no dejan de sonar",
+   "tagEn": "Hits that never stop",
+   "color": "#e91e63",
+   "icon": "sparkles",
+   "cover": "https://i.ytimg.com/vi/JGwWNGJdvx8/hqdefault.jpg",
+   "genres": [
+    "Pop",
+    "Balada"
+   ],
+   "queries": [
+    "pop hits",
+    "baladas romanticas"
+   ],
+   "active": true,
+   "sort": 10,
+   "updatedAt": 1793673550404
+  },
+  {
+   "id": "Rock",
+   "label": "Rock",
+   "tag": "Guitarras e himnos eternos",
+   "tagEn": "Guitars and timeless anthems",
+   "color": "#f44336",
+   "icon": "lightning",
+   "cover": "https://i.ytimg.com/vi/fJ9rUzIMcZQ/hqdefault.jpg",
+   "genres": [
+    "Rock",
+    "Metal",
+    "Punk",
+    "Grunge"
+   ],
+   "queries": [
+    "rock clasico",
+    "rock hits"
+   ],
+   "active": true,
+   "sort": 20,
+   "updatedAt": 1793673550404
+  },
+  {
+   "id": "Latino",
+   "label": "Latino",
+   "tag": "Ritmo y sabor de fiesta",
+   "tagEn": "Party rhythm and flavor",
+   "color": "#ff9800",
+   "icon": "fire",
+   "cover": "https://i.ytimg.com/vi/kJQP7kiw5Fk/hqdefault.jpg",
+   "genres": [
+    "Latino",
+    "Reggaetón",
+    "Salsa",
+    "Bachata",
+    "Cumbia",
+    "Merengue",
+    "Vallenato",
+    "Regional Mexicano",
+    "Popular",
+    "Despecho",
+    "Ranchera"
+   ],
+   "queries": [
+    "latin music",
+    "reggaeton",
+    "musica popular"
+   ],
+   "active": true,
+   "sort": 30,
+   "updatedAt": 1793673550404
+  },
+  {
+   "id": "Electrónica",
+   "label": "Electrónica",
+   "tag": "Beats, luces y sintetizadores",
+   "tagEn": "Beats, lights and synths",
+   "color": "#9c27b0",
+   "icon": "wave",
+   "cover": "https://i.ytimg.com/vi/60ItHLz5WEA/hqdefault.jpg",
+   "genres": [
+    "Electrónica",
+    "EDM",
+    "House",
+    "Techno",
+    "Trance",
+    "Dance"
+   ],
+   "queries": [
+    "electronic dance hits",
+    "edm"
+   ],
+   "active": true,
+   "sort": 40,
+   "updatedAt": 1793673550404
+  },
+  {
+   "id": "Hip-Hop",
+   "label": "Hip-Hop",
+   "tag": "Flow, rimas y actitud",
+   "tagEn": "Flow, rhymes and attitude",
+   "color": "#8d6e63",
+   "icon": "mic",
+   "cover": "https://i.ytimg.com/vi/QK8mJJJvaes/hqdefault.jpg",
+   "genres": [
+    "Hip-Hop",
+    "Rap",
+    "Trap",
+    "Drill"
+   ],
+   "queries": [
+    "hip hop hits",
+    "rap"
+   ],
+   "active": true,
+   "sort": 50,
+   "updatedAt": 1793673550404
+  },
+  {
+   "id": "Lo-Fi",
+   "label": "Lo-Fi",
+   "tag": "Calma para estudiar y crear",
+   "tagEn": "Calm to study and create",
+   "color": "#4caf50",
+   "icon": "headphones",
+   "cover": "https://i.ytimg.com/vi/5qap5aO4i9A/hqdefault.jpg",
+   "genres": [
+    "Lo-Fi",
+    "Lofi",
+    "Chillhop",
+    "Ambient"
+   ],
+   "queries": [
+    "lofi chill beats",
+    "chillhop"
+   ],
+   "active": true,
+   "sort": 60,
+   "updatedAt": 1793673550404
+  },
+  {
+   "id": "R&B",
+   "label": "R&B",
+   "tag": "Soul, groove y voz",
+   "tagEn": "Soul, groove and voice",
+   "color": "#7e57c2",
+   "icon": "heart",
+   "cover": "https://i.ytimg.com/vi/450p7goxZqg/hqdefault.jpg",
+   "genres": [
+    "R&B",
+    "Soul",
+    "Funk"
+   ],
+   "queries": [
+    "r&b soul hits"
+   ],
+   "active": true,
+   "sort": 70,
+   "updatedAt": 1793673550404
+  },
+  {
+   "id": "K-Pop",
+   "label": "K-Pop",
+   "tag": "Pop coreano que conquista",
+   "tagEn": "Korean pop that takes over",
+   "color": "#ec407a",
+   "icon": "sparkles",
+   "cover": "https://i.ytimg.com/vi/gdZLi9oWNZg/hqdefault.jpg",
+   "genres": [
+    "K-Pop",
+    "J-Pop"
+   ],
+   "queries": [
+    "kpop hits"
+   ],
+   "active": true,
+   "sort": 80,
+   "updatedAt": 1793674424135
+  },
+  {
+   "id": "Indie",
+   "label": "Indie",
+   "tag": "Nuevas voces, sonidos libres",
+   "tagEn": "New voices, free sounds",
+   "color": "#26a69a",
+   "icon": "wave",
+   "cover": "https://i.ytimg.com/vi/1G4isv_Fylg/hqdefault.jpg",
+   "genres": [
+    "Indie",
+    "Alternative",
+    "Alternativo",
+    "Folk"
+   ],
+   "queries": [
+    "indie hits",
+    "indie alternative"
+   ],
+   "active": true,
+   "sort": 90,
+   "updatedAt": 1793673550404
+  }
+ ]
+}

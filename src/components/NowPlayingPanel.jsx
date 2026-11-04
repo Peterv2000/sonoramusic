@@ -161,9 +161,12 @@ export default function NowPlayingPanel() {
 
       <section className="np-card np-queue">
         <header className="np-card-head">
-          <span><Icon name="queue" size={14} /> {t('upNext')}</span>
+          <span title={usingAuto ? t('smartQueueHint') : undefined}>
+            <Icon name={usingAuto ? 'radio' : 'queue'} size={14} /> {usingAuto ? t('radioOfSong') : t('upNext')}
+          </span>
           <button onClick={() => p.openFull(true)}>{t('queue')}</button>
         </header>
+        {usingAuto && <p className="np-muted np-radio-hint">{t('upNextInSonora')}</p>}
         {queue.length === 0 && <p className="np-muted">{t('queueEmpty')}</p>}
         {queue.slice(0, 4).map((tr, i) => (
           <button

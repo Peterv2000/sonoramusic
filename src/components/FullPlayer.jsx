@@ -223,9 +223,10 @@ export default function FullPlayer() {
           </div>
 
           <h4 className="q-next-title">
-            {t('upNext')} {upNext.length > 0 && <span className="q-count">{upNext.length}</span>}
-            {usingAuto && <span className="live-badge"><Icon name="sparkles" size={12} /> {t('automaticQueue')}</span>}
+            {usingAuto ? t('upNextInSonora') : t('upNext')} {upNext.length > 0 && <span className="q-count">{upNext.length}</span>}
+            {usingAuto && <span className="live-badge"><Icon name="radio" size={12} /> {t('radioOfSong')}</span>}
           </h4>
+          {usingAuto && <small className="muted q-radio-hint">{t('smartQueueHint')}</small>}
 
           {upNext.length === 0 ? (
             <div className="q-empty">

@@ -4,9 +4,10 @@ import { useApp } from '../state/AppState.jsx';
 import { usePlayer } from '../player/PlayerContext.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
 import { Card, Shelf, TrackRow } from '../components/widgets.jsx';
-import { TRACKS, MIXES, STATIONS, ALBUMS, ARTISTS, GENRES, trackById, nf } from '../data/catalog.js';
+import { TRACKS, MIXES, STATIONS, ALBUMS, ARTISTS, trackById, nf } from '../data/catalog.js';
 import { searchYouTubeDetailed, suggestYouTube } from '../api/youtubeSearch.js';
 import { getCatalog, warmLookup } from '../api/liveData.js';
+import { useCategories } from '../api/categories.js';
 import Icon from '../components/Icon.jsx';
 
 const TABS = ['all', 'songs', 'artists', 'albums', 'playlists'];
@@ -28,6 +29,7 @@ export default function Search() {
   const p = usePlayer();
   const nav = useNavigate();
   const { t } = useI18n();
+  const { categories } = useCategories();
   const [params] = useSearchParams();
 
   const urlQ = params.get('q') || '';
@@ -289,7 +291,7 @@ export default function Search() {
                   <div className="discover-block">
                     <div className="discover-title"><Icon name="sparkles" size={14} /> {t('genresToExplore')}</div>
                     <div className="discover-genres">
-                      {GENRES.map((g) => (
+                      {categories.map((g) => (
                         <button
                           type="button"
                           key={g.id}

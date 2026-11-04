@@ -6,11 +6,12 @@ import { useI18n } from '../i18n/useI18n.jsx';
 import { Card, Shelf, TrackRow, GenreGrid } from '../components/widgets.jsx';
 import Icon from '../components/Icon.jsx';
 import {
-  TRACKS, MIXES, STATIONS, MOODS, GENRES, trackById,
+  TRACKS, MIXES, STATIONS, MOODS, trackById,
   weeklyDiscovery, dailyMixes, newReleases, topCharts, ARTISTS, formatViews, seedShuffle,
 } from '../data/catalog.js';
 import { useLibraryData } from '../hooks/useLibraryData.js';
 import { getPersonalizedFeed, refreshProfile } from '../ai/personalize.js';
+import { categoryTag, fetchCategoryTracks, useCategories } from '../api/categories.js';
 
 /* Cada píldora decide qué bloques del centro se muestran. */
 const FILTER_SECTIONS = {
@@ -28,8 +29,9 @@ export default function Home() {
   const p = usePlayer();
   const nav = useNavigate();
   const loc = useLocation();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const lib = useLibraryData();
+  const { categories } = useCategories();
   const all = Array.isArray(lib.tracks) && lib.tracks.length ? lib.tracks : TRACKS;
   const [homeSeed, setHomeSeed] = useState(() => Date.now());
   const [filter, setFilter] = useState('all');
@@ -81,7 +83,10 @@ export default function Home() {
     () => seedShuffle(topCharts('Global'), homeSeed + 37).slice(0, 8),
     [homeSeed]
   );
-  const genres = useMemo(() => seedShuffle(GENRES, homeSeed + 41).slice(0, 6), [homeSeed]);
+  const genres = useMemo(
+    () => seedShuffle(categories.map((c) => ({ ...c, tag: categoryTag(c, lang) })), homeSeed + 41).slice(0, 6),
+    [categories, homeSeed, lang],
+  );
   const forYouMixes = useMemo(() => seedShuffle(MIXES, homeSeed + 67), [homeSeed]);
   const stations = useMemo(() => seedShuffle(STATIONS, homeSeed + 71), [homeSeed]);
   const trends = useMemo(() => seedShuffle(all, homeSeed + 89).slice(0, 12), [all, homeSeed]);
@@ -166,9 +171,16 @@ export default function Home() {
           </div>
           <GenreGrid
             genres={genres}
-            countOf={(id) => (Array.isArray(all) ? all : TRACKS).filter((t) => t.genre === id).length}
+            countOf={(id) => categories.find((c) => c.id === id)?.count || (Array.isArray(all) ? all : TRACKS).filter((t) => t.genre === id).length}
             onPick={() => nav('/explore')}
-            onPlay={(id) => { const l = (Array.isArray(all) ? all : TRACKS).filter((t) => t.genre === id); if (l.length) p.playList(seedShuffle(l, homeSeed + 103)); }}
+            onPlay={async (id) => {
+              const remote = await fetchCategoryTracks(id);
+              const cat = categories.find((c) => c.id === id);
+              const wanted = new Set((cat?.genres || [id]).map((g) => String(g).toLowerCase()));
+              const local = (Array.isArray(all) ? all : TRACKS).filter((t) => wanted.has(String(t.genre || '').toLowerCase()));
+              const l = remote?.length ? remote : local;
+              if (l.length) p.playList(seedShuffle(l, homeSeed + 103));
+            }}
           />
         </section>
       )}

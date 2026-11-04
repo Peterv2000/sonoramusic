@@ -26,9 +26,16 @@ import { fileURLToPath } from 'node:url';
 import { searchYouTube, searchSuggestions } from './youtube.mjs';
 import {
   runUpdate, status as updaterStatus, readJson, writeJson, CONFIG,
-  guessGenre, guessMoods, CHART_TABS,
+  guessGenre, CHART_TABS,
 } from './updater.mjs';
+/* `guessMoods` del actualizador es asíncrona; aquí se necesita la versión
+   síncrona del clasificador para enriquecer la respuesta de búsqueda. */
+import { guessMoods } from './ai-curator.mjs';
 import { resolveTrack } from './resolver.mjs';
+import {
+  adminCategories, broadcast, categoryTracks, clearErrors, publicCategories,
+  readErrors, recordError, removeCategory, saveCategory, subscribeEvents,
+} from './live.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST = path.join(__dirname, '..', 'dist');
@@ -114,8 +121,15 @@ function proxyCover(url) {
   return `/api/cover/${b64url(url)}`;
 }
 
-function sanitizeSearchResults(list) {
+function sanitizeSearchResults(list, context = '') {
   if (!Array.isArray(list)) return [];
+  /* El query de origen aporta una pista de estilo cuando el proveedor no la
+     trae (p. ej. «reggaeton» → Reggaetón y Fiesta latina). El cliente afina
+     después con BPM, energía y bailabilidad. */
+  const contextGenre = context ? guessGenre(context) : '';
+  /* El proveedor marca todo como «Ritmo»; ese valor es un marcador de marca,
+     no un género. Solo se conserva un género real. */
+  const GENERIC_GENRE = /^(?:ritmo|sonora|otros|other|music|m[úu]sica|varios|unknown|canal|lista)$/i;
   return list.map((item) => {
     if (!item) return null;
     const kind = item.kind || 'video';
@@ -153,6 +167,11 @@ function sanitizeSearchResults(list) {
     const source = String(item.yt || '').replace(/^yt-/, '');
     if (!source) return null;
     const artist = !item.artist || item.artist === 'Ritmo' ? 'Sonora Music' : item.artist;
+    const ownGenre = String(item.genre || '').trim();
+    const genre = (ownGenre && !GENERIC_GENRE.test(ownGenre) ? ownGenre : contextGenre) || undefined;
+    const moods = Array.isArray(item.moods) && item.moods.length
+      ? item.moods
+      : (genre ? guessMoods(`${item.title || ''} ${item.artist || ''} ${context}`, genre) : undefined);
     return {
       track_id: `snr_${b64url(source)}`,
       title: item.title || '',
@@ -161,6 +180,8 @@ function sanitizeSearchResults(list) {
       cover_url: proxyCover(item.thumb || `https://i.ytimg.com/vi/${source}/hqdefault.jpg`),
       stream_url: `/api/stream/${b64url(source)}`,
       kind: 'video',
+      genre,
+      moods,
       duration: item.dur || item.duration || 0,
       views: item.views || 0,
     };
@@ -217,7 +238,7 @@ async function apiSearch(res, url) {
 
   const hit = cache.get(key);
   if (hit && Date.now() - hit.t < TTL) {
-    const results = sanitizeSearchResults(hit.v);
+    const results = sanitizeSearchResults(hit.v, q);
     return sendJson(res, 200, { query: q, deep, cached: true, source: 'sonora', count: results.length, results });
   }
 
@@ -227,7 +248,7 @@ async function apiSearch(res, url) {
     const warmHit = warm?.cache?.[q];
     if (warmHit?.v?.length) {
       cache.set(key, { t: warmHit.t, v: warmHit.v });
-      const results = sanitizeSearchResults(warmHit.v);
+      const results = sanitizeSearchResults(warmHit.v, q);
       return sendJson(res, 200, { query: q, deep, cached: true, warm: true, source: 'sonora', count: results.length, results });
     }
   }
@@ -236,7 +257,7 @@ async function apiSearch(res, url) {
     const results = await searchYouTube(q, { limit, pages, music: true, retries: 3 });
     cache.set(key, { t: Date.now(), v: results });
     if (cache.size > 200) cache.delete(cache.keys().next().value);
-    const clean = sanitizeSearchResults(results);
+    const clean = sanitizeSearchResults(results, q);
     sendJson(res, 200, { query: q, deep, source: 'sonora', count: clean.length, results: clean });
   } catch (err) {
     sendJson(res, 502, { error: 'no se pudo completar la búsqueda', detail: String(err.message || err) });
@@ -467,6 +488,92 @@ async function apiAdminSearch(res, url) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
+   API v1: categorías dinámicas, pistas, eventos SSE y QA Robot
+   ══════════════════════════════════════════════════════════════════════════ */
+
+function withProxiedCategory(category) {
+  return { ...category, cover: proxyCover(category.cover) };
+}
+
+function apiV1Categories(res) {
+  const catalog = readJson('catalog.json') || { tracks: [] };
+  const data = publicCategories(catalog);
+  sendJson(res, 200, {
+    ok: true,
+    updatedAt: data.updatedAt,
+    source: 'sonora',
+    categories: data.categories.map(withProxiedCategory),
+  });
+}
+
+function apiV1Tracks(res, url) {
+  const categoryId = (url.searchParams.get('category_id') || '').trim();
+  if (!categoryId) return sendJson(res, 400, { error: 'falta el parámetro category_id' });
+  const limit = Math.max(1, Math.min(300, Number(url.searchParams.get('limit')) || 150));
+  const result = categoryTracks(categoryId, {
+    catalog: readJson('catalog.json'),
+    curated: readJson('curated.json'),
+    limit,
+    coverProxy: proxyCover,
+  });
+  if (!result) return sendJson(res, 404, { error: 'categoría no encontrada o inactiva' });
+  sendJson(res, 200, {
+    ok: true,
+    category: withProxiedCategory(result.category),
+    updatedAt: result.updatedAt,
+    source: 'sonora',
+    count: result.tracks.length,
+    tracks: result.tracks,
+  });
+}
+
+function apiV1AdminCategories(res) {
+  const catalog = readJson('catalog.json') || { tracks: [] };
+  const data = adminCategories(catalog);
+  sendJson(res, 200, {
+    ok: true,
+    ...data,
+    source: 'sonora',
+  });
+}
+
+async function apiV1AdminCategoryWrite(req, res) {
+  let body;
+  try { body = await readBody(req, 200_000); } catch (e) { return sendJson(res, 400, { error: String(e.message || e) }); }
+  try {
+    if (req.method === 'DELETE' || body.action === 'delete') {
+      const id = body.id || body.category?.id;
+      const removed = removeCategory(id);
+      if (removed) broadcast('categories', { reason: 'delete', id, at: Date.now() });
+      return sendJson(res, removed ? 200 : 404, { ok: removed, removed });
+    }
+    const raw = body.category || body;
+    const category = saveCategory(raw);
+    broadcast('categories', { reason: 'save', id: category.id, at: Date.now() });
+    sendJson(res, 200, { ok: true, category });
+  } catch (e) {
+    sendJson(res, 400, { error: String(e.message || e) });
+  }
+}
+
+function apiV1AdminErrors(res, url) {
+  const limit = Number(url.searchParams.get('limit')) || 200;
+  sendJson(res, 200, { ok: true, ...readErrors(limit), source: 'sonora' });
+}
+
+async function apiV1Telemetry(req, res) {
+  let body;
+  try { body = await readBody(req, 120_000); } catch (e) { return sendJson(res, 400, { error: String(e.message || e) }); }
+  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').toString().split(',')[0].trim();
+  const entry = recordError(body, { ip });
+  broadcast('telemetry', {
+    id: entry.id, at: entry.at, type: entry.type, severity: entry.severity,
+    title: entry.title, artist: entry.artist, message: entry.message,
+  });
+  sendJson(res, 202, { ok: true, id: entry.id });
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
    Entrada única: devuelve true si la petición era del API.
    ══════════════════════════════════════════════════════════════════════════ */
 
@@ -478,7 +585,7 @@ export async function handleApi(req, res, url) {
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+      'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Token, Authorization',
     });
     res.end();
@@ -487,8 +594,30 @@ export async function handleApi(req, res, url) {
 
   if (!rateLimit(req, res)) return true;
 
-  if (pathname.startsWith('/api/admin/') || pathname === '/api/update') {
+  if (pathname.startsWith('/api/admin/') || pathname.startsWith('/api/v1/admin/') || pathname === '/api/update') {
     if (!checkAdmin(req, res)) return true;
+  }
+
+  if (pathname === '/api/v1/categories') { apiV1Categories(res); return true; }
+  if (pathname === '/api/v1/tracks') { apiV1Tracks(res, url); return true; }
+  if (pathname === '/api/v1/events') { subscribeEvents(req, res); return true; }
+  if (pathname === '/api/v1/telemetry/errors') {
+    if (req.method === 'POST') await apiV1Telemetry(req, res);
+    else sendJson(res, 405, { error: 'usa POST para reportar un error' });
+    return true;
+  }
+  if (pathname === '/api/v1/admin/categories') {
+    if (req.method === 'POST' || req.method === 'DELETE') await apiV1AdminCategoryWrite(req, res);
+    else apiV1AdminCategories(res);
+    return true;
+  }
+  if (pathname === '/api/v1/admin/errors') {
+    if (req.method === 'DELETE') {
+      clearErrors();
+      broadcast('telemetry', { reason: 'clear', at: Date.now() });
+      sendJson(res, 200, { ok: true });
+    } else apiV1AdminErrors(res, url);
+    return true;
   }
 
   if (pathname.startsWith('/api/cover/')) { apiCover(res, pathname); return true; }
@@ -525,7 +654,7 @@ export async function handleApi(req, res, url) {
         updatedAt: data.updatedAt,
         query: q,
         found: Boolean(hit?.v?.length),
-        results: sanitizeSearchResults(hit?.v || []),
+        results: sanitizeSearchResults(hit?.v || [], q),
       });
       return true;
     }

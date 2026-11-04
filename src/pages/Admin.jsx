@@ -3,6 +3,7 @@ import { useAuth } from '../auth/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/Toast.jsx';
 import Icon from '../components/Icon.jsx';
+import { AdminCategories, AdminErrors } from './AdminLive.jsx';
 
 const CFG_KEY = 'ritmo-admin-config-v1';
 const PAY_KEY = 'ritmo-admin-paystatus-v1';
@@ -265,6 +266,8 @@ export default function Admin() {
         <button className={`admin-tab ${tab === 'ads' ? 'active' : ''}`} onClick={() => setTab('ads')}><Icon name="globe" size={16} /> Anuncios</button>
         <button className={`admin-tab ${tab === 'devices' ? 'active' : ''}`} onClick={() => setTab('devices')}><Icon name="device" size={16} /> Dispositivos</button>
         <button className={`admin-tab ${tab === 'content' ? 'active' : ''}`} onClick={() => setTab('content')}><Icon name="link" size={16} /> Contenido</button>
+        <button className={`admin-tab ${tab === 'categories' ? 'active' : ''}`} onClick={() => setTab('categories')}><Icon name="sparkles" size={16} /> Categorías</button>
+        <button className={`admin-tab ${tab === 'monitor' ? 'active' : ''}`} onClick={() => setTab('monitor')}><Icon name="pulse" size={16} /> QA Robot</button>
       </nav>
 
       {tab === 'overview' && (
@@ -674,6 +677,9 @@ export default function Admin() {
           </div>
         </section>
       )}
+
+      {tab === 'categories' && <AdminCategories toast={toast} />}
+      {tab === 'monitor' && <AdminErrors toast={toast} />}
     </div>
   );
 }
