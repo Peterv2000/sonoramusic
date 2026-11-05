@@ -36,6 +36,9 @@ import {
   adminCategories, broadcast, categoryTracks, clearErrors, publicCategories,
   readErrors, recordError, removeCategory, saveCategory, subscribeEvents,
 } from './live.mjs';
+import {
+  catalogTracks, homeFeed, matchesMood, readHistory, recordListen,
+} from './home.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST = path.join(__dirname, '..', 'dist');
@@ -508,23 +511,145 @@ function apiV1Categories(res) {
 
 function apiV1Tracks(res, url) {
   const categoryId = (url.searchParams.get('category_id') || '').trim();
-  if (!categoryId) return sendJson(res, 400, { error: 'falta el parámetro category_id' });
+  const mood = (url.searchParams.get('mood') || '').trim();
+  const genre = (url.searchParams.get('genre') || '').trim();
+  const q = (url.searchParams.get('q') || '').replace(/\s+/g, ' ').trim();
+  if (!categoryId && !mood && !genre && !q) {
+    return sendJson(res, 400, { error: 'envía category_id, mood, genre o q' });
+  }
+
   const limit = Math.max(1, Math.min(300, Number(url.searchParams.get('limit')) || 150));
-  const result = categoryTracks(categoryId, {
-    catalog: readJson('catalog.json'),
-    curated: readJson('curated.json'),
-    limit,
-    coverProxy: proxyCover,
-  });
-  if (!result) return sendJson(res, 404, { error: 'categoría no encontrada o inactiva' });
+  const catalog = readJson('catalog.json');
+  const curated = readJson('curated.json');
+
+  let tracks = [];
+  let category = null;
+  let updatedAt = 0;
+
+  if (categoryId) {
+    const result = categoryTracks(categoryId, {
+      catalog, curated, limit: Math.max(limit, 120), coverProxy: proxyCover,
+    });
+    if (!result) return sendJson(res, 404, { error: 'categoría no encontrada o inactiva' });
+    tracks = result.tracks;
+    category = result.category;
+    updatedAt = result.updatedAt;
+  } else {
+    /* Con mood hay que filtrar sobre el catálogo completo y recortar DESPUÉS;
+       si se recorta antes, un chip como «Fiesta latina» pierde casi todas sus
+       coincidencias porque viven en la categoría Latino. */
+    tracks = catalogTracks({
+      catalog, curated, coverProxy: proxyCover, genre, q, limit: mood ? 1200 : 300,
+    });
+  }
+
+  if (mood) tracks = tracks.filter((track) => matchesMood(track, mood));
+  tracks = tracks.slice(0, limit);
+
   sendJson(res, 200, {
     ok: true,
-    category: withProxiedCategory(result.category),
-    updatedAt: result.updatedAt,
+    category: category ? withProxiedCategory(category) : null,
+    mood: mood || null,
+    genre: genre || null,
+    query: q || null,
+    updatedAt,
     source: 'sonora',
-    count: result.tracks.length,
-    tracks: result.tracks,
+    count: tracks.length,
+    tracks,
   });
+}
+
+/* ── Inicio dinámico + historial de escucha ─────────────────────────────── */
+
+function apiV1Home(res, url) {
+  const userId = (url.searchParams.get('user_id') || url.searchParams.get('userId') || '').trim();
+  const lang = (url.searchParams.get('lang') || 'es').trim();
+  const mood = (url.searchParams.get('mood') || '').trim();
+  const seedParam = Number(url.searchParams.get('seed'));
+  const seed = Number.isFinite(seedParam) && seedParam > 0 ? seedParam : Date.now();
+  const limit = Math.max(8, Math.min(24, Number(url.searchParams.get('limit')) || 12));
+
+  const feed = homeFeed({
+    userId,
+    lang,
+    mood,
+    seed,
+    limit,
+    catalog: readJson('catalog.json'),
+    curated: readJson('curated.json'),
+    coverProxy: proxyCover,
+  });
+  sendJson(res, 200, feed);
+}
+
+async function apiV1History(req, res, url) {
+  if (req.method === 'GET') {
+    const userId = (url.searchParams.get('user_id') || url.searchParams.get('userId') || '').trim();
+    return sendJson(res, 200, { ok: true, source: 'sonora', ...readHistory(userId) });
+  }
+  let body;
+  try { body = await readBody(req, 80_000); } catch (e) { return sendJson(res, 400, { error: String(e.message || e) }); }
+  const saved = recordListen({
+    userId: body.userId || body.user_id || '',
+    track: body.track || body,
+    categoryId: body.categoryId || body.category_id || '',
+  });
+  if (!saved) return sendJson(res, 400, { error: 'pista no válida' });
+  sendJson(res, 202, { ok: true, source: 'sonora', ...saved });
+}
+
+/* ── Versión / actualización en vivo de la APK ──────────────────────────── */
+const VERSION_FILE = 'version.json';
+
+function readVersion() {
+  let pkgVersion = '1.0.0';
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+    if (pkg?.version) pkgVersion = String(pkg.version);
+  } catch { /* sin package.json */ }
+  const saved = readJson(VERSION_FILE) || {};
+  return {
+    web: String(saved.web || pkgVersion),
+    apk: {
+      version: String(saved?.apk?.version || pkgVersion),
+      url: String(saved?.apk?.url || ''),
+      notes: String(saved?.apk?.notes || ''),
+      mandatory: saved?.apk?.mandatory === true,
+      updatedAt: Number(saved?.apk?.updatedAt) || 0,
+    },
+    updatedAt: Number(saved.updatedAt) || 0,
+  };
+}
+
+function apiV1Version(res) {
+  sendJson(res, 200, {
+    ok: true,
+    source: 'sonora',
+    serverTime: Date.now(),
+    api: 'v1',
+    ...readVersion(),
+  });
+}
+
+async function apiV1AdminVersion(req, res) {
+  let body;
+  try { body = await readBody(req, 40_000); } catch (e) { return sendJson(res, 400, { error: String(e.message || e) }); }
+  const current = readVersion();
+  const patch = body?.apk || body || {};
+  const next = {
+    web: String(body.web || current.web),
+    apk: {
+      version: String(patch.version || current.apk.version),
+      url: String(patch.url || current.apk.url).slice(0, 500),
+      notes: String(patch.notes || current.apk.notes).slice(0, 500),
+      mandatory: patch.mandatory === true,
+      updatedAt: Date.now(),
+    },
+    updatedAt: Date.now(),
+  };
+  writeJson(VERSION_FILE, next);
+  broadcast('version', { reason: 'save', at: Date.now(), ...next });
+  sendJson(res, 200, { ok: true, source: 'sonora', ...next });
 }
 
 function apiV1AdminCategories(res) {
@@ -599,6 +724,9 @@ export async function handleApi(req, res, url) {
   }
 
   if (pathname === '/api/v1/categories') { apiV1Categories(res); return true; }
+  if (pathname === '/api/v1/home' || pathname === '/api/v1/home/feed') { apiV1Home(res, url); return true; }
+  if (pathname === '/api/v1/history') { await apiV1History(req, res, url); return true; }
+  if (pathname === '/api/v1/version') { apiV1Version(res); return true; }
   if (pathname === '/api/v1/tracks') { apiV1Tracks(res, url); return true; }
   if (pathname === '/api/v1/events') { subscribeEvents(req, res); return true; }
   if (pathname === '/api/v1/telemetry/errors') {
@@ -609,6 +737,11 @@ export async function handleApi(req, res, url) {
   if (pathname === '/api/v1/admin/categories') {
     if (req.method === 'POST' || req.method === 'DELETE') await apiV1AdminCategoryWrite(req, res);
     else apiV1AdminCategories(res);
+    return true;
+  }
+  if (pathname === '/api/v1/admin/version') {
+    if (req.method === 'GET') apiV1Version(res);
+    else await apiV1AdminVersion(req, res);
     return true;
   }
   if (pathname === '/api/v1/admin/errors') {
