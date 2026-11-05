@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useI18n } from '../i18n/useI18n.jsx';
 import { usePlayer } from '../player/PlayerContext.jsx';
 import Icon from './Icon.jsx';
-import { reportIssue, runDiagnostics } from '../api/telemetry.js';
+import { clearLocalCaches, reportIssue, runDiagnostics } from '../api/telemetry.js';
 
 /* Asistente flotante: FAQs, diagnóstico automático y reporte en un toque. */
 export default function SupportBot() {
@@ -12,6 +12,8 @@ export default function SupportBot() {
   const [tab, setTab] = useState('faq');
   const [diag, setDiag] = useState(null);
   const [checking, setChecking] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [cacheDone, setCacheDone] = useState(false);
   const [note, setNote] = useState('');
   const [sent, setSent] = useState(false);
 
@@ -26,6 +28,13 @@ export default function SupportBot() {
   const diagnose = async () => {
     setChecking(true);
     try { setDiag(await runDiagnostics()); } finally { setChecking(false); }
+  };
+
+  const clearCache = async () => {
+    setClearing(true);
+    setCacheDone(false);
+    try { await clearLocalCaches(); setCacheDone(true); } finally { setClearing(false); }
+    diagnose();
   };
 
   useEffect(() => {
@@ -107,9 +116,23 @@ export default function SupportBot() {
                   <span>{t('supportConnection')}</span><b>{diag?.connection || '—'}</b>
                 </div>
                 {diag?.apiError && <p className="support-err">{diag.apiError}</p>}
-                <button className="btn small" onClick={diagnose} disabled={checking}>
-                  <Icon name="refresh" size={14} /> {t('supportCheck')}
-                </button>
+                <div className="support-actions">
+                  <button className="btn small" onClick={diagnose} disabled={checking}>
+                    <Icon name="refresh" size={14} /> {t('supportCheck')}
+                  </button>
+                  <button className="btn small" onClick={clearCache} disabled={clearing}>
+                    <Icon name="trash" size={14} /> {clearing ? t('supportClearing') : t('supportClearCache')}
+                  </button>
+                </div>
+                <p className="muted support-cache-hint">{t('supportClearCacheHint')}</p>
+                {cacheDone && (
+                  <p className="support-cache-ok">
+                    <Icon name="check" size={14} /> {t('supportCacheCleared')}
+                    <button className="btn small" onClick={() => window.location.reload()}>
+                      {t('supportReload')}
+                    </button>
+                  </p>
+                )}
               </div>
             )}
 

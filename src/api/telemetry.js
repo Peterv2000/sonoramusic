@@ -95,6 +95,68 @@ export function reportResourceError(target, { track } = {}) {
   });
 }
 
+/* Claves que NUNCA se borran: sesión, ajustes, biblioteca, volumen, historial
+   de usuario y descargas. Borrar la caché es una reparación, no un reinicio. */
+const PRESERVED_KEYS = new Set([
+  'sonora-client-id',
+  'ritmo_user',
+  'ritmo_users',
+  'ritmo-state-v1',
+  'ritmo_vol',
+  'ritmo-admin-token',
+  'ritmo-crossfade-v1',
+  'ritmo_ads_config',
+  'ritmo_songs_count',
+  'ritmo-ai-profile-v1',
+]);
+
+const CACHE_PREFIXES = [
+  'sonora-home',
+  'sonora-categories',
+  'sonora-cache',
+  'ritmo-livedata',
+  'ritmo-lyrics',
+  'ritmo-ytsearch',
+  'ritmo-cache',
+];
+
+const PRESERVED_CACHES = new Set(['ritmo-v3', 'ritmo-offline-v1']);
+
+/**
+ * Borra la caché local de la app (feed, catálogo, letras, búsquedas y Cache
+ * Storage), conservando sesión, ajustes, biblioteca y canciones descargadas.
+ * Devuelve cuántas entradas se eliminaron.
+ */
+export async function clearLocalCaches() {
+  let localKeys = 0;
+  try {
+    const doomed = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (!key || PRESERVED_KEYS.has(key)) continue;
+      const match = CACHE_PREFIXES.some((p) => key === p || key.startsWith(p))
+        || /(^|[-_])cache([-_]|$)/i.test(key);
+      if (match) doomed.push(key);
+    }
+    doomed.forEach((key) => {
+      try { localStorage.removeItem(key); localKeys += 1; } catch { /* noop */ }
+    });
+  } catch { /* almacenamiento no disponible */ }
+
+  let cacheKeys = 0;
+  try {
+    if (typeof caches !== 'undefined') {
+      const names = await caches.keys();
+      const doomed = names.filter((name) => !PRESERVED_CACHES.has(name)
+        && /(cache|sonora|ritmo)/i.test(name));
+      const results = await Promise.all(doomed.map((name) => caches.delete(name).catch(() => false)));
+      cacheKeys = results.filter(Boolean).length;
+    }
+  } catch { /* Cache Storage no disponible */ }
+
+  return { localKeys, cacheKeys, total: localKeys + cacheKeys };
+}
+
 /** Diagnóstico del cliente para el widget de soporte. */
 export async function runDiagnostics() {
   const started = Date.now();

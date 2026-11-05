@@ -13,3 +13,5 @@ android/.idea/
 android/app/src/main/assets/public/
 android/app/src/main/assets/capacitor.config.json
 server/data/errors.json
+server/data/history.json
+server/data/version.json

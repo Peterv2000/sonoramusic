@@ -182,10 +182,45 @@ cd android
 
 - Firma el APK/AAB con un keystore guardado fuera del repositorio.
 - `capacitor.config.json` debe apuntar al dominio de producción.
-- **Actualizaciones en vivo**: usa Capacitor Updater (o un servicio tipo
-  CodePush) para publicar cambios de JS/CSS sin reenviar el binario. Publica
-  solo cambios compatibles con el binario instalado y mantén una versión de
-  respaldo para *rollback*.
+- **Actualizaciones en vivo**: la app consulta `GET /api/v1/version` al
+  arrancar, cada 15 minutos, al volver a primer plano y cuando el servidor
+  emite el evento SSE `version`. El administrador publica desde
+  `POST /api/v1/admin/version`:
+
+  ```json
+  {
+    "apk": {
+      "version": "1.4.2",
+      "url": "https://cdn.sonora.app/bundles/sonora-1.4.2.zip",
+      "notes": "Nueva portada y correcciones de audio",
+      "mandatory": false
+    }
+  }
+  ```
+
+  Para que la APK pueda aplicar el bundle sin reinstalarse:
+
+  1. Instala el plugin en el proyecto Android:
+     `npm i @capgo/capacitor-updater && npx cap sync android`.
+  2. Añade el plugin al `MainActivity` (o deja que Capacitor lo registre) y
+     mantén la configuración de `capacitor.config.json`:
+     `"CapacitorUpdater": { "autoUpdate": false, "resetWhenUpdate": true,
+     "directUpdate": false }`. El chequeo lo dirige `src/api/liveUpdate.js`
+     contra nuestra API; `autoUpdate` se deja apagado para no duplicar
+     peticiones.
+  3. Sube el ZIP del build web (`dist/`) al CDN y publica su URL/versión en el
+     panel `#/admin` → **Versión**. No cambies el binario nativo: solo viaja
+     JS/CSS.
+  4. La app llama `download({ url, version })` y `set({ id })`; el bundle
+     nuevo se activa en el siguiente arranque. `notifyAppReady()` se invoca al
+     iniciar y, si el bundle no arranca, Capacitor Updater hace rollback.
+  5. Mantén siempre la versión anterior publicada para poder revertir y no
+     publiques cambios que requieran permisos o plugins nativos nuevos: esos
+     sí necesitan un APK nuevo.
+
+  Alternativa sin plugin: apunta `server.url` de Capacitor al dominio web y la
+  APK cargará siempre la última versión (requiere red y pierde parte del modo
+  offline).
 - **Modo offline**: la app cachea catálogo, categorías y últimas carátulas en
   `localStorage`/Cache API. La cola inteligente sigue funcionando con el
   catálogo local y sincroniza al recuperar la red.
@@ -221,7 +256,10 @@ Checklist:
 - [ ] `/api/v1/tracks?category_id=…` devuelve 10–20+ pistas limpias (sin mixes,
       recopilatorios ni vídeos de letras).
 - [ ] Cambiar una categoría en `#/admin` se refleja en otra pestaña sin recargar.
-- [ ] El widget de soporte muestra diagnóstico y permite reportar.
+- [ ] El widget de soporte muestra diagnóstico, permite reportar y borrar la
+      caché local sin cerrar sesión.
 - [ ] La radio no salta de español a inglés ni de Latino a pop/rock.
 - [ ] El APK arranca sin conexión y reproduce la caché local.
+- [ ] Publicar una versión en `#/admin` → **Versión** actualiza la web al
+      recargar y ofrece el bundle nuevo a la APK sin reinstalar.
 - [ ] `/api/health` responde en todas las réplicas.

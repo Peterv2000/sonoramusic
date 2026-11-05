@@ -12,6 +12,7 @@ import FullPlayer from './components/FullPlayer.jsx';
 import SupportBot from './components/SupportBot.jsx';
 import { ToastProvider } from './components/Toast.jsx';
 import { installErrorGuard } from './api/telemetry.js';
+import { watchLiveUpdates } from './api/liveUpdate.js';
 import Home from './pages/Home.jsx';
 import Explore from './pages/Explore.jsx';
 import Library from './pages/Library.jsx';
@@ -35,6 +36,9 @@ export default function App() {
 
   // QA Robot: registra carátulas/recursos caídos sin interrumpir la app.
   useEffect(() => installErrorGuard(), []);
+
+  // Web/PWA + APK: versión publicada, SSE y bundle nativo (Capacitor Updater).
+  useEffect(() => watchLiveUpdates(), []);
 
   return (
     <I18nCtx.Provider value={state.settings.lang}>
