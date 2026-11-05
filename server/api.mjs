@@ -59,7 +59,7 @@ function rateLimit(req, res) {
   const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown').toString().split(',')[0].trim();
   const now = Date.now();
   const windowMs = 60_000;
-  const max = 120;
+  const max = 240;
   let b = rlBuckets.get(ip);
   if (!b || now - b.start > windowMs) { b = { start: now, count: 0 }; rlBuckets.set(ip, b); }
   b.count += 1;
@@ -229,6 +229,107 @@ function apiStream(res, pathname) {
    Búsqueda real (global)
    ══════════════════════════════════════════════════════════════════════════ */
 
+function searchNorm(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+/** Une resultados sin duplicar la misma pista (mismo track_id). */
+function mergeSearchResults(...lists) {
+  const seen = new Set();
+  const out = [];
+  for (const list of lists) {
+    for (const item of list || []) {
+      const key = item?.track_id || `${item?.title}|${item?.artist}`;
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      out.push(item);
+    }
+  }
+  return out;
+}
+
+/** Respaldo con el catálogo ya sincronizado: la búsqueda nunca queda vacía
+    por un fallo temporal del proveedor externo. */
+function catalogSearchFallback(q, limit = 40) {
+  const catalog = readJson('catalog.json');
+  const curated = readJson('curated.json');
+  if ((!catalog || !catalog.tracks?.length) && !curated?.catalog?.length) return [];
+
+  try {
+    const pool = catalogTracks({ catalog, curated, coverProxy: proxyCover, limit: 2000 });
+    const needle = searchNorm(q);
+    if (!needle) return [];
+    const terms = needle.split(' ').filter(Boolean);
+    const scored = [];
+
+    for (const track of pool) {
+      const hay = searchNorm([
+        track.title, track.artist, track.album, track.genre,
+        ...(Array.isArray(track.moods) ? track.moods : []),
+      ].join(' '));
+      if (!hay.includes(needle)) continue;
+
+      const title = searchNorm(track.title);
+      const artist = searchNorm(track.artist);
+      let score = terms.every((term) => hay.includes(term)) ? 0.5 : 0;
+      if (title === needle || artist === needle) score += 3;
+      else if (title.startsWith(needle) || artist.startsWith(needle)) score += 2;
+      else if (title.includes(needle) || artist.includes(needle)) score += 1;
+      scored.push({ track, score });
+    }
+
+    scored.sort((a, b) => b.score - a.score || (Number(b.track.views) || 0) - (Number(a.track.views) || 0));
+    const raw = scored.slice(0, Math.max(1, Math.min(120, limit))).map(({ track }) => ({
+      yt: String(track.yt || '').replace(/^yt-/, ''),
+      title: track.title,
+      artist: track.artist,
+      album: track.album,
+      thumb: track.thumb || track.cover_url,
+      dur: track.dur || track.duration,
+      views: track.views,
+      genre: track.genre,
+      moods: track.moods,
+      kind: 'video',
+    })).filter((item) => item.yt);
+
+    return sanitizeSearchResults(raw, q);
+  } catch {
+    return [];
+  }
+}
+
+/** Caché caliente de búsquedas ya resueltas (aunque no sea la consulta exacta). */
+function warmSearchFallback(q) {
+  const warm = readJson('warm.json');
+  const entries = warm?.cache || {};
+  const needle = q.toLowerCase();
+  const exact = entries[q] || entries[needle];
+  if (exact?.v?.length) return sanitizeSearchResults(exact.v, q);
+
+  for (const [key, value] of Object.entries(entries)) {
+    if (!value?.v?.length) continue;
+    const k = key.toLowerCase();
+    if (k.includes(needle) || needle.includes(k)) return sanitizeSearchResults(value.v, q);
+  }
+  return [];
+}
+
+/** Corta una promesa larga: el cliente recibe respuesta antes de rendirse. */
+function withSearchBudget(promise, ms) {
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error('búsqueda agotada')), ms);
+    }),
+  ]).finally(() => clearTimeout(timer));
+}
+
 async function apiSearch(res, url) {
   const q = (url.searchParams.get('q') || '').replace(/\s+/g, ' ').trim();
   if (!q) return sendJson(res, 400, { error: 'falta el parámetro q' });
@@ -256,15 +357,59 @@ async function apiSearch(res, url) {
     }
   }
 
+  let live = [];
+  let liveError = null;
   try {
-    const results = await searchYouTube(q, { limit, pages, music: true, retries: 3 });
-    cache.set(key, { t: Date.now(), v: results });
-    if (cache.size > 200) cache.delete(cache.keys().next().value);
-    const clean = sanitizeSearchResults(results, q);
-    sendJson(res, 200, { query: q, deep, source: 'sonora', count: clean.length, results: clean });
+    /* El cliente espera como máximo 30 s. Si YouTube se atasca, devolvemos el
+       respaldo local dentro de ese margen en vez de dejar la búsqueda vacía. */
+    live = await withSearchBudget(
+      searchYouTube(q, { limit, pages, music: true, retries: 2 }),
+      deep ? 26000 : 16000,
+    );
   } catch (err) {
-    sendJson(res, 502, { error: 'no se pudo completar la búsqueda', detail: String(err.message || err) });
+    liveError = err;
   }
+
+  let clean = live.length ? sanitizeSearchResults(live, q) : [];
+  if (live.length) {
+    cache.set(key, { t: Date.now(), v: live });
+    if (cache.size > 200) cache.delete(cache.keys().next().value);
+  }
+
+  /* Completamos con el catálogo sincronizado. Sirve tanto si el proveedor
+     falló como si devolvió pocos resultados. */
+  clean = mergeSearchResults(clean, catalogSearchFallback(q, limit)).slice(0, limit);
+  if (clean.length) {
+    return sendJson(res, 200, {
+      query: q,
+      deep,
+      source: 'sonora',
+      degraded: !live.length,
+      count: clean.length,
+      results: clean,
+    });
+  }
+
+  /* Último recurso: resultados antiguos de esta consulta o de la caché
+     caliente, para no romper la experiencia por un corte temporal. */
+  const stale = hit?.v?.length ? sanitizeSearchResults(hit.v, q) : [];
+  const recovered = mergeSearchResults(stale, warmSearchFallback(q)).slice(0, limit);
+  if (recovered.length) {
+    return sendJson(res, 200, {
+      query: q,
+      deep,
+      source: 'sonora',
+      cached: true,
+      fallback: true,
+      count: recovered.length,
+      results: recovered,
+    });
+  }
+
+  sendJson(res, 502, {
+    error: 'no se pudo completar la búsqueda',
+    detail: String(liveError?.message || 'sin resultados'),
+  });
 }
 
 /* GET /api/suggest?q=… → sugerencias de búsqueda (autocompletado en vivo) */
@@ -717,7 +862,10 @@ export async function handleApi(req, res, url) {
     return true;
   }
 
-  if (!rateLimit(req, res)) return true;
+  /* Las carátulas son decenas de peticiones por pantalla: no deben consumir el
+     cupo de la API ni provocar que la siguiente búsqueda reciba 429. */
+  const isCover = pathname.startsWith('/api/cover/');
+  if (!isCover && !rateLimit(req, res)) return true;
 
   if (pathname.startsWith('/api/admin/') || pathname.startsWith('/api/v1/admin/') || pathname === '/api/update') {
     if (!checkAdmin(req, res)) return true;

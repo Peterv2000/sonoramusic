@@ -19,7 +19,9 @@
 const API = '/api/search';
 const CACHE_KEY = 'ritmo-ytsearch-v1';
 const CACHE_TTL = 1000 * 60 * 60 * 6; // 6 h
-const DEFAULT_TIMEOUT = 20000; // el buscador pagina resultados; 12 s era demasiado justo
+/* El servidor responde con respaldo local si YouTube se atasca (16 s rápido,
+   26 s profundo). 30 s evita abortar justo antes de recibir esa respuesta. */
+const DEFAULT_TIMEOUT = 30000;
 
 const MEM = new Map();
 
