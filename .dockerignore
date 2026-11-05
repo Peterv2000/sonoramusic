@@ -5,5 +5,11 @@ update-run.log
 *.log
 .git
 .gitignore
+.github
 android
 docs
+.env
+.env.*
+server/data/history.json
+server/data/errors.json
+server/data/version.json

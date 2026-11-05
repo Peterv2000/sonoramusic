@@ -1,5 +1,9 @@
 # Despliegue 24/7 y alta disponibilidad — Sonora Music
 
+> **¿Buscas la forma gratuita y rápida?** Empieza por
+> [DESPLIEGUE-GRATIS.md](DESPLIEGUE-GRATIS.md): Render Free en 5 minutos
+> (sin tarjeta) y Oracle Cloud Always Free para 24/7 con disco persistente.
+
 Esta guía describe cómo llevar Sonora Music a producción con Web + APK, sin
 puntos únicos de fallo y con las categorías dinámicas, el QA Robot y la cola
 inteligente funcionando en tiempo real.
@@ -86,7 +90,7 @@ CREATE INDEX telemetry_errors_created_idx ON telemetry_errors (created_at DESC);
 | `DATABASE_URL` | PostgreSQL (producción) | `postgres://…` |
 | `REDIS_URL` | Pub/Sub y caché (producción) | `redis://…` |
 | `CDN_BASE_URL` | Base de audio/carátulas | `https://cdn.sonora.app` |
-| `PUBLIC_API_URL` | API para la APK si vive en otro dominio | `https://api.sonora.app` |
+| `PUBLIC_API_URL` | Reservado para separar el API en otro dominio (hoy el cliente usa rutas relativas) | `https://api.sonora.app` |
 
 Nunca subas un `.env` real al repositorio. En Vercel/Netlify/Railway se
 configuran en el panel del proyecto.

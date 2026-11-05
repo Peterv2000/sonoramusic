@@ -32,6 +32,9 @@ import { handleApi } from './api.mjs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST = path.join(__dirname, '..', 'dist');
 const PORT = Number(process.env.PORT || 4173);
+/* En contenedores se puede fijar HOST=0.0.0.0. Si no se define, Node escucha
+   en todas las interfaces (IPv4 + IPv6), que también sirve para Render/Docker. */
+const HOST = process.env.HOST || undefined;
 
 /* ---------- Cabeceras de seguridad para los ficheros estáticos ---------- */
 function applySecurityHeaders(res) {
@@ -113,7 +116,7 @@ const server = http.createServer((req, res) => {
   return serveStatic(req, res, pathname);
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, HOST, () => {
   console.log(`\n  ▶ Ritmo Music  http://localhost:${PORT}`);
   console.log(`  · buscador real:  http://localhost:${PORT}/api/search?q=bad+bunny`);
   console.log(`  · letras (LRCLIB): http://localhost:${PORT}/api/lyrics?t=Hello&a=Adele`);

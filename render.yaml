@@ -1,0 +1,22 @@
+# Despliegue gratuito en Render (plan Free, sin tarjeta).
+# Render detecta este archivo al crear un "Blueprint" desde el repositorio.
+services:
+  - type: web
+    name: sonora-music
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci && npm run build
+    startCommand: node server/index.mjs
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: 22.11.0
+      # El catálogo ya viene versionado en el repo. En el plan Free conviene no
+      # ejecutar el scraper cada 10 minutos (consume CPU y tráfico saliente).
+      - key: UPDATE_DISABLED
+        value: "1"
+      # Render genera un token seguro; lo verás en el panel del servicio.
+      - key: ADMIN_TOKEN
+        generateValue: true

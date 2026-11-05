@@ -1,0 +1,19 @@
+# HTTPS automático + streaming SSE para Sonora en una VM (Oracle/GCP).
+# 1. Cambia sonora.duckdns.org por tu dominio (DuckDNS es gratis).
+# 2. Instala Caddy y copia este archivo en /etc/caddy/Caddyfile.
+# 3. sudo systemctl reload caddy
+
+sonora.duckdns.org {
+	encode zstd gzip
+
+	# flush_interval -1 desactiva el buffering: imprescindible para
+	# /api/v1/events (SSE) y para que los cambios del admin lleguen al instante.
+	reverse_proxy 127.0.0.1:4173 {
+		flush_interval -1
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+	}
+}

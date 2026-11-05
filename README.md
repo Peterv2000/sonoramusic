@@ -25,8 +25,11 @@ compilado, usa `npm run build && npm run serve`.
 
 Abre en Chrome/Edge → menú → **"Instalar Ritmo Music"**. Funciona offline (app shell cacheada por service worker).
 
-> `npm run preview` también sirve `dist`, pero **sin** el API de búsqueda. Usa `npm start` o
-> `npm run serve` para tener el buscador real de YouTube funcionando.
+> `npm run preview` también sirve `dist` y monta el API (buscador real de YouTube,
+> catálogo y home) mediante `vite.config.js`. Para producción usa `npm run serve`.
+
+> 🌐 **¿Listo para publicarlo?** Guía paso a paso 100 % gratis (Render y Oracle
+> Cloud): **[docs/DESPLIEGUE-GRATIS.md](docs/DESPLIEGUE-GRATIS.md)**.
 
 ---
 
