@@ -117,18 +117,18 @@ function withCatalogMetadata(track) {
 
 /* ── Familias musicales ─────────────────────────────────────────────────── */
 const FAMILY_RULES = [
-  [/reggaeton|reggaetón|dembow|perreo|salsa|bachata|cumbia|merengue|vallenato|regional mexicano|banda|corrido|\blatin|latino|urbano|flamenco|despecho|ranchera|mariachi|norte[nñ]o|\bpopular\b/, 'latin'],
+  [/reggaeton|reggaetón|dembow|perreo|salsa|bachata|cumbia|merengue|vallenato|regional mexicano|\bbanda\b|\bcorrido\b|\blatin|latino|urbano|dancehall|trap\s*latino|flamenco|despecho|ranchera|mariachi|norte[nñ]o|\bpopular\b/, 'latin'],
   [/lo.?fi|chill\s*hop|ambient|study\s*beats|sleep\s*beats/, 'lofi'],
-  [/electron|edm|house|techno|trance|dubstep|drum\s*and\s*bass|synth|dance\s*music/, 'electronic'],
+  [/electron|edm|\bhouse\b|techno|trance|dubstep|drum\s*and\s*bass|synth|dance\s*music/, 'electronic'],
   [/hip.?hop|\brap\b|\btrap\b|\bdrill\b|grime/, 'hiphop'],
-  [/\br\s*&\s*b\b|\brnb\b|soul\b|funk\b/, 'rnb'],
-  [/rock|metal|punk|indie|grunge|alternative|alternativo/, 'rock'],
-  [/pop|balad|ballad/, 'pop'],
+  [/\br\s*&\s*b\b|\brnb\b|\bsoul\b|\bfunk\b/, 'rnb'],
+  [/\brock\b|metal|punk|indie|grunge|alternative|alternativo/, 'rock'],
+  [/\bpop\b|balad|ballad/, 'pop'],
   [/jazz|blues|classical|clasica|clásica|country|folk|acoustic|acústic/, 'acoustic'],
 ];
 
 const ARTIST_HINTS = [
-  [/bad bunny|karol g|feid|daddy yankee|anuel|ozuna|rauw|maluma|j balvin|arcangel|arcángel|myke towers|sech|blessd|ryan castro|brytiago|shakira|luis fonsi|juanes|marc anthony|romeo santos|prince royce|don omar|wisin|yandel|nicky jam|jhayco|jhay cortez/i, 'latin'],
+  [/bad bunny|karol g|feid|daddy yankee|\banuel\b|ozuna|rauw|maluma|j balvin|arcangel|arcángel|myke towers|sech|blessd|ryan castro|brytiago|shakira|luis fonsi|juanes|marc anthony|romeo santos|prince royce|don omar|wisin|yandel|nicky jam|jhayco|jhay cortez|darell|ñengo flow|nengo flow|farruko|quevedo|eladio carrion|eladio carrión|dei v|j quiles|lenny tavarez|lenny tavárez|grupo firme|natanael cano|peso pluma|carin leon|carin león|christian nodal|calibre 50|tigres del norte|intocable|jenni rivera|vicente fernandez|vicente fernández|joan sebastian|joan sebastián|los bukis|marco antonio solis|marco antonio solís|jorge celedon|jorge celedón|peter manjarres|silvestre dangond|diomedes diaz|el andariego/i, 'latin'],
   [/queen|nirvana|guns n|metallica|ac\/?dc|deep purple|led zeppelin|pink floyd|foo fighters|linkin park|green day|offspring|ramones|muse|u2|oasis|radiohead|arctic monkeys|the strokes|survivor|smash mouth|a-ha|imagine dragons|coldplay/i, 'rock'],
   [/avicii|alan walker|daft punk|tiesto|marshmello|calvin harris|david guetta|martin garrix|kygo|armin|hardwell|skrillex|deadmau5|zedd/i, 'electronic'],
   [/macklemore|drake|kendrick|eminem|cardi|nicki|post malone|travis scott|jay-z|nas|21 savage|future|lil /i, 'hiphop'],
@@ -229,7 +229,7 @@ const PT_WORDS = new Set([
   'sempre', 'nunca', 'deus', 'mulher', 'homem', 'menina', 'menino',
 ]);
 
-const ES_ARTIST = /bad bunny|karol g|feid|daddy yankee|anuel|ozuna|rauw|maluma|j balvin|arcangel|arcángel|myke towers|sech|blessd|ryan castro|nicky jam|wisin|yandel|don omar|jhayco|jhay cortez|shakira|luis fonsi|juanes|marc anthony|romeo santos|prince royce|enrique iglesias|julio iglesias|cristian castro|ha\*?ash|camila|mana|maná|juan gabriel|jose jose|josé josé|chayanne|ricky martin|thalia|thalía|paulina rubio|gloria estefan|celia cruz|olga ta[nñ]on|carlos vives|fonseca|silvestre dangond|diomedes|los betos|andariego|jenni rivera|vicente fernandez|vicente fernández|joan sebastian|joan sebastián|marco antonio solis|marco antonio solís|los bukis|grupo firme|natanael cano|peso pluma|junior h|carin leon|carin león|christian nodal|banda ms|calibre 50|gerardo ortiz|ariel camacho|los tigres del norte|intocable|la arrolladora|espinoza paz|pepe aguilar|alejandro fernandez|alejandro fernández|luis miguel|selena|los angeles azules|los ángeles azules|sonora dinamita|los hermanos zuleta|los inquietos|jorge celedon|jorge celedón|peter manjarres|peter manjarres|silvestre|los gigantes|los chiches|los diablitos|los charritos|los temerarios|banda el recodo|banda los recoditos|los plebes del rancho|los elementos|el fantasma|edwin luna|alberto pedraza|el andariego/i;
+const ES_ARTIST = /bad bunny|karol g|feid|daddy yankee|\banuel\b|ozuna|rauw|maluma|j balvin|arcangel|arcángel|myke towers|sech|blessd|ryan castro|nicky jam|wisin|yandel|don omar|jhayco|jhay cortez|darell|ñengo flow|nengo flow|farruko|quevedo|eladio carrion|eladio carrión|dei v|j quiles|lenny tavarez|lenny tavárez|shakira|luis fonsi|juanes|marc anthony|romeo santos|prince royce|enrique iglesias|julio iglesias|cristian castro|ha\*?ash|camila|mana|maná|juan gabriel|jose jose|josé josé|chayanne|ricky martin|thalia|thalía|paulina rubio|gloria estefan|celia cruz|olga ta[nñ]on|carlos vives|fonseca|silvestre dangond|diomedes|los betos|andariego|jenni rivera|vicente fernandez|vicente fernández|joan sebastian|joan sebastián|marco antonio solis|marco antonio solís|los bukis|grupo firme|natanael cano|peso pluma|junior h|carin leon|carin león|christian nodal|banda ms|calibre 50|gerardo ortiz|ariel camacho|los tigres del norte|intocable|la arrolladora|espinoza paz|pepe aguilar|alejandro fernandez|alejandro fernández|luis miguel|selena|los angeles azules|los ángeles azules|sonora dinamita|los hermanos zuleta|los inquietos|jorge celedon|jorge celedón|peter manjarres|peter manjarres|silvestre|los gigantes|los chiches|los diablitos|los charritos|los temerarios|banda el recodo|banda los recoditos|los plebes del rancho|los elementos|el fantasma|edwin luna|alberto pedraza|el andariego/i;
 const EN_ARTIST = /ed sheeran|adele|queen|nivana|nirvana|guns n|metallica|ac[\/ ]?dc|deep purple|led zeppelin|pink floyd|foo fighters|linkin park|green day|offspring|ramones|muse\b|u2\b|oasis|radiohead|arctic monkeys|the strokes|survivor|smash mouth|a-ha|imagine dragons|coldplay|avicii|alan walker|daft punk|tiesto|marshmello|calvin harris|david guetta|martin garrix|kygo|armin|hardwell|skrillex|deadmau5|zedd|drake|kendrick|eminem|macklemore|cardi|nicki|post malone|travis scott|jay-z|nas\b|21 savage|future|lil |the weeknd|frank ocean|sza|h\.e\.r|usher|chris brown|alicia keys|john legend|taylor swift|bruno mars|katy perry|maroon 5|dua lipa|sia\b|pharrell|one republic|onerepublic|justin bieber|selena gomez|ariana grande|billie eilish|olivia rodrigo|sabrina carpenter|michael jackson|psy\b|billie|beatles|rolling stones|elton john|beyonce|beyoncé|rihanna|miley cyrus|demi lovato|shawn mendes|camila cabello|halsey|lorde|lord huron|passenger|hozier|lewis capaldi|sam smith|harry styles|post malone/i;
 
 function wordScore(words, set) {
@@ -325,11 +325,14 @@ function detectFamily(track, haystack) {
     const g = fold(track.genre);
     for (const [re, family] of FAMILY_RULES) if (re.test(g)) return family;
   }
-  for (const [re, family] of FAMILY_RULES) {
-    if (re.test(haystack)) return family;
-  }
+  /* El artista es una señal más fiable que una palabra suelta del título:
+     «Lollipop» de Darell no debe caer en pop por contener «pop». Primero
+     artistas reconocidos; después, el resto de metadatos. */
   for (const [re, family] of ARTIST_HINTS) {
     if (re.test(String(track?.artist || ''))) return family;
+  }
+  for (const [re, family] of FAMILY_RULES) {
+    if (re.test(haystack)) return family;
   }
   return 'unknown';
 }
@@ -337,16 +340,23 @@ function detectFamily(track, haystack) {
 const REGIONAL_HINT = /regional mexicano|ranchera|mariachi|banda|corrido|norte[nñ]o|grupo firme|natanael cano|peso pluma|carin le[oó]n|christian nodal|calibre 50|tigres del norte|intocable|arrolladora|espinoza paz|pepe aguilar|alejandro fern[aá]ndez|los temerarios|recodo|ms de|los plebes|el fantasma|edwin luna|jenni rivera|vicente fern[aá]ndez|joan sebasti[aá]n|los bukis|marco antonio sol[ií]s/i;
 const DESPECHO_HINT = /despecho|popular|andariego|los betos|los inquietos|los gigantes|los chiches|diablitos|jorge celed[oó]n|peter manjarres|silvestre dangond|diomedes d[ií]az|vallenato/i;
 
+const URBAN_HINT = /dembow|trap\s*latino|trap\s*argentino|dancehall|urbano\s*latino|perreo|reggaeton|reggaetón|bad bunny|karol g|feid|daddy yankee|\banuel\b|ozuna|rauw|maluma|j balvin|arcangel|arcángel|myke towers|sech|blessd|nicky jam|wisin|yandel|don omar|jhayco|jhay cortez|darell|ñengo flow|nengo flow|farruko|quevedo|eladio carrion|eladio carrión|dei v|j quiles|lenny tavarez|lenny tavárez/i;
+const POPULAR_HINT = /popular|ranchera|mariachi|banda|norte[nñ]o|regional mexicano|corrido|grupo firme|natanael cano|peso pluma|carin le[oó]n|christian nodal|calibre 50|tigres del norte|intocable|arrolladora|espinoza paz|pepe aguilar|alejandro fern[aá]ndez|los temerarios|recodo|ms de|los plebes|el fantasma|edwin luna|jenni rivera|vicente fern[aá]ndez|joan sebasti[aá]n|los bukis|marco antonio sol[ií]s/i;
+
 function detectSubgenre(family, track, haystack, energy) {
   const g = fold(track?.genre);
   const all = `${g} ${haystack}`;
-  if (/reggaeton|dembow|perreo|bad bunny|karol g|feid|daddy yankee|anuel|ozuna|rauw|maluma|j balvin|arcangel|myke towers|sech|blessd|nicky jam|wisin|yandel|don omar|jhayco/.test(all)) return 'Reggaetón';
+  if (/dembow/.test(all)) return 'Dembow';
+  if (/trap\s*latino|trap\s*argentino|trap latino/.test(all)) return 'Trap Latino';
+  if (/dancehall/.test(all)) return 'Dancehall Latino';
+  if (/urbano\s*latino|perreo/.test(all)) return 'Urbano Latino';
+  if (URBAN_HINT.test(all)) return 'Reggaetón';
   if (/salsa/.test(g) || /\bsalsa\b/.test(haystack)) return 'Salsa';
   if (/bachata/.test(g) || /\bbachata\b/.test(haystack)) return 'Bachata';
   if (/cumbia/.test(g) || /\bcumbia\b/.test(haystack)) return 'Cumbia';
   if (/merengue/.test(g) || /\bmerengue\b/.test(haystack)) return 'Merengue';
   if (/vallenato/.test(g) || /\bvallenato\b/.test(haystack) || DESPECHO_HINT.test(all)) return 'Vallenato';
-  if (REGIONAL_HINT.test(all)) return 'Regional Mexicano';
+  if (POPULAR_HINT.test(all)) return 'Popular';
 
   switch (family) {
     case 'pop':

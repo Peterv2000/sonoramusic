@@ -195,11 +195,38 @@ export function removeCategory(id) {
   return before !== data.categories.length;
 }
 
-/* ── Género efectivo de una pista del catálogo ampliado ─────────────────── */
+/* ── Género efectivo de una pista del catálogo ampliado ───────────────────
+   El catálogo antiguo guardó «Ritmo»/«Pop» para muchos temas latinos porque
+   el clasificador anterior no conocía a Darell, Myke Towers ni la música
+   popular colombiana/mexicana. Aquí se re-clasifica al leer, sin mutar el
+   catálogo: una señal latina fuerte manda sobre el género almacenado. */
+const LATIN_SIGNAL = /darell|myke towers|ñengo flow|nengo flow|farruko|bad bunny|karol g|feid|daddy yankee|anuel|ozuna|rauw|maluma|j balvin|arcangel|arcángel|sech|blessd|ryan castro|brytiago|nicky jam|wisin|yandel|don omar|jhayco|jhay cortez|quevedo|eladio carrion|trap\s*latino|dembow|dancehall|urbano\s*latino|perreo|reggaeton|reggaetón|salsa|bachata|cumbia|merengue|vallenato|ranchera|mariachi|norteño|norteno|corrido|regional mexicano|musica popular|música popular|despecho|los betos|el andariego|grupo firme|natanael cano|peso pluma|carin leon|carin león|christian nodal|calibre 50|tigres del norte|intocable|jenni rivera|vicente fernandez|vicente fernández|joan sebastian|joan sebastián|los bukis|marco antonio solis|marco antonio solís|jorge celedon|jorge celedón|peter manjarres|silvestre dangond|diomedes diaz|los temerarios/i;
+
+function latinSubgenre(hay) {
+  if (/dembow/i.test(hay)) return 'Dembow';
+  if (/trap\s*latino|trap latino|trap\s*argentino/i.test(hay)) return 'Trap Latino';
+  if (/dancehall/i.test(hay)) return 'Dancehall Latino';
+  if (/urbano\s*latino|perreo/i.test(hay)) return 'Urbano Latino';
+  if (/reggaeton|reggaetón|darell|myke towers|ñengo flow|nengo flow|farruko|bad bunny|karol g|feid|daddy yankee|anuel|ozuna|rauw|maluma|j balvin|arcangel|arcángel|sech|blessd|ryan castro|brytiago|nicky jam|wisin|yandel|don omar|jhayco|jhay cortez|quevedo|eladio carrion/i.test(hay)) return 'Reggaetón';
+  if (/salsa/i.test(hay)) return 'Salsa';
+  if (/bachata/i.test(hay)) return 'Bachata';
+  if (/cumbia/i.test(hay)) return 'Cumbia';
+  if (/merengue/i.test(hay)) return 'Merengue';
+  if (/vallenato|despecho|los betos|el andariego|jorge celedon|jorge celedón|peter manjarres|silvestre dangond|diomedes diaz/i.test(hay)) return 'Vallenato';
+  if (/regional mexicano|ranchera|mariachi|norteño|norteno|corrido|popular|grupo firme|natanael cano|peso pluma|carin leon|carin león|christian nodal|calibre 50|tigres del norte|intocable|jenni rivera|vicente fernandez|vicente fernández|joan sebastian|joan sebastián|los bukis|marco antonio solis|marco antonio solís|los temerarios/i.test(hay)) return 'Popular';
+  return 'Latino';
+}
+
 function effectiveGenre(track) {
   const own = String(track?.genre || '').trim();
-  if (own && !GENERIC_GENRES.has(norm(own))) return own;
   const hay = `${track?.title || ''} ${track?.artist || ''} ${track?.album || ''}`;
+  const latin = LATIN_SIGNAL.test(hay) ? latinSubgenre(hay) : '';
+  const genericOwn = !own || GENERIC_GENRES.has(norm(own)) || /^(?:pop|ritmo|youtube|musica|música)$/.test(norm(own));
+  if (latin && (genericOwn || /latino|latin|reggaeton|reggaetón|salsa|bachata|cumbia|merengue|vallenato|popular|regional|ranchera|norteño|corrido|dembow|trap|urbano/i.test(own))) {
+    return latin;
+  }
+  if (own && !GENERIC_GENRES.has(norm(own))) return own;
+  if (latin) return latin;
   for (const [re, genre] of GENRE_RULES) {
     if (re.test(hay)) return genre;
   }
@@ -280,8 +307,15 @@ function isPlayableSong(track) {
   // Medleys con tres o más canciones en el título.
   if ((title.match(/\s\/\s/g) || []).length >= 2) return false;
   const dur = Number(track.dur || track.duration || 0);
-  if (dur && (dur < 25 || dur > 900)) return false;
+  if (dur && (dur < 60 || dur > 900)) return false;
   return true;
+}
+
+function inferYear(track) {
+  const direct = Number(track?.year);
+  if (direct >= 1900 && direct <= 2035) return direct;
+  const match = `${track?.title || ''} ${track?.album || ''}`.match(/\b(19[5-9]\d|20[0-2]\d)\b/);
+  return match ? Number(match[1]) : null;
 }
 
 function toClientTrack(track, category, coverProxy) {
@@ -299,10 +333,12 @@ function toClientTrack(track, category, coverProxy) {
     stream_url: `/api/stream/${Buffer.from(yt, 'utf8').toString('base64url')}`,
     kind: 'video',
     genre: effectiveGenre(track) || category.label,
-    moods: Array.isArray(track.moods) ? track.moods : [],
+    moods: Array.isArray(track.moods) && track.moods.length ? track.moods : [],
     duration: Number(track.dur || track.duration || 0),
     dur: Number(track.dur || track.duration || 0),
+    year: inferYear(track),
     views: Number(track.views || 0),
+    categoryId: category.id,
     source: 'sonora',
     external: true,
   };

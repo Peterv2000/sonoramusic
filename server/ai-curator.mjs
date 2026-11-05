@@ -24,17 +24,29 @@ export function norm(s) {
     .trim();
 }
 
-/* ── Reglas de género (ampliadas, subgéneros incluidos) ── */
+/* ── Reglas de género (ampliadas, subgéneros incluidos) ──
+   El orden importa: el urbano latino y la música popular/regional se evalúan
+   ANTES que «pop» y que el trap genérico. Así «Darell», «trap latino» o
+   «música popular» nunca terminan clasificados como pop inglés. */
+const URBAN_LATIN_ARTISTS = /darell|myke towers|ñengo flow|nengo flow|farruko|bad bunny|karol g|feid|daddy yankee|anuel|ozuna|rauw alejandro|rauw|maluma|j balvin|arcangel|arcángel|sech|blessd|ryan castro|brytiago|nicky jam|wisin|yandel|don omar|jhayco|jhay cortez|quevedo|eladio carrion|eladio carrión|dei v|j quiles|lenny tavarez|lenny tavárez|sebastian yatra|sebastián yatra/i;
+const REGIONAL_ARTISTS = /grupo firme|natanael cano|peso pluma|carin leon|carin león|christian nodal|calibre 50|tigres del norte|intocable|arrolladora|espinoza paz|pepe aguilar|alejandro fernandez|alejandro fernández|los temerarios|banda ms|los plebes|el fantasma|edwin luna|jenni rivera|vicente fernandez|vicente fernández|joan sebastian|joan sebastián|los bukis|marco antonio solis|marco antonio solís|jorge celedon|jorge celedón|peter manjarres|silvestre dangond|diomedes diaz|diomedes díaz|los betos|el andariego|los inquietos|los gigantes|los chiches|los diablitos/i;
+
 const GENRE_RULES = [
-  // Latino / urbano
-  [/reggaeton|reggaetón|dembow|perreo/i, 'Reggaetón'],
-  [/bad bunny|karol g|feid|daddy yankee|anuel|ozuna|rauw|maluma|j balvin|arcangel|arcángel|myke towers|rauw alejandro|sech|blessd|ryan castro|brytiago/i, 'Reggaetón'],
+  // Latino urbano (primero, para no caer en «pop» ni en «trap» genérico)
+  [/dembow/i, 'Dembow'],
+  [/trap\s*latino|trap latino|trap\s*argentino/i, 'Trap Latino'],
+  [/dancehall\s*latino|dancehall/i, 'Dancehall Latino'],
+  [/urbano\s*latino|perreo/i, 'Urbano Latino'],
+  [/reggaeton|reggaetón/i, 'Reggaetón'],
+  [URBAN_LATIN_ARTISTS, 'Reggaetón'],
   [/salsa/i, 'Salsa'],
   [/bachata/i, 'Bachata'],
   [/cumbia/i, 'Cumbia'],
   [/merengue/i, 'Merengue'],
-  [/vallenato/i, 'Vallenato'],
-  [/regional mexicano|banda|norteño|corrido/i, 'Regional Mexicano'],
+  [/vallenato|despecho/i, 'Vallenato'],
+  // Popular / regional mexicano antes de «pop»: «Popular» contiene «pop».
+  [/regional mexicano|ranchera|mariachi|norteño|norteno|corrido|banda|popular/i, 'Popular'],
+  [REGIONAL_ARTISTS, 'Popular'],
   [/latin|latino|sabor/i, 'Latino'],
   // Rock / metal
   [/metallica|iron maiden|slipknot|metal|heavy|thrash/i, 'Metal'],
@@ -82,20 +94,25 @@ const MOOD_RULES = [
   [/party|fiesta|dance|bailar|hit|hits|top|club/i, 'Fiesta'],
   [/rock|energy|workout|gym|motivaci|power/i, 'Energía'],
   [/chill|relax|lofi|sleep|study|calm|piano|ambient/i, 'Relajado'],
+  [/sad|triste|llorar|desamor|heartbreak|despecho|ranchera|vallenato|popular/i, 'Triste'],
   [/love|amor|romant|heart|beso/i, 'Romántico'],
-  [/sad|triste|llorar|desamor|heartbreak/i, 'Triste'],
   [/night|noche|dark/i, 'Noche'],
   [/workout|gym|entren/i, 'Workout'],
   [/study|estudi|focus|concentr/i, 'Concentración'],
   [/classic|clásic/i, 'Clásico'],
-  [/latin|latino|sabor/i, 'Fiesta latina'],
+  [/latin|latino|sabor|reggaeton|reggaetón|dembow|urbano|dancehall/i, 'Fiesta latina'],
 ];
 
 export function guessMoods(text, genre) {
   const moods = [];
   for (const [re, mood] of MOOD_RULES) if (re.test(text || '')) moods.push(mood);
   if (genre === 'Lo-Fi' || genre === 'Ambient') moods.push('Concentración');
-  if (genre === 'Latino' || genre === 'Reggaetón' || genre === 'Salsa' || genre === 'Cumbia') moods.push('Fiesta latina');
+  if (['Latino', 'Reggaetón', 'Salsa', 'Cumbia', 'Bachata', 'Merengue', 'Dembow', 'Trap Latino', 'Urbano Latino', 'Dancehall Latino'].includes(genre)) {
+    moods.push('Fiesta latina', 'Fiesta');
+  }
+  if (['Popular', 'Vallenato', 'Regional Mexicano'].includes(genre)) {
+    moods.push('Triste', 'Romántico');
+  }
   if (genre === 'Metal' || genre === 'Punk' || genre === 'Rock') moods.push('Energía');
   return [...new Set(moods)].slice(0, 4);
 }
@@ -120,7 +137,7 @@ export function isJunk(track) {
   const title = track.title || '';
   const text = `${title} ${track.artist || ''}`;
   if (!track.yt || !/^[A-Za-z0-9_-]{11}$/.test(track.yt)) return { junk: true, reason: 'sin id válido' };
-  if (!track.dur || track.dur < 30) return { junk: true, reason: 'duración < 30s' };
+  if (!track.dur || track.dur < 60) return { junk: true, reason: 'duración < 60s (posible previo)' };
   if (track.dur > 900) return { junk: true, reason: 'duración > 15 min' };
   if (COMPILATION_RE.test(title)) return { junk: true, reason: 'compilación/mezcla' };
   if (LOW_VALUE_RE.test(text)) return { junk: true, reason: 'contenido no musical' };

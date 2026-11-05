@@ -113,28 +113,53 @@ export function scoreFeatures(seed, candidate) {
   return Number((raw * trust).toFixed(4));
 }
 
-/* El urbano latino (reggaetón, dembow, trap latino) comparte cadencia con el
-   hip-hop; el resto de la música latina no debe mezclarse con pop, rock ni
-   electrónica. */
-const URBAN_LATIN = new Set(['Reggaetón', 'Dembow', 'Trap latino', 'Latino urbano', 'Perreo']);
+/* Grupos de subgénero con bloqueo duro. Un reggaetón no debe saltar a una
+   balada latina, y una ranchera no debe saltar a reggaetón, aunque ambos sean
+   «latinos». */
+const URBAN_LATIN = new Set(['reggaeton', 'dembow', 'trap latino', 'dancehall latino', 'urbano latino', 'perreo']);
+const POPULAR_LATIN = new Set(['popular', 'ranchera', 'vallenato', 'banda', 'norteno', 'regional mexicano', 'corrido', 'mariachi', 'despecho']);
+
+function latinGroup(subgenre) {
+  const key = fold(subgenre);
+  if (!key) return '';
+  if (URBAN_LATIN.has(key)) return 'urban';
+  if (POPULAR_LATIN.has(key)) return 'popular';
+  return '';
+}
 
 /** Filtro duro de idioma: español con español, inglés con inglés. */
 export function languageCompatible(seed, candidate) {
   if (!seed?.language || seed.language === 'unknown') return true;
-  if (!candidate?.language || candidate.language === 'unknown') return true;
-  if (seed.language === 'instrumental' || candidate.language === 'instrumental') return true;
+  if (seed.language === 'instrumental') return true;
+  if (!candidate?.language) return false;
+  if (candidate.language === 'instrumental') return true;
+  if (candidate.language === 'unknown') {
+    // Solo se admite una pista sin idioma detectable si pertenece con claridad
+    // a la misma familia (p. ej. una pista latina sin letra reconocible).
+    return Boolean(candidate.family && candidate.family === seed.family && candidate.family !== 'unknown');
+  }
   return seed.language === candidate.language;
 }
 
 /** Filtro duro de género/región: nunca saltar a un mundo musical distinto. */
 export function familyCompatible(seed, candidate) {
   if (!seed?.family || seed.family === 'unknown') return true;
-  if (!candidate?.family || candidate.family === 'unknown') return true;
+  if (!candidate?.family || candidate.family === 'unknown') return false;
   if (seed.family === candidate.family) return true;
   if (seed.family === 'latin') {
-    return candidate.family === 'hiphop' && URBAN_LATIN.has(seed.subgenre);
+    // El urbano latino comparte cadencia con el hip-hop, pero la música
+    // popular/regional no debe mezclarse con ningún otro mundo.
+    return candidate.family === 'hiphop' && latinGroup(seed.subgenre) === 'urban';
   }
-  return familyAffinity(seed.family, candidate.family) >= 0.52;
+  return familyAffinity(seed.family, candidate.family) >= 0.62;
+}
+
+/** Filtro duro de subgénero dentro del mundo latino. */
+export function subgenreCompatible(seed, candidate) {
+  if (!seed?.family || seed.family !== 'latin') return true;
+  const group = latinGroup(seed.subgenre);
+  if (!group) return true;
+  return latinGroup(candidate?.subgenre) === group;
 }
 
 function candidateEntries(seed, candidates, exclude = []) {
@@ -156,6 +181,7 @@ function candidateEntries(seed, candidates, exclude = []) {
 
     const languageOk = languageCompatible(seedFeatures, features);
     const familyOk = familyCompatible(seedFeatures, features);
+    const subgenreOk = subgenreCompatible(seedFeatures, features);
     const bpmDiff = Math.abs(features.bpm - seedFeatures.bpm) / Math.max(seedFeatures.bpm, features.bpm);
     const energyDiff = Math.abs(features.energy - seedFeatures.energy);
 
@@ -165,7 +191,8 @@ function candidateEntries(seed, candidates, exclude = []) {
       score: scoreFeatures(seedFeatures, features),
       languageOk,
       familyOk,
-      strictOk: languageOk && familyOk && bpmDiff <= 0.15 && energyDiff <= 0.24,
+      subgenreOk,
+      strictOk: languageOk && familyOk && subgenreOk && bpmDiff <= 0.15 && energyDiff <= 0.24,
     });
   }
   return out;
@@ -213,12 +240,12 @@ export function buildSmartQueue(seed, candidates, {
   const history = Array.isArray(recent) && recent.length ? recent.slice(-8) : [];
   if (!history.length || history[history.length - 1]?.id !== seed.id) history.push(seed);
 
-  /* Etapa 1: solo coincidencias estrictas (idioma, género, ±15 % BPM,
-     energía ±0.24). Etapa 2: se relajan tempo/energía para completar la cola,
-     pero NUNCA se relajan idioma ni género. */
+  /* Etapa 1: solo coincidencias estrictas (idioma, género, subgénero,
+     ±15 % BPM, energía ±0.24). Etapa 2: se relajan tempo/energía para
+     completar la cola, pero NUNCA se relajan idioma, género ni subgénero. */
   const stages = [
     ranked.filter((entry) => entry.strictOk),
-    ranked.filter((entry) => !entry.strictOk && entry.languageOk && entry.familyOk),
+    ranked.filter((entry) => !entry.strictOk && entry.languageOk && entry.familyOk && entry.subgenreOk),
   ].filter((pool) => pool.length);
 
   const chosen = [];

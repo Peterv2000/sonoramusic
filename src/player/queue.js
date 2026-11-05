@@ -86,7 +86,7 @@ export function isQueueCandidate(track, { maxDuration = 900 } = {}) {
   if ((title.match(/\s\/\s/g) || []).length >= 2) return false;
 
   const dur = Number(track.dur || track.duration || 0);
-  if (dur && (dur < 25 || dur > maxDuration)) return false;
+  if (dur && (dur < 60 || dur > maxDuration)) return false;
   return true;
 }
 

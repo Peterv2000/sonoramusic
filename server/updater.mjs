@@ -168,7 +168,7 @@ function dedupe(tracks, seen, strict = false) {
   const maxDur = strict ? 900 : 1800;                           // gráficos: 15 min; catálogo: 30 min
   for (const tr of tracks) {
     if (!tr?.yt || seen.has(tr.yt)) continue;
-    if (tr.dur < 30 || tr.dur > maxDur) continue;               // fuera cortes y mezclas largas
+    if (tr.dur < 60 || tr.dur > maxDur) continue;             // fuera previos cortos y mezclas largas
     if (strict && COMPILATION.test(tr.title)) continue;         // fuera recopilatorios (solo gráficos)
     const key = normTitle(tr.artist) + '|' + normTitle(tr.title);
     if (seen.has(key)) continue;
@@ -179,17 +179,35 @@ function dedupe(tracks, seen, strict = false) {
   return out;
 }
 
-/* ── Clasificador de género por palabras clave ──────────────────────────── */
+/* ── Clasificador de género por palabras clave ────────────────────────────
+   El urbano latino, la música popular y el regional mexicano se clasifican
+   antes que «pop» y que el trap genérico. «Popular» contiene «pop», así que
+   ese patrón jamás debe llegar a la regla de pop. */
+const URBAN_LATIN_ARTISTS = /darell|myke towers|ñengo flow|nengo flow|farruko|bad bunny|karol g|feid|daddy yankee|anuel|ozuna|rauw|maluma|j balvin|arcangel|arcángel|sech|blessd|ryan castro|brytiago|nicky jam|wisin|yandel|don omar|jhayco|jhay cortez|quevedo|eladio carrion/i;
+const REGIONAL_ARTISTS = /grupo firme|natanael cano|peso pluma|carin leon|carin león|christian nodal|calibre 50|tigres del norte|intocable|arrolladora|espinoza paz|pepe aguilar|alejandro fernandez|alejandro fernández|los temerarios|banda ms|los plebes|el fantasma|edwin luna|jenni rivera|vicente fernandez|vicente fernández|joan sebastian|joan sebastián|los bukis|marco antonio solis|marco antonio solís|jorge celedon|jorge celedón|peter manjarres|silvestre dangond|diomedes diaz|los betos|el andariego|los inquietos|los gigantes|los chiches|los diablitos/i;
 const GENRE_RULES = [
-  [/reggaeton|reggaetón|bad bunny|karol g|feid|daddy yankee|anuel|ozuna|rauw|maluma|j balvin|arcangel|arcángel|mambo|dembow|urbano/i, 'Latino'],
-  [/salsa|bachata|cumbia|merengue|grupo|banda|norteño|regional/i, 'Latino'],
+  [/dembow/i, 'Dembow'],
+  [/trap\s*latino|trap latino|trap\s*argentino/i, 'Trap Latino'],
+  [/dancehall\s*latino|dancehall/i, 'Dancehall Latino'],
+  [/urbano\s*latino|perreo/i, 'Urbano Latino'],
+  [/reggaeton|reggaetón|mambo|urbano/i, 'Reggaetón'],
+  [URBAN_LATIN_ARTISTS, 'Reggaetón'],
+  [/salsa/i, 'Salsa'],
+  [/bachata/i, 'Bachata'],
+  [/cumbia/i, 'Cumbia'],
+  [/merengue/i, 'Merengue'],
+  [/vallenato|despecho/i, 'Vallenato'],
+  [/regional mexicano|ranchera|mariachi|norteño|norteno|corrido|banda|popular/i, 'Popular'],
+  [REGIONAL_ARTISTS, 'Popular'],
   [/rock|metallica|queen|nirvana|guns|acdc|ac\/dc|purple|muse|green day|linkin|foofighter|foo fighter/i, 'Rock'],
   [/electronic|dance|edm|house|techno|dubstep|alan walker|avicii|daft punk|tiesto|marshmello|calvin harris|david guetta|martin garrix/i, 'Electrónica'],
-  [/hip hop|hip-hop|rap|trap|drake|kendrick|eminem|macklemore|cardi|nicki|post malone|travis scott/i, 'Hip-Hop'],
+  [/trap/i, 'Trap'],
+  [/hip hop|hip-hop|rap|drake|kendrick|eminem|macklemore|cardi|nicki|post malone|travis scott/i, 'Hip-Hop'],
   [/r&b|rnb|soul|the weeknd|frank ocean|sza|h.e.r|usher|chris brown/i, 'R&B'],
   [/indie|alternative|artic monkeys|arctic monkeys|lana del rey|tame impala|radiohead/i, 'Indie'],
   [/kpop|k-pop|bts|blackpink|twice|stray kids|newjeans|ive|aespa/i, 'K-Pop'],
   [/lofi|lo-fi|chill|study|relax|ambient|piano/i, 'Lo-Fi'],
+  [/latin|latino|sabor/i, 'Latino'],
   [/pop|taylor swift|dua lipa|adele|ed sheeran|bruno mars|ariana|billie eilish|rihanna|katy perry|sia|shakira|coldplay|maroon/i, 'Pop'],
 ];
 

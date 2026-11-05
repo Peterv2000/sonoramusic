@@ -46,13 +46,23 @@ function styleQueries(features) {
   const out = [];
 
   switch (features.family) {
-    case 'latin':
-      if (features.subgenre === 'Reggaetón') out.push('reggaeton', 'latin party hits');
-      else if (features.subgenre === 'Salsa') out.push('salsa clasica', 'salsa');
-      else if (features.subgenre === 'Cumbia') out.push('cumbia', 'cumbia clasica');
-      else if (features.subgenre === 'Bachata') out.push('bachata', 'bachata romantica');
-      else out.push('latin music', low ? 'latin romanticas' : 'latin party hits');
+    case 'latin': {
+      /* Consultas estrictas por subgénero: el urbano latino solo busca urbano
+         latino y la música popular solo busca popular/regional. */
+      const sub = fold(features.subgenre);
+      if (sub === 'reggaeton') out.push('reggaeton', 'reggaeton urbano', 'latin urbano');
+      else if (sub === 'trap latino') out.push('trap latino', 'trap latino 2024', 'urbano latino');
+      else if (sub === 'dembow') out.push('dembow', 'dembow dominicano', 'urbano latino');
+      else if (sub === 'dancehall latino') out.push('dancehall', 'dancehall latino', 'reggaeton');
+      else if (sub === 'urbano latino') out.push('urbano latino', 'reggaeton urbano', 'latin urbano');
+      else if (sub === 'popular') out.push('musica popular', 'ranchera', 'corrido');
+      else if (sub === 'vallenato') out.push('vallenato', 'musica popular', 'despecho');
+      else if (sub === 'salsa') out.push('salsa clasica', 'salsa');
+      else if (sub === 'cumbia') out.push('cumbia', 'cumbia clasica');
+      else if (sub === 'bachata') out.push('bachata', 'bachata romantica');
+      else out.push('musica latina', low ? 'latin romanticas' : 'latin party hits');
       break;
+    }
     case 'rock':
       out.push(low ? 'rock acustico' : 'rock clasico');
       out.push(high ? 'rock workout' : 'rock hits');

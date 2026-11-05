@@ -70,11 +70,15 @@ const reggaetonQueue = queueFor(reggaeton);
 const rockQueue = queueFor(rock);
 
 assert.ok(balladQueue.length >= 6, `cola de balada demasiado corta (${balladQueue.length})`);
-/* El catálogo curado solo tiene tres temas latinos; la cola real se completa
-   con la búsqueda en vivo. Aquí verificamos que el filtro no deje pasar nada
-   que no sea latino en español. */
-assert.ok(reggaetonQueue.length >= 2, `cola de reggaetón demasiado corta (${reggaetonQueue.length})`);
+/* El catálogo curado solo tiene tres temas latinos y uno de ellos no es
+   urbano. La regla estricta de subgénero impide rellenar con salsa o pop, así
+   que aquí la cola puede ser corta; la búsqueda en vivo la completa. */
+assert.ok(reggaetonQueue.length >= 1, `cola de reggaetón demasiado corta (${reggaetonQueue.length})`);
 assert.ok(rockQueue.length >= 6, `cola de rock demasiado corta (${rockQueue.length})`);
+assert.ok(
+  reggaetonQueue.every((t) => featuresFor(t).family === 'latin'),
+  'la radio de reggaetón incluyó una pista que no es latina',
+);
 
 for (const [name, queue] of [['balada', balladQueue], ['reggaetón', reggaetonQueue], ['rock', rockQueue]]) {
   assert.ok(!hasExcessiveArtistRun(queue), `${name}: hay 3+ canciones seguidas del mismo artista`);
@@ -85,9 +89,9 @@ for (const [name, queue] of [['balada', balladQueue], ['reggaetón', reggaetonQu
 const balladTop = balladQueue.slice(0, 5).map((t) => featuresFor(t));
 assert.ok(balladTop.every((f) => f.energy < 0.75), 'la radio de balada saltó a un tema demasiado energético');
 
-// El reggaetón debe empezar por la misma familia latina.
+// El reggaetón debe mantenerse siempre en la misma familia latina.
 const reggaetonTop = reggaetonQueue.slice(0, 3).map((t) => featuresFor(t));
-assert.ok(reggaetonTop.filter((f) => f.family === 'latin').length >= 2, 'la radio de reggaetón no prioriza música latina');
+assert.ok(reggaetonTop.every((f) => f.family === 'latin'), 'la radio de reggaetón no prioriza música latina');
 
 // El rock debe mantenerse en rock/pop-rock de intensidad similar.
 const rockTop = rockQueue.slice(0, 5).map((t) => featuresFor(t));
@@ -105,7 +109,7 @@ const diverse = buildSmartQueue(ballad, candidates, { limit: 7, recent: [ballad]
 assert.ok(!hasExcessiveArtistRun(diverse), 'el orden permitió 3+ temas seguidos del mismo artista');
 
 /* Caso «El Andariego»: una semilla de música Popular/Despecho en español no
-   puede terminar en una canción en inglés ni en pop/rock/electrónica. */
+   puede terminar en reggaetón, bachata ni pop en inglés. */
 const andariego = {
   id: 'el-andariego', yt: 'el-andariego', title: 'El Andariego', artist: 'Los Betos',
   genre: 'Popular', moods: ['Triste'], year: 1995, dur: 240,
@@ -113,29 +117,68 @@ const andariego = {
 const andariegoF = featuresFor(andariego);
 assert.equal(andariegoF.family, 'latin', 'la música Popular debe pertenecer a la familia latina');
 assert.equal(andariegoF.language, 'es', 'El Andariego debe detectarse como español');
+assert.equal(andariegoF.subgenre, 'Vallenato', 'El Andariego debe caer en el grupo popular');
 
-const latinCandidates = [
-  byTitle('Despacito'),
-  byTitle('Waka Waka (Esto es África)'),
-  { id: 'la-bachata', yt: 'la-bachata', title: 'La Bachata', artist: 'Manuel Turizo', genre: 'Latino', moods: ['Romántico'], dur: 200 },
+const popularCandidates = [
+  { id: 'grupo-firme', yt: 'grupo-firme', title: 'El Tóxico', artist: 'Grupo Firme', genre: 'Popular', moods: ['Triste'], dur: 200 },
+  { id: 'ranchera', yt: 'ranchera', title: 'El Rey', artist: 'José Alfredo Jiménez', genre: 'Ranchera', moods: ['Triste'], dur: 180 },
+  { id: 'vallenato', yt: 'vallenato', title: 'La Gota Fría', artist: 'Carlos Vives', genre: 'Vallenato', moods: ['Fiesta'], dur: 220 },
+  { id: 'banda', yt: 'banda', title: 'El Amor de Mi Vida', artist: 'Banda MS', genre: 'Banda', moods: ['Romántico'], dur: 210 },
+  { id: 'reggaeton-urban', yt: 'reggaeton-urban', title: 'Tití Me Preguntó', artist: 'Bad Bunny', genre: 'Reggaetón', moods: ['Fiesta'], dur: 240 },
+  { id: 'bachata', yt: 'bachata', title: 'La Bachata', artist: 'Manuel Turizo', genre: 'Bachata', moods: ['Romántico'], dur: 200 },
   { id: 'english-latin', yt: 'english-latin', title: 'Bailando (English Version)', artist: 'Enrique Iglesias', genre: 'Latino', language: 'en', moods: ['Fiesta'], dur: 250 },
   { id: 'english-pop', yt: 'english-pop', title: 'Perfect', artist: 'Ed Sheeran', genre: 'Pop', moods: ['Romántico'], dur: 240 },
-  { id: 'english-hip', yt: 'english-hip', title: 'Lose Yourself', artist: 'Eminem', genre: 'Hip-Hop', moods: ['Energía'], dur: 240 },
-  { id: 'cumbia-instr', yt: 'cumbia-instr', title: 'Cumbia Instrumental', artist: 'Sonora Instrumental', genre: 'Cumbia', moods: ['Fiesta'], dur: 200 },
 ];
-const latinQueue = buildSmartQueue(andariego, latinCandidates, {
+const popularQueue = buildSmartQueue(andariego, popularCandidates, {
   limit: 10, recent: [andariego], minCount: 1,
 });
-assert.ok(latinQueue.length >= 2, `cola latina demasiado corta (${latinQueue.length})`);
+assert.ok(popularQueue.length >= 3, `cola popular demasiado corta (${popularQueue.length})`);
 assert.ok(
-  latinQueue.every((t) => featuresFor(t).language !== 'en'),
-  'la radio latina saltó a una canción en inglés',
+  popularQueue.every((t) => featuresFor(t).language !== 'en'),
+  'la radio popular saltó a una canción en inglés',
 );
 assert.ok(
-  latinQueue.every((t) => ['latin', 'unknown'].includes(featuresFor(t).family)),
-  'la radio latina saltó a un género no latino',
+  popularQueue.every((t) => featuresFor(t).family === 'latin'),
+  'la radio popular saltó a un género no latino',
 );
-assert.ok(!latinQueue.some((t) => t.id === 'english-latin'), 'el filtro de idioma dejó pasar una versión en inglés');
+assert.ok(
+  popularQueue.every((t) => featuresFor(t).subgenre !== 'Reggaetón'),
+  'la radio popular saltó a reggaetón',
+);
+assert.ok(
+  popularQueue.every((t) => !['reggaeton-urban', 'bachata', 'english-latin', 'english-pop'].includes(t.id)),
+  'la radio popular dejó pasar una pista de otro subgénero o idioma',
+);
+
+/* Caso urbano estricto: una semilla de reggaetón solo admite urbano latino
+   (reggaetón, dembow, trap latino, dancehall, perreo); nunca bachata, música
+   popular ni pop en inglés. */
+const darell = {
+  id: 'darell-seed', yt: 'darell-seed', title: 'Diles', artist: 'Darell',
+  genre: 'Reggaetón', moods: ['Fiesta'], year: 2020, dur: 220,
+};
+const urbanCandidates = [
+  { id: 'urban-bb', yt: 'urban-bb', title: 'Tití Me Preguntó', artist: 'Bad Bunny', genre: 'Reggaetón', moods: ['Fiesta'], dur: 240 },
+  { id: 'urban-dembow', yt: 'urban-dembow', title: 'Dembow', artist: 'El Alfa', genre: 'Dembow', moods: ['Fiesta'], dur: 180 },
+  { id: 'urban-trap', yt: 'urban-trap', title: 'Trap Latino', artist: 'Anuel AA', genre: 'Trap Latino', moods: ['Energía'], dur: 200 },
+  { id: 'urban-dancehall', yt: 'urban-dancehall', title: 'Dancehall Latino', artist: 'Sech', genre: 'Dancehall Latino', moods: ['Fiesta'], dur: 190 },
+  { id: 'urban-bachata', yt: 'urban-bachata', title: 'La Bachata', artist: 'Manuel Turizo', genre: 'Bachata', moods: ['Romántico'], dur: 200 },
+  { id: 'urban-popular', yt: 'urban-popular', title: 'El Tóxico', artist: 'Grupo Firme', genre: 'Popular', moods: ['Triste'], dur: 200 },
+  { id: 'urban-english', yt: 'urban-english', title: 'Perfect', artist: 'Ed Sheeran', genre: 'Pop', moods: ['Romántico'], dur: 240 },
+];
+const URBAN_SUBGENRES = new Set(['Reggaetón', 'Dembow', 'Trap Latino', 'Dancehall Latino', 'Urbano Latino', 'Perreo']);
+const urbanQueue = buildSmartQueue(darell, urbanCandidates, {
+  limit: 10, recent: [darell], minCount: 1,
+});
+assert.ok(urbanQueue.length >= 4, `cola urbana demasiado corta (${urbanQueue.length})`);
+assert.ok(
+  urbanQueue.every((t) => featuresFor(t).family === 'latin' && URBAN_SUBGENRES.has(featuresFor(t).subgenre)),
+  'la radio urbana incluyó un subgénero que no es urbano latino',
+);
+assert.ok(
+  urbanQueue.every((t) => !['urban-bachata', 'urban-popular', 'urban-english'].includes(t.id)),
+  'la radio urbana dejó pasar bachata, popular o pop en inglés',
+);
 
 // Los recopilatorios y mixes nunca deben entrar en «A continuación».
 assert.equal(isQueueCandidate({ id: 'junk', title: 'Top 50 Global | Mejores Canciones', artist: 'TopLauMusic', dur: 573 }), false);
