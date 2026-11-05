@@ -25,7 +25,7 @@ const DEFAULT_STATE = {
     lang: 'es',               // es | en
     quality: 'auto',          // auto | low | high (high = PRO)
     volumeNorm: false,        // PRO
-    crossfade: 0,             // segundos, PRO
+    crossfade: 4,             // segundos, PRO (fundido cruzado por defecto)
     autoplay: true,
     explicitFilter: false,
     dataSaver: false,
@@ -75,6 +75,15 @@ function load() {
     const raw = localStorage.getItem(KEY);
     if (!raw) return DEFAULT_STATE;
     const saved = JSON.parse(raw);
+    const settings = { ...DEFAULT_STATE.settings, ...saved.settings };
+    // Migración única: las instalaciones anteriores guardaron crossfade 0
+    // porque la función aún no existía; ahora el fundido por defecto es 4 s.
+    try {
+      if (!localStorage.getItem('ritmo-crossfade-v1')) {
+        settings.crossfade = DEFAULT_STATE.settings.crossfade;
+        localStorage.setItem('ritmo-crossfade-v1', '1');
+      }
+    } catch { /* sin almacenamiento */ }
     return {
       ...DEFAULT_STATE,
       ...saved,
@@ -83,7 +92,7 @@ function load() {
       pro: { ...DEFAULT_STATE.pro, ...saved.pro },
       devices: saved.devices || [],
       sync: { ...DEFAULT_STATE.sync, ...saved.sync },
-      settings: { ...DEFAULT_STATE.settings, ...saved.settings },
+      settings,
       library: { ...DEFAULT_STATE.library, ...saved.library, playCounts: { ...(saved.library?.playCounts || {}) } },
     };
   } catch {

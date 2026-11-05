@@ -248,13 +248,16 @@ button.link:hover, .link:hover { text-decoration: underline; }
   overflow: hidden; cursor: pointer; touch-action: pan-y;
 }
 
-/* El iframe llena la pantalla y se agranda/recorta para sacar de la vista
-   la barra de título y los logos/enlaces del proveedor. */
+/* Los iframes llenan la pantalla y se agrandan/recortan para sacar de la vista
+   la barra de título y los logos/enlaces del proveedor. Solo el reproductor
+   activo es visible; el otro queda listo para el crossfade. */
 .vstage .yt-host {
   position: absolute; inset: 0;
   width: 100% !important; height: 100% !important;
-  opacity: 1; overflow: hidden; border-radius: 0;
+  opacity: 0; overflow: hidden; border-radius: 0;
+  transition: opacity 0.12s linear;
 }
+.vstage .yt-host.active { opacity: 1; }
 .vstage .yt-host iframe {
   width: 145% !important; height: 145% !important;
   position: absolute; top: -22.5%; left: -22.5%;

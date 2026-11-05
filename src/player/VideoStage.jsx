@@ -26,7 +26,7 @@ import Icon from '../components/Icon.jsx';
 
 const SKIP_SECONDS = 10;
 
-export default function VideoStage({ hostRef, videoMode }) {
+export default function VideoStage({ hostsRef, activeSlot = 0, videoMode }) {
   const p = usePlayer();
   const { t } = useI18n();
   const [hideUi, setHideUi] = useState(false);
@@ -188,10 +188,15 @@ export default function VideoStage({ hostRef, videoMode }) {
             }}
             aria-label={p.playing ? t('pause') : t('play')}
           >
-            {/* Contenedor del iframe (nodo estable): se recorta por CSS.
-                Va DENTRO de la carcasa para que la pantalla completa incluya el vídeo. */}
-            <div className="yt-host" aria-hidden={!open}>
-              <div ref={hostRef} />
+            {/* Contenedores de los dos reproductores (nodos estables):
+                mientras uno suena, el otro precarga y entra con fundido.
+                Van DENTRO de la carcasa para que la pantalla completa incluya
+                el vídeo. */}
+            <div className={`yt-host ${activeSlot === 0 ? 'active' : ''}`} aria-hidden={!open}>
+              <div ref={(el) => { if (hostsRef?.current) hostsRef.current[0] = el; }} />
+            </div>
+            <div className={`yt-host ${activeSlot === 1 ? 'active' : ''}`} aria-hidden={!open}>
+              <div ref={(el) => { if (hostsRef?.current) hostsRef.current[1] = el; }} />
             </div>
 
             {/* Zonas de doble toque (feedback visual) */}
