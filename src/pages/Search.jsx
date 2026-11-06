@@ -5,8 +5,9 @@ import { usePlayer } from '../player/PlayerContext.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
 import { Card, Shelf, TrackRow } from '../components/widgets.jsx';
 import { TRACKS, MIXES, STATIONS, ALBUMS, ARTISTS, trackById, nf } from '../data/catalog.js';
-import { searchYouTubeDetailed, suggestYouTube } from '../api/youtubeSearch.js';
-import { getCatalog, warmLookup } from '../api/liveData.js';
+import { suggestYouTube } from '../api/youtubeSearch.js';
+import { hybridSearchFallback, mergeTrackResults } from '../api/hybridSearch.js';
+import { getCatalog } from '../api/liveData.js';
 import { useCategories } from '../api/categories.js';
 import Icon from '../components/Icon.jsx';
 
@@ -41,13 +42,17 @@ export default function Search() {
   const [sugg, setSugg] = useState([]);
   const [liveTracks, setLiveTracks] = useState([]);
   const [liveItems, setLiveItems] = useState(null); // null = cargando
-  const [liveError, setLiveError] = useState(null);
+  const [localResults, setLocalResults] = useState([]);
+  const [hybridMeta, setHybridMeta] = useState(null);
   const [liveInstant, setLiveInstant] = useState(false);
-  const [liveAttempt, setLiveAttempt] = useState(0);
+  const [onlineTick, setOnlineTick] = useState(0);
 
   const suggReq = useRef(0);
   const liveReq = useRef(0);
   const boxRef = useRef(null);
+  const liveTracksRef = useRef(liveTracks);
+
+  liveTracksRef.current = liveTracks;
 
   /* La barra superior navega a /search?q=…: mantenemos el término en sincronía. */
   useEffect(() => {
@@ -86,44 +91,64 @@ export default function Search() {
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
 
-  /* Búsqueda global: se ejecuta al pulsar Enter o el botón, no al teclear. */
+  /* Si vuelve la conexión, reintentamos la consulta actual sin que el usuario
+     tenga que pulsar nada. */
+  useEffect(() => {
+    const onOnline = () => setOnlineTick((n) => n + 1);
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+  }, []);
+
+  /* Búsqueda híbrida: locales/caché al instante, remotos si llegan a tiempo y
+     respaldo silencioso a los 2.5 s. Nunca muestra errores de conexión. */
   useEffect(() => {
     const term = submitted.trim();
     if (!term) {
       setLiveItems(null);
-      setLiveError(null);
+      setLocalResults([]);
+      setHybridMeta(null);
       setLiveInstant(false);
       return undefined;
     }
+
     let alive = true;
     const id = ++liveReq.current;
+    const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
     setLiveItems(null);
-    setLiveError(null);
+    setLocalResults([]);
+    setHybridMeta(null);
     setLiveInstant(false);
-    (async () => {
-      try {
-        if (!deep) {
-          const warm = await warmLookup(term).catch(() => null);
-          if (alive && id === liveReq.current && Array.isArray(warm) && warm.length) {
-            setLiveItems(warm);
-            setLiveInstant(true);
-            return;
-          }
-        }
-        const result = await searchYouTubeDetailed(term, { deep });
-        if (alive && id === liveReq.current) {
-          setLiveItems(Array.isArray(result?.items) ? result.items : []);
-          setLiveError(result?.error || null);
-        }
-      } catch {
-        if (alive && id === liveReq.current) {
-          setLiveItems([]);
-          setLiveError('unavailable');
-        }
-      }
-    })();
-    return () => { alive = false; };
-  }, [submitted, deep, liveAttempt]);
+
+    const apply = (result) => {
+      if (!alive || id !== liveReq.current || !result) return;
+      setLiveItems(Array.isArray(result.global) ? result.global : []);
+      setLocalResults(Array.isArray(result.local) ? result.local : []);
+      setHybridMeta(result.meta || null);
+      setLiveInstant(Boolean(result.meta?.cached && !result.meta?.pending && !deep));
+    };
+
+    hybridSearchFallback(term, {
+      deep,
+      signal: ctrl?.signal,
+      catalogTracks: liveTracksRef.current,
+      onUpdate: apply,
+    }).then(apply).catch(() => {
+      if (!alive || id !== liveReq.current) return;
+      /* El motor híbrido no rechaza; si algo externo falla, dejamos el estado
+         local y nunca pintamos un error de red. */
+      setLiveItems((items) => (Array.isArray(items) ? items : []));
+      setHybridMeta((meta) => meta || {
+        pending: false,
+        degraded: true,
+        offline: typeof navigator !== 'undefined' && navigator.onLine === false,
+      });
+    });
+
+    return () => {
+      alive = false;
+      try { ctrl?.abort(); } catch { /* noop */ }
+    };
+  }, [submitted, deep, onlineTick]);
 
   const local = useMemo(() => {
     const term = submitted.trim().toLowerCase();
@@ -152,6 +177,13 @@ export default function Search() {
     };
   }, [submitted, liveTracks, state?.library?.playlists]);
 
+  /* Canciones locales: las del catálogo visible + las que rescató el motor
+     híbrido (catálogo descargado, aunque esté caducado). Sin duplicados. */
+  const localSongs = useMemo(
+    () => mergeTrackResults(local.songs, localResults),
+    [local.songs, localResults],
+  );
+
   const liveSongs = useMemo(
     () => (liveItems || []).filter((x) => (x.kind || 'video') === 'video'),
     [liveItems],
@@ -161,16 +193,19 @@ export default function Search() {
 
   const counts = {
     all: liveSongs.length + liveArtists.length + livePlaylists.length +
-      local.songs.length + local.albums.length + local.artists.length +
+      localSongs.length + local.albums.length + local.artists.length +
       local.playlists.length + local.mixes.length + local.stations.length,
-    songs: liveSongs.length + local.songs.length,
+    songs: liveSongs.length + localSongs.length,
     artists: liveArtists.length + local.artists.length,
     albums: local.albums.length,
     playlists: livePlaylists.length + local.playlists.length + local.mixes.length + local.stations.length,
   };
 
   const visible = (tab) => filter === 'all' || filter === tab;
-  const loading = submitted.trim().length > 0 && liveItems === null;
+  /* Mientras el remoto siga pendiente y no haya canciones globales, el
+     esqueleto ocupa el lugar del aviso de error. */
+  const loading = submitted.trim().length > 0
+    && (liveItems === null || Boolean(hybridMeta?.pending && !liveSongs.length));
 
   const runSearch = (value) => {
     const v = (value ?? q).trim();
@@ -201,8 +236,8 @@ export default function Search() {
     if (!term) return;
     setPendingGroup(item.id);
     try {
-      const result = await searchYouTubeDetailed(term, { limit: 30 });
-      const songs = (result?.items || []).filter((x) => (x.kind || 'video') === 'video');
+      const result = await hybridSearchFallback(term, { limit: 30 });
+      const songs = (result?.merged || []).filter((x) => (x.kind || 'video') === 'video');
       if (!songs.length) return;
       if (toQueue) queueAll(songs);
       else playAll(songs);
@@ -380,8 +415,15 @@ export default function Search() {
             ))}
           </div>
 
+          {hybridMeta?.offline && (
+            <div className="search-offline-banner" role="status">
+              <Icon name="download" size={16} />
+              <span>{t('offlineCatalogMode')}</span>
+            </div>
+          )}
+
           {loading && (
-            <section className="list-section search-youtube-section">
+            <section className="list-section search-youtube-section" aria-busy="true" aria-live="polite">
               <div className="shelf-head">
                 <h2><Icon name="sparkles" size={18} /> {t('searchingSonora')} <span className="search-query-chip">“{submitted.trim()}”</span></h2>
               </div>
@@ -389,26 +431,6 @@ export default function Search() {
                 {Array.from({ length: 5 }).map((_, i) => <div key={i} className="yt-skel-row" />)}
               </div>
             </section>
-          )}
-
-          {liveError && liveItems?.length > 0 && (
-            <div className="search-inline-warn">
-              <Icon name="warning" size={14} />
-              <span>{liveError === 'timeout' ? t('searchTimeout') : t('searchUnavailable')}</span>
-              <button className="btn tiny" onClick={() => setLiveAttempt((n) => n + 1)}>{t('retry')}</button>
-            </div>
-          )}
-
-          {liveError && liveItems?.length === 0 && (
-            <div className="empty-box search-fallback">
-              <p><Icon name="warning" size={16} /> {liveError === 'timeout' ? t('searchTimeout') : t('searchUnavailable')}</p>
-              <small>{t('searchUnavailableHint')}</small>
-              <div className="head-actions">
-                <button className="btn small primary" onClick={() => setLiveAttempt((n) => n + 1)}>
-                  <Icon name="history" size={14} /> {t('retry')}
-                </button>
-              </div>
-            </div>
           )}
 
           {visible('songs') && liveSongs.length > 0 && (
@@ -465,22 +487,22 @@ export default function Search() {
             </Shelf>
           )}
 
-          {visible('songs') && local.songs.length > 0 && (
+          {visible('songs') && localSongs.length > 0 && (
             <section className="list-section search-catalog-section">
-              <SectionHead icon="library" title={t('inCatalog')} count={local.songs.length}>
-                <button className="btn small" onClick={() => queueAll(local.songs)}>
+              <SectionHead icon="library" title={t('inCatalog')} count={localSongs.length}>
+                <button className="btn small" onClick={() => queueAll(localSongs)}>
                   <Icon name="plus" size={14} /> {t('addToQueue')}
                 </button>
-                <button className="btn primary small" onClick={() => playAll(local.songs)}>
+                <button className="btn primary small" onClick={() => playAll(localSongs)}>
                   <Icon name="play" size={15} /> {t('playAll')}
                 </button>
               </SectionHead>
-              {local.songs.map((tr, i) => (
+              {localSongs.map((tr, i) => (
                 <TrackRow
                   key={tr.id}
                   track={tr}
                   index={i}
-                  list={local.songs}
+                  list={localSongs}
                   showAlbum
                   onQueue={() => p.enqueue(tr)}
                 />
@@ -557,7 +579,7 @@ export default function Search() {
             </Shelf>
           )}
 
-          {!loading && !liveError && counts.all === 0 && (
+          {!loading && counts.all === 0 && (
             <div className="empty-box search-empty">
               <div className="search-empty-art"><Icon name="search" size={30} /></div>
               <strong>{t('noResults')}</strong>

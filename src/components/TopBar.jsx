@@ -6,7 +6,8 @@ import { usePlayer } from '../player/PlayerContext.jsx';
 import { GENRES } from '../data/catalog.js';
 import Icon from './Icon.jsx';
 import Logo from './Logo.jsx';
-import { suggestYouTube, searchYouTube } from '../api/youtubeSearch.js';
+import { suggestYouTube } from '../api/youtubeSearch.js';
+import { hybridSearchFallback } from '../api/hybridSearch.js';
 
 export default function TopBar() {
   const nav = useNavigate();
@@ -33,23 +34,39 @@ export default function TopBar() {
     const term = q.trim();
     if (term.length < 2) { setSugg([]); setRes([]); return; }
     const id = ++req.current;
+    const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
     setLoading(true);
+    const quickResults = (result) => (Array.isArray(result?.merged) ? result.merged : [])
+      .filter((x) => (x.kind || 'video') === 'video')
+      .slice(0, 8);
+
     const tmr = setTimeout(async () => {
       try {
-        const [s, r] = await Promise.all([
+        const [s, result] = await Promise.all([
           suggestYouTube(term).catch(() => []),
-          searchYouTube(term, { deep: false }).catch(() => []),
+          hybridSearchFallback(term, {
+            deep: false,
+            signal: ctrl?.signal,
+            onUpdate: (partial) => {
+              if (id !== req.current) return;
+              const list = quickResults(partial);
+              if (list.length) setRes(list);
+            },
+          }).catch(() => ({ merged: [] })),
         ]);
         if (id !== req.current) return;
         setSugg(Array.isArray(s) ? s.filter((x) => typeof x === 'string').slice(0, 6) : []);
-        setRes(Array.isArray(r) ? r.filter((x) => (x.kind || 'video') === 'video').slice(0, 8) : []);
+        setRes(quickResults(result));
       } catch {
         if (id === req.current) { setSugg([]); setRes([]); }
       } finally {
         if (id === req.current) setLoading(false);
       }
     }, 160);
-    return () => clearTimeout(tmr);
+    return () => {
+      clearTimeout(tmr);
+      try { ctrl?.abort(); } catch { /* noop */ }
+    };
   }, [q]);
 
   const pick = (val) => goSearch(val);

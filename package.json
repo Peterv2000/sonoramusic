@@ -17,6 +17,7 @@
     "check:i18n": "node scripts/check-i18n.mjs",
     "check:queue": "node scripts/check-smart-queue.mjs",
     "check:search": "node scripts/check-search-fallback.mjs",
+    "check:hybrid": "node scripts/check-hybrid-search.mjs",
     "apk:prepare": "vite build && cap sync android",
     "apk:build": "vite build && cap sync android && cd android && gradlew assembleDebug",
     "apk:release": "vite build && cap sync android && cd android && gradlew assembleRelease"

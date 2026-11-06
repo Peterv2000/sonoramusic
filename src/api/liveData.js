@@ -24,11 +24,11 @@ const KEY = 'ritmo-livedata-v1';
 let mem = null; // { t, catalog, charts, warm }
 let revalidated = false;
 
-function readAll() {
-  if (mem && Date.now() - mem.t < TTL) return mem;
+function readAll({ allowStale = false } = {}) {
+  if (mem && (allowStale || Date.now() - mem.t < TTL)) return mem;
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if (raw && Date.now() - raw.t < TTL) { mem = raw; return mem; }
+    if (raw && (allowStale || Date.now() - raw.t < TTL)) { mem = raw; return mem; }
   } catch { /* sin caché */ }
   return null;
 }
@@ -73,9 +73,11 @@ export function hasLiveData() {
 }
 
 /** Catálogo en vivo ya cacheado, de forma síncrona.
- *  Lo usa la cola de reproducción para no limitarse al catálogo curado. */
-export function cachedCatalogTracks() {
-  const d = readAll();
+ *  Lo usa la cola de reproducción para no limitarse al catálogo curado.
+ *  `allowStale` lo rescata cuando no hay red: mejor un catálogo de ayer que
+ *  una pantalla vacía. */
+export function cachedCatalogTracks({ allowStale = false } = {}) {
+  const d = readAll({ allowStale });
   return Array.isArray(d?.catalog?.tracks) ? d.catalog.tracks : [];
 }
 
@@ -156,4 +158,26 @@ export async function warmLookup(query) {
   } catch {
     return null;
   }
+}
+
+/* Búsqueda resuelta que ya está en la caché local de 12 h. Es síncrona: sirve
+   para pintar resultados al instante incluso antes de tocar la red. */
+export function cachedWarmResults(query, { allowStale = true } = {}) {
+  const q = (query || '').trim().toLowerCase();
+  if (!q) return [];
+  const d = readAll({ allowStale });
+  const cache = d?.warm?.cache;
+  if (!cache || typeof cache !== 'object') return [];
+
+  const keys = Object.keys(cache);
+  const exact = keys.find((k) => k.trim().toLowerCase() === q);
+  let hit = exact ? cache[exact] : null;
+  if (!hit?.v?.length) {
+    const loose = keys.find((k) => {
+      const kk = k.trim().toLowerCase();
+      return cache[k]?.v?.length && (kk.includes(q) || q.includes(kk));
+    });
+    if (loose) hit = cache[loose];
+  }
+  return mapSearchResults(Array.isArray(hit?.v) ? hit.v : []);
 }

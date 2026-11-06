@@ -13,7 +13,7 @@
    en la interfaz.
 
    Si el API no está disponible (por ejemplo abriendo `dist` como fichero
-   suelto), se degrada con elegancia: se avisa y se puede reintentar.
+   suelto), `hybridSearchFallback` toma el relevo con el catálogo local.
    ══════════════════════════════════════════════════════════════════════════ */
 
 const API = '/api/search';
@@ -109,10 +109,16 @@ export function mapSearchResults(list) {
 }
 
 /* Petición JSON con tiempo límite. Nunca deja una promesa colgada si el
-   servidor no responde (móvil con mala señal, API caída, etc.). */
-async function fetchJSON(path, { timeout = DEFAULT_TIMEOUT, ...opts } = {}) {
+   servidor no responde (móvil con mala señal, API caída, etc.).
+   `signal` permite cancelar desde fuera (al cambiar de consulta o desmontar). */
+async function fetchJSON(path, { timeout = DEFAULT_TIMEOUT, signal, ...opts } = {}) {
   const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
   const timer = ctrl ? setTimeout(() => ctrl.abort(), timeout) : null;
+  const relayAbort = () => { try { ctrl?.abort(); } catch { /* noop */ } };
+  if (signal) {
+    if (signal.aborted) relayAbort();
+    else signal.addEventListener('abort', relayAbort, { once: true });
+  }
   try {
     const res = await fetch(path, {
       ...opts,
@@ -123,6 +129,7 @@ async function fetchJSON(path, { timeout = DEFAULT_TIMEOUT, ...opts } = {}) {
     return await res.json();
   } finally {
     if (timer) clearTimeout(timer);
+    if (signal) signal.removeEventListener('abort', relayAbort);
   }
 }
 
@@ -156,13 +163,37 @@ function writeCache(q, v) {
 }
 
 /**
+ * Resultados ya indexados de una consulta. Con `allowStale` también devuelve
+ * entradas caducadas: es la red de seguridad cuando no hay conexión o el
+ * proveedor tarda demasiado. Nunca lanza.
+ */
+export function getCachedSearchResults(query, { deep = false, allowStale = false } = {}) {
+  const q = (query || '').trim();
+  if (!q) return [];
+
+  const key = deep ? q + '::deep' : q;
+  if (MEM.has(key)) return MEM.get(key) || [];
+
+  try {
+    const all = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+    const hit = all[key] || all[q];
+    if (hit && (allowStale || Date.now() - hit.t < CACHE_TTL)) {
+      const list = Array.isArray(hit.v) ? hit.v : [];
+      MEM.set(key, list);
+      return list;
+    }
+  } catch { /* sin caché */ }
+  return [];
+}
+
+/**
  * Busca a través de nuestro servidor y devuelve también el estado del error.
  * `deep` pide una búsqueda profunda (varias páginas → muchos más resultados).
  *
  * Nunca lanza: si YouTube o el servidor fallan, devuelve `{ items: [], error }`
- * para que la interfaz muestre un aviso limpio y pueda ofrecer reintentar.
+ * para que `hybridSearchFallback` decida el respaldo local sin romper la UI.
  */
-export async function searchYouTubeDetailed(query, { deep = false, limit, timeout } = {}) {
+export async function searchYouTubeDetailed(query, { deep = false, limit, timeout, signal } = {}) {
   const q = (query || '').trim();
   if (!q) return { items: [], error: null, cached: false };
 
@@ -177,7 +208,7 @@ export async function searchYouTubeDetailed(query, { deep = false, limit, timeou
   if (limit) params.set('limit', String(limit));
 
   try {
-    const data = await fetchJSON(`${API}?${params}`, { timeout });
+    const data = await fetchJSON(`${API}?${params}`, { timeout, signal });
     const list = mapSearchResults(Array.isArray(data?.results) ? data.results : []);
     if (list.length) writeCache(key, list);
     return { items: list, error: null, cached: false };
