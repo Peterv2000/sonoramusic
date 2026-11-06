@@ -11,6 +11,12 @@ import './styles-pro.css';
 import './styles-modern.css';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { reportResourceError } from './api/telemetry.js';
+import { startCatalogSync } from './api/catalogStore.js';
+
+/* Catálogo dinámico: descarga el API y refresca al volver la conexión o cuando
+   el administrador publica cambios (SSE). La app arranca al instante con la
+   caché/semilla y se actualiza en segundo plano. */
+startCatalogSync();
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>

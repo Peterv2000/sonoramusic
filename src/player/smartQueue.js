@@ -17,6 +17,7 @@
 
 import { artistKey, globalPool, isQueueCandidate, mergeTracks } from './queue.js';
 import { featuresFor, fold, songKey } from './audioFeatures.js';
+import { affinityScore, listeningProfile } from '../state/listeningHistory.js';
 
 /* Afinidad entre familias. 1 = mismo estilo; los valores intermedios permiten
    puentes naturales (pop ↔ R&B, latino ↔ hip-hop) sin saltar a otro mundo. */
@@ -71,8 +72,11 @@ export function proximitySimilarity(a, b, tolerance = 0.2) {
 }
 
 function moodSimilarity(seed, candidate) {
-  const a = new Set([seed.mood, ...(seed.moods || [])].filter(Boolean));
-  const b = new Set([candidate.mood, ...(candidate.moods || [])].filter(Boolean));
+  /* `moods` puede llegar como objeto desde cachés antiguas: se normaliza antes
+     de iterar para no romper la cola ni el render del reproductor. */
+  const moodsOf = (track) => (Array.isArray(track?.moods) ? track.moods : []);
+  const a = new Set([seed.mood, ...moodsOf(seed)].filter(Boolean));
+  const b = new Set([candidate.mood, ...moodsOf(candidate)].filter(Boolean));
   if (!a.size || !b.size) return 0.5;
   if (seed.mood && seed.mood === candidate.mood) return 1;
   let overlap = 0;
@@ -239,6 +243,10 @@ export function buildSmartQueue(seed, candidates, {
 
   const history = Array.isArray(recent) && recent.length ? recent.slice(-8) : [];
   if (!history.length || history[history.length - 1]?.id !== seed.id) history.push(seed);
+  /* Afinidad con el consumo real del usuario (historial local). Es un empujón
+     pequeño: la similitud audio (género/BPM/energía) sigue mandando, pero la
+     cola se inclina hacia lo que la persona escucha de verdad. */
+  const profile = listeningProfile();
 
   /* Etapa 1: solo coincidencias estrictas (idioma, género, subgénero,
      ±15 % BPM, energía ±0.24). Etapa 2: se relajan tempo/energía para
@@ -268,7 +276,8 @@ export function buildSmartQueue(seed, candidates, {
 
         const uses = artist ? context.filter((t) => sameTrackArtist(t, entry.track)).length : 0;
         const uncertainty = entry.features.language === 'unknown' ? 0.03 : 0;
-        const adjusted = entry.score - Math.min(0.14, uses * 0.018) - Math.min(0.04, run * 0.02) - uncertainty;
+        const taste = affinityScore(entry.track, profile) * 0.12;
+        const adjusted = entry.score + taste - Math.min(0.14, uses * 0.018) - Math.min(0.04, run * 0.02) - uncertainty;
         if (adjusted > bestScore) {
           bestScore = adjusted;
           bestIdx = i;

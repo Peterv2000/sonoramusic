@@ -14,6 +14,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { TRACKS, GENRES, tracksByGenre } from '../data/catalog.js';
 import { cachedCategories } from './categories.js';
+import { apiUrl, eventUrl } from './apiBase.js';
+import { weightedShuffle, listeningProfile } from '../state/listeningHistory.js';
 
 const CACHE_KEY = 'sonora-home-v2';
 const CLIENT_KEY = 'sonora-client-id';
@@ -125,11 +127,20 @@ function rotate(list, seed, count) {
 }
 
 function localFeed({ lang = 'es', seed = Date.now(), mood = '' } = {}) {
-  const categories = (cachedCategories().length ? cachedCategories() : GENRES).map((c, i) => normalizeCategory({
-    ...c,
-    tracks: rotate(tracksByGenre(c.id), seed + i * 17, 18),
-    count: tracksByGenre(c.id).length,
-  }, i)).filter(Boolean);
+  const profile = listeningProfile();
+  /* El respaldo offline también rota de forma ponderada: sube lo que el
+     usuario escucha y evita repetir en exceso. */
+  const localTracksFor = (category) => TRACKS.filter((t) =>
+    !t.live && (t.genre === category.id || t.categoryId === category.id ||
+      (category.genres || []).some((g) => t.genre === g)));
+  const categories = (cachedCategories().length ? cachedCategories() : GENRES).map((c, i) => {
+    const pool = localTracksFor(c);
+    return normalizeCategory({
+      ...c,
+      tracks: weightedShuffle(pool, { profile, seed: seed + i * 17, limit: 18 }),
+      count: pool.length || tracksByGenre(c.id).length,
+    }, i);
+  }).filter(Boolean);
 
   const pool = [];
   const seen = new Set();
@@ -253,7 +264,7 @@ export async function fetchHomeFeed({ userId = getClientUserId(), lang = 'es', m
   if (mood) params.set('mood', mood);
 
   try {
-    const res = await fetch(`/api/v1/home/feed?${params}`, {
+    const res = await fetch(apiUrl(`/api/v1/home/feed?${params}`), {
       headers: { Accept: 'application/json' },
       cache: 'no-store',
     });
@@ -280,7 +291,7 @@ export async function fetchHomeFeed({ userId = getClientUserId(), lang = 'es', m
 export async function fetchMoodTracks(mood, { limit = 600 } = {}) {
   if (!mood) return [];
   try {
-    const res = await fetch(`/api/v1/tracks?mood=${encodeURIComponent(mood)}&limit=${limit}`, {
+    const res = await fetch(apiUrl(`/api/v1/tracks?mood=${encodeURIComponent(mood)}&sort=random&limit=${limit}`), {
       headers: { Accept: 'application/json' },
       cache: 'no-store',
     });
@@ -313,7 +324,7 @@ export function recordListen(track, categoryId) {
         year: track.year,
       },
     });
-    fetch('/api/v1/history', {
+    fetch(apiUrl('/api/v1/history'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body,
@@ -359,7 +370,7 @@ export function useHomeFeed({ userId, lang = 'es', mood = '', enabled = true } =
     let es = null;
     try {
       if (typeof EventSource !== 'undefined') {
-        es = new EventSource('/api/v1/events');
+        es = new EventSource(eventUrl('/api/v1/events'));
         const refresh = () => { if (!dead) load({ force: true, freshSeed: false }); };
         es.addEventListener('categories', refresh);
         es.addEventListener('version', refresh);

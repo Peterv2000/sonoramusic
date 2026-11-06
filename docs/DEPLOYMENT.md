@@ -88,9 +88,12 @@ CREATE INDEX telemetry_errors_created_idx ON telemetry_errors (created_at DESC);
 | `UPDATE_INTERVAL_MS` | Frecuencia del actualizador | `3600000` |
 | `UPDATE_FIRST_DELAY_MS` | Retraso de la primera pasada | `8000` |
 | `DATABASE_URL` | PostgreSQL (producción) | `postgres://…` |
+| `SUPABASE_URL` | Proyecto Supabase (catálogo/historial) | `https://xxxx.supabase.co` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Escritura del servidor (nunca en el frontend) | `eyJ…` |
 | `REDIS_URL` | Pub/Sub y caché (producción) | `redis://…` |
 | `CDN_BASE_URL` | Base de audio/carátulas | `https://cdn.sonora.app` |
-| `PUBLIC_API_URL` | Reservado para separar el API en otro dominio (hoy el cliente usa rutas relativas) | `https://api.sonora.app` |
+| `VITE_API_BASE_URL` | API público que consume la web/APK | `https://sonora-api.onrender.com` |
+| `SONORA_APP_URL` | Web pública que carga la APK (`server.url`) | `https://sonora.vercel.app` |
 
 Nunca subas un `.env` real al repositorio. En Vercel/Netlify/Railway se
 configuran en el panel del proyecto.
@@ -177,15 +180,17 @@ variables `DATABASE_URL` y `REDIS_URL` cuando migres el almacén JSON.
 
 ## 7. APK Android (Capacitor)
 
-```bash
-npm run build
-npx cap sync android
-cd android
-./gradlew assembleRelease
+```powershell
+$env:SONORA_APP_URL = "https://sonora.vercel.app"       # web pública
+$env:VITE_API_BASE_URL = "https://sonora-api.onrender.com"
+npm run apk:release
 ```
 
 - Firma el APK/AAB con un keystore guardado fuera del repositorio.
-- `capacitor.config.json` debe apuntar al dominio de producción.
+- `npm run apk:build` / `apk:release` escriben `server.url` desde
+  `SONORA_APP_URL` antes de `cap sync`; no edites `capacitor.config.json` a mano.
+  Sin esa variable, la APK usa el bundle local y requiere `VITE_API_BASE_URL`.
+- Guía completa del stack dinámico: [STACK-DINAMICO.md](STACK-DINAMICO.md).
 - **Actualizaciones en vivo**: la app consulta `GET /api/v1/version` al
   arrancar, cada 15 minutos, al volver a primer plano y cuando el servidor
   emite el evento SSE `version`. El administrador publica desde

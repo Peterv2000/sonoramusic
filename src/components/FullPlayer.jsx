@@ -336,9 +336,9 @@ export default function FullPlayer() {
         </div>
       )}
 
-      {p.error && (
-        <div className="toast show"><Icon name="warning" size={15} /> {t('unavailable')}</div>
-      )}
+      {/* El auditor de reproducción cambia de fuente en silencio: nunca
+          mostramos un cartel de error por una URL 404/500. Los fallos se
+          registran en telemetría para el QA Robot. */}
     </div>
   );
 }

@@ -7,6 +7,8 @@
    interfaz ni muestra mensajes técnicos al usuario.
    ══════════════════════════════════════════════════════════════════════════ */
 
+import { apiUrl } from './apiBase.js';
+
 const SEEN = new Map();
 const WINDOW_MS = 15000;
 const MAX_PER_MINUTE = 8;
@@ -71,7 +73,7 @@ export function reportIssue(payload = {}, { force = false } = {}) {
     if (typeof navigator !== 'undefined' && navigator.sendBeacon?.('/api/v1/telemetry/errors', blob)) return true;
   } catch { /* beacon no disponible */ }
 
-  fetch('/api/v1/telemetry/errors', {
+  fetch(apiUrl('/api/v1/telemetry/errors'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -168,7 +170,7 @@ export async function runDiagnostics() {
   let apiMs = 0;
   let apiError = '';
   try {
-    const res = await fetch('/api/health', { cache: 'no-store' });
+    const res = await fetch(apiUrl('/api/health'), { cache: 'no-store' });
     apiMs = Date.now() - started;
     api = res.ok;
     if (!res.ok) apiError = `HTTP ${res.status}`;

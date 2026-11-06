@@ -16,6 +16,8 @@
    suelto), `hybridSearchFallback` toma el relevo con el catálogo local.
    ══════════════════════════════════════════════════════════════════════════ */
 
+import { apiUrl } from './apiBase.js';
+
 const API = '/api/search';
 const CACHE_KEY = 'ritmo-ytsearch-v1';
 const CACHE_TTL = 1000 * 60 * 60 * 6; // 6 h
@@ -120,7 +122,7 @@ async function fetchJSON(path, { timeout = DEFAULT_TIMEOUT, signal, ...opts } = 
     else signal.addEventListener('abort', relayAbort, { once: true });
   }
   try {
-    const res = await fetch(path, {
+    const res = await fetch(apiUrl(path), {
       ...opts,
       headers: { Accept: 'application/json', ...(opts.headers || {}) },
       signal: ctrl?.signal,
@@ -269,7 +271,7 @@ export function trackFromYouTubeId(id, title, artist, thumb) {
    ══════════════════════════════════════════════════════════════════════════ */
 
 async function adminJSON(path, opts = {}) {
-  const res = await fetch(path, {
+  const res = await fetch(apiUrl(path), {
     headers: { Accept: 'application/json', ...(opts.body ? { 'Content-Type': 'application/json' } : {}) },
     ...opts,
   });

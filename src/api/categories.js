@@ -10,6 +10,7 @@
 
 import { useEffect, useState } from 'react';
 import { GENRES as STATIC_GENRES, tracksByGenre } from '../data/catalog.js';
+import { apiUrl, eventUrl } from './apiBase.js';
 
 const CACHE_KEY = 'sonora-categories-v2';
 const TTL = 1000 * 60 * 5;
@@ -72,7 +73,7 @@ export async function fetchCategories({ force = false } = {}) {
     return hit.categories;
   }
   try {
-    const res = await fetch('/api/v1/categories', { headers: { Accept: 'application/json' }, cache: 'no-store' });
+    const res = await fetch(apiUrl('/api/v1/categories'), { headers: { Accept: 'application/json' }, cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const categories = (data.categories || []).map(normalize).filter(Boolean);
@@ -90,7 +91,7 @@ export async function fetchCategories({ force = false } = {}) {
 export async function fetchCategoryTracks(categoryId, { limit = 150 } = {}) {
   if (!categoryId) return null;
   try {
-    const res = await fetch(`/api/v1/tracks?category_id=${encodeURIComponent(categoryId)}&limit=${limit}`, {
+    const res = await fetch(apiUrl(`/api/v1/tracks?category_id=${encodeURIComponent(categoryId)}&limit=${limit}`), {
       headers: { Accept: 'application/json' },
       cache: 'no-store',
     });
@@ -132,7 +133,7 @@ export function useCategories() {
     let es = null;
     try {
       if (typeof EventSource !== 'undefined') {
-        es = new EventSource('/api/v1/events');
+        es = new EventSource(eventUrl('/api/v1/events'));
         es.addEventListener('categories', () => { if (!dead) load(true); });
       }
     } catch { /* sin SSE: la app sigue con la caché */ }

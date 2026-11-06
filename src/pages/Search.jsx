@@ -449,7 +449,7 @@ export default function Search() {
                   track={tr}
                   index={i}
                   list={liveSongs}
-                  onPlay={() => p.playList(liveSongs, tr.id)}
+                  onPlay={() => p.playRadio(tr)}
                   onQueue={() => p.enqueue(tr)}
                 />
               ))}
@@ -504,6 +504,7 @@ export default function Search() {
                   index={i}
                   list={localSongs}
                   showAlbum
+                  onPlay={() => p.playRadio(tr)}
                   onQueue={() => p.enqueue(tr)}
                 />
               ))}

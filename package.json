@@ -18,9 +18,11 @@
     "check:queue": "node scripts/check-smart-queue.mjs",
     "check:search": "node scripts/check-search-fallback.mjs",
     "check:hybrid": "node scripts/check-hybrid-search.mjs",
-    "apk:prepare": "vite build && cap sync android",
-    "apk:build": "vite build && cap sync android && cd android && gradlew assembleDebug",
-    "apk:release": "vite build && cap sync android && cd android && gradlew assembleRelease"
+    "check:catalog": "node scripts/check-catalog.mjs",
+    "apk:config": "node scripts/write-capacitor-config.mjs",
+    "apk:prepare": "node scripts/write-capacitor-config.mjs && vite build && cap sync android",
+    "apk:build": "node scripts/write-capacitor-config.mjs && vite build && cap sync android && cd android && gradlew assembleDebug",
+    "apk:release": "node scripts/write-capacitor-config.mjs && vite build && cap sync android && cd android && gradlew assembleRelease"
   },
   "dependencies": {
     "react": "18.3.1",

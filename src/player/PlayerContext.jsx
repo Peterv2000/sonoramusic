@@ -10,6 +10,8 @@ import { DJDrop } from '../components/DJ.jsx';
 import { useAds } from '../ads/AdManager.jsx';
 import { reportIssue } from '../api/telemetry.js';
 import { recordListen } from '../api/home.js';
+import { recordCatalogListen } from '../api/catalogStore.js';
+import { apiUrl } from '../api/apiBase.js';
 
 const PlayerCtx = createContext(null);
 
@@ -239,7 +241,7 @@ export function PlayerProvider({ children }) {
     triedResolveRef.current.add(failedTrack.id);
     try {
       setError('Buscando esta canción en otra fuente...');
-      const url = `/api/resolve?title=${encodeURIComponent(failedTrack.title || '')}&artist=${encodeURIComponent(failedTrack.artist || '')}`;
+      const url = apiUrl(`/api/resolve?title=${encodeURIComponent(failedTrack.title || '')}&artist=${encodeURIComponent(failedTrack.artist || '')}`);
       const res = await fetch(url, { cache: 'no-store' }).then(r => r.json()).catch(() => ({ ok: false }));
       if (res?.ok) {
         if (res.type === 'audio' && res.audioUrl) {
@@ -248,12 +250,22 @@ export function PlayerProvider({ children }) {
             audioRef.current = new Audio();
             audioRef.current.preload = 'auto';
             audioRef.current.playsInline = true;
-            audioRef.current.onerror = () => reportIssue({
-              type: 'playback', severity: 'error',
-              message: 'la fuente alternativa de audio también falló',
-              code: String(audioRef.current?.error?.code || ''),
-              track: failedTrack, source: 'audio',
-            });
+            audioRef.current.onerror = () => {
+              reportIssue({
+                type: 'playback', severity: 'error',
+                message: 'la fuente alternativa de audio también falló',
+                code: String(audioRef.current?.error?.code || ''),
+                track: failedTrack, source: 'audio',
+              });
+              /* Auditor: un 404/500 del stream de audio no detiene la música.
+                 Se pide otro espejo/vídeo de la misma canción; si tampoco hay,
+                 se salta en silencio a la siguiente de la cola. */
+              if (!sameSongLockRef.current) {
+                sameSongRef.current?.(failedTrack).then((ok) => {
+                  if (!ok) handlersRef.current.advance?.(1, { force: true });
+                }).catch(() => handlersRef.current.advance?.(1, { force: true }));
+              }
+            };
           }
           audioRef.current.src = res.audioUrl;
           audioRef.current.volume = targetVolume() / 100;
@@ -643,6 +655,9 @@ export function PlayerProvider({ children }) {
     dispatch({ type: 'add-history', id: tk.id });
     try { recordPlay(tk); } catch { /* noop */ }
     try { recordListen(tk, tk.categoryId); } catch { /* noop */ }
+    /* Historial local: alimenta la rotación ponderada y las recomendaciones
+       aunque el servidor no esté disponible. */
+    try { recordCatalogListen(tk, tk.categoryId); } catch { /* noop */ }
     /* DJ Ritmo: comenta la nueva canción (usa el tema anterior para la transición) */
     if (tk.id !== prev?.id) emitDj({ track: tk, prevTrack: prev });
     prevTrackRef.current = tk;

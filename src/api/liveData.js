@@ -17,6 +17,7 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 import { mapSearchResults } from './youtubeSearch.js';
+import { apiUrl } from './apiBase.js';
 
 const TTL = 1000 * 60 * 60 * 12; // 12 h
 const KEY = 'ritmo-livedata-v1';
@@ -89,7 +90,7 @@ export async function refreshLive() {
 }
 
 async function fetchJSON(path) {
-  const res = await fetch(path, { headers: { Accept: 'application/json' } });
+  const res = await fetch(apiUrl(path), { headers: { Accept: 'application/json' } });
   if (!res.ok) throw new Error('HTTP ' + res.status);
   return res.json();
 }

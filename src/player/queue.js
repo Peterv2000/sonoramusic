@@ -13,6 +13,7 @@
 
 import { TRACKS } from '../data/catalog.js';
 import { cachedCatalogTracks } from '../api/liveData.js';
+import { catalogPool } from '../api/catalogStore.js';
 
 const GENERIC_GENRES = new Set(['', 'ritmo', 'sonora', 'otros', 'other', 'music', 'música', 'varios']);
 
@@ -108,9 +109,10 @@ export function mergeTracks(...lists) {
 /* Catálogo completo disponible ahora mismo (curado + caché en vivo). */
 export function globalPool() {
   try {
-    return mergeTracks(TRACKS, cachedCatalogTracks());
+    // `catalogPool` incluye el catálogo del API fusionado + caché persistida.
+    return mergeTracks(catalogPool(), cachedCatalogTracks({ allowStale: true }), TRACKS);
   } catch {
-    return mergeTracks(TRACKS);
+    return mergeTracks(TRACKS, cachedCatalogTracks({ allowStale: true }));
   }
 }
 

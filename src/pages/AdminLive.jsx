@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Icon from '../components/Icon.jsx';
+import { apiUrl, eventUrl } from '../api/apiBase.js';
 
 const EMPTY = {
   id: '', label: '', tag: '', tagEn: '', color: '#ff0033', icon: 'sparkles',
@@ -11,7 +12,7 @@ function adminToken() {
 }
 
 async function adminJSON(path, opts = {}) {
-  const res = await fetch(path, {
+  const res = await fetch(apiUrl(path), {
     headers: {
       Accept: 'application/json',
       ...(opts.body ? { 'Content-Type': 'application/json' } : {}),
@@ -57,7 +58,7 @@ export function AdminCategories({ toast }) {
     load();
     let es = null;
     try {
-      es = new EventSource('/api/v1/events');
+      es = new EventSource(eventUrl('/api/v1/events'));
       es.addEventListener('categories', () => load());
     } catch { /* sin SSE */ }
     return () => { alive.current = false; try { es?.close(); } catch { /* noop */ } };
@@ -212,7 +213,7 @@ export function AdminErrors({ toast }) {
     const iv = setInterval(load, 15000);
     let es = null;
     try {
-      es = new EventSource('/api/v1/events');
+      es = new EventSource(eventUrl('/api/v1/events'));
       es.addEventListener('telemetry', () => load());
     } catch { /* sin SSE */ }
     return () => {

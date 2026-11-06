@@ -539,6 +539,54 @@ export function homeFeed({
   };
 }
 
+/* Afinidad de una pista con el consumo real del usuario. Se usa para que la
+   rotación aleatoria no sea ciega: sube los géneros/artistas que escucha. */
+function affinityFactor(track, weights = {}) {
+  const genre = asNumber(weights.genres?.[track.genre]) + asNumber(weights.genres?.[norm(track.genre)]);
+  const artist = asNumber(weights.artists?.[track.artist]);
+  const category = asNumber(weights.categories?.[track.categoryId]);
+  /* Algunas cachés antiguas guardan `moods` como objeto: normalizar evita que
+     `reduce` rompa la mezcla aleatoria del servidor. */
+  const moods = Array.isArray(track.moods) ? track.moods : [];
+  const mood = moods.reduce((sum, m) => sum + asNumber(weights.moods?.[m]), 0);
+  return 1 + Math.min(2.4, genre * 0.22 + artist * 0.16 + category * 0.12 + mood * 0.08);
+}
+
+/**
+ * Mezcla aleatoria ponderada para `GET /api/v1/tracks?sort=random`.
+ *
+ * El peso combina popularidad, cuántas veces ya la escuchó el usuario y su
+ * afinidad de género/artista. Cada petición con semilla distinta (o sin
+ * semilla) devuelve un orden diferente, así Inicio nunca se ve congelado.
+ */
+export function weightedShuffleTracks(tracks, { userId = '', seed = Date.now(), limit = 20 } = {}) {
+  const list = Array.isArray(tracks) ? tracks.filter(Boolean) : [];
+  if (!list.length) return [];
+  const random = mulberry32((asNumber(seed) || Date.now()) ^ hashString(userId || 'guest'));
+  const { user, weights } = listeningWeights(userId);
+  const seen = seenCounts(user);
+
+  const pool = list.slice();
+  const out = [];
+  const wanted = Math.max(1, Math.min(pool.length, asNumber(limit, 20) || 20));
+  while (pool.length && out.length < wanted) {
+    let total = 0;
+    const scores = pool.map((track) => {
+      const w = Math.max(0.05, trackWeight(track, seen) * affinityFactor(track, weights));
+      total += w;
+      return w;
+    });
+    let hit = random() * total;
+    let idx = 0;
+    for (; idx < pool.length - 1; idx += 1) {
+      hit -= scores[idx];
+      if (hit <= 0) break;
+    }
+    out.push(pool.splice(idx, 1)[0]);
+  }
+  return out;
+}
+
 /** Catálogo completo (sin categorías) para búsquedas por mood/género. */
 export function catalogTracks({
   catalog,

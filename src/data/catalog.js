@@ -69,7 +69,121 @@ export const TRACKS = [
   video: `https://www.youtube.com/watch?v=${t.yt}`,
 }));
 
-export const trackById = (id) => TRACKS.find((t) => t.id === id);
+/* ══════════════════════════════════════════════════════════════════════════
+   Catálogo en vivo.
+
+   `TRACKS` nace con una semilla mínima para que la app nunca arranque vacía
+   (modo avión, primer arranque sin red). La capa `src/api/catalogStore.js`
+   descarga el catálogo real del API y lo fusiona aquí en memoria; a partir de
+   ese momento TODOS los consumidores (Inicio, búsqueda, cola, reproductor,
+   artistas, álbumes) ven el catálogo dinámico sin cambiar sus imports.
+
+   La semilla deja de ser la fuente de verdad: es solo el respaldo offline.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+function normalizeCatalogTrack(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  let yt = String(raw.yt || '').trim();
+  const rawId = String(raw.id || '').trim();
+  if (!yt && /^yt-[\w-]{11}$/.test(rawId)) yt = rawId.slice(3);
+  if (!yt && /^[\w-]{11}$/.test(rawId)) yt = rawId;
+  if (!yt) return null;
+  const id = rawId || yt;
+  const thumb = String(raw.thumb || raw.cover_url || raw.cover || `https://i.ytimg.com/vi/${yt}/hqdefault.jpg`);
+  const dur = Number(raw.dur || raw.duration || 0);
+  return {
+    ...raw,
+    id,
+    yt,
+    title: String(raw.title || ''),
+    artist: String(raw.artist || 'Sonora Music'),
+    album: String(raw.album || 'Sonora'),
+    genre: String(raw.genre || '').trim() || 'Sonora',
+    moods: Array.isArray(raw.moods) ? raw.moods.filter(Boolean) : [],
+    dur,
+    duration: dur,
+    views: Number(raw.views) || 0,
+    year: Number(raw.year) || null,
+    thumb,
+    cover_url: String(raw.cover_url || thumb),
+    video: raw.video || `https://www.youtube.com/watch?v=${yt}`,
+    source: raw.source || 'sonora',
+    external: raw.external !== false,
+  };
+}
+
+/**
+ * Fusiona pistas del API en el catálogo en memoria. Idempotente: si la pista
+ * ya existe (mismo `yt`) actualiza sus metadatos sin duplicarla.
+ * Devuelve cuántas pistas nuevas entraron.
+ */
+export function mergeCatalogTracks(list) {
+  if (!Array.isArray(list) || !list.length) return 0;
+  const byYt = new Map(TRACKS.map((t) => [t.yt, t]));
+  let added = 0;
+  for (const raw of list) {
+    const track = normalizeCatalogTrack(raw);
+    if (!track) continue;
+    const existing = byYt.get(track.yt);
+    if (existing) {
+      // Conserva el id y los campos ricos de la semilla; completa lo que falte.
+      for (const [key, value] of Object.entries(track)) {
+        if (existing[key] == null || existing[key] === '' || key === 'views' || key === 'year') {
+          existing[key] = value;
+        }
+      }
+      if (!existing.thumb && track.thumb) existing.thumb = track.thumb;
+    } else {
+      byYt.set(track.yt, track);
+      TRACKS.push(track);
+      added += 1;
+    }
+  }
+  if (added) rebuildDerivedCatalog();
+  return added;
+}
+
+function buildAlbumsFrom(list) {
+  const map = new Map();
+  for (const t of list) {
+    const key = `${t.album}||${t.artist}`;
+    if (!map.has(key)) map.set(key, { id: encodeURIComponent(t.album), title: t.album, artist: t.artist, year: t.year, genre: t.genre, cover: t.thumb, tracks: [] });
+    map.get(key).tracks.push(t);
+  }
+  return [...map.values()].sort((a, b) => (b.year || 0) - (a.year || 0));
+}
+
+function buildArtistsFrom(list) {
+  const hashNum = (s, mod) => { let h = 7; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h % mod; };
+  const map = new Map();
+  for (const t of list) {
+    const name = String(t.artist || '').replace(/ ft\..*$/i, '').replace(/ & .*$/i, '');
+    if (!name) continue;
+    if (!map.has(name)) {
+      map.set(name, {
+        id: encodeURIComponent(name),
+        name,
+        genre: t.genre,
+        thumb: t.thumb,
+        listeners: 400_000 + hashNum(name, 18_000_000),
+        tracks: [],
+      });
+    }
+    map.get(name).tracks.push(t);
+  }
+  return [...map.values()].sort((a, b) => b.listeners - a.listeners);
+}
+
+function rebuildDerivedCatalog() {
+  ALBUMS.splice(0, ALBUMS.length, ...buildAlbumsFrom(TRACKS));
+  ARTISTS.splice(0, ARTISTS.length, ...buildArtistsFrom(TRACKS));
+  VIDEOS.splice(0, VIDEOS.length, ...TRACKS.filter((t) => !t.live).sort((a, b) => b.views - a.views));
+}
+
+export const trackById = (id) => {
+  if (!id) return undefined;
+  return TRACKS.find((t) => t.id === id || t.yt === id || t.id === `yt-${id}` || `yt-${t.yt}` === id);
+};
 
 const pick = (...ids) => ids.map(trackById).filter(Boolean);
 

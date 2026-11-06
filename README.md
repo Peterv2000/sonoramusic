@@ -148,8 +148,12 @@ reflejan **al instante** en `/api/catalog` y `/api/charts`, sin reiniciar el ser
 
 ### Categorías dinámicas, QA Robot y soporte
 
-- `GET /api/v1/categories` y `GET /api/v1/tracks?category_id=…` alimentan la Web y la APK desde
-  un almacén central (`server/data/categories.json`), sin listas hardcodeadas en el cliente.
+- `GET /api/v1/categories` y `GET /api/v1/tracks?category_id=…&sort=random&limit=20` alimentan
+  la Web y la APK desde un almacén central, sin listas hardcodeadas en el cliente.
+- El catálogo se descarga al arrancar, se cachea en `localStorage` y se refresca al volver la
+  conexión o cuando el administrador publica cambios por SSE.
+- La rotación es ponderada: cada recarga cambia el orden, suben los géneros que el usuario
+  escucha y bajan las canciones repetidas. Se prueba con `npm run check:catalog`.
 - `GET /api/v1/events` (SSE) avisa al instante cuando el administrador crea, oculta o elimina
   una categoría. La pestaña **Categorías** del panel las gestiona en vivo.
 - El **QA Robot** registra errores de reproducción, carátulas y latencia en
@@ -161,9 +165,12 @@ reflejan **al instante** en `/api/catalog` y `/api/charts`, sin reiniciar el ser
 
 ## ☁️ Despliegue 24/7 y alta disponibilidad
 
-La guía completa está en [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md): API redundante, PostgreSQL
-con réplica, Redis Pub/Sub para SSE, CDN de medios, variables de entorno, Docker y
-actualizaciones en vivo de la APK.
+Stack recomendado: **Vercel/Netlify** (web) + **Render Free** (API 24/7) +
+**Supabase** (catálogo, historial y licencias) + **UptimeRobot** (ping cada 10 min).
+
+- Guía paso a paso: [`docs/STACK-DINAMICO.md`](docs/STACK-DINAMICO.md).
+- Esquema de base de datos: [`docs/supabase-schema.sql`](docs/supabase-schema.sql).
+- Producción avanzada (réplicas, Redis, CDN): [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 ```bash
 docker compose up --build   # API + web estática con volumen persistente
@@ -175,13 +182,11 @@ docker compose up --build   # API + web estática con volumen persistente
 
 El proyecto **ya tiene la carpeta `android/` generada** y sincronizada.
 
-> ℹ️ **Sobre el buscador en la APK.** La APK carga la web empaquetada (`dist/`). El buscador
-> real de YouTube necesita el backend (`server/`). Tienes dos formas de usarlo en el móvil:
-> **1)** publicar este proyecto en cualquier hosting con Node (Render, Railway, Fly.io… con
-> `npm run serve`) y apuntar la APK a esa URL desde `capacitor.config.json` → `server.url`; o
-> **2)** abrir la APK con el ordenador en la misma red y usar `server.url` apuntando a
-> `http://<ip-local>:4173`. El catálogo local y toda la reproducción funcionan siempre, incluso
-> sin backend.
+> ℹ️ **La APK siempre muestra el catálogo actual.** El build escribe `server.url` con la web
+> pública (`SONORA_APP_URL`); así, cada cambio publicado en Vercel/Netlify aparece en el móvil
+> sin reinstalar el APK. El API público se configura con `VITE_API_BASE_URL`. Si no defines
+> `SONORA_APP_URL`, la APK usa el bundle local de `dist/` y necesita esa misma variable
+> compilada para buscar y cargar el catálogo.
 
 ### Opción A — Compilar en la nube (sin instalar nada) ✅ recomendada
 Sube este repo a GitHub y abre la pestaña **Actions** → *"Build APK"*. La workflow produce el archivo **`ritmo-music-debug.apk`** como artefacto descargable.
@@ -189,14 +194,16 @@ Sube este repo a GitHub y abre la pestaña **Actions** → *"Build APK"*. La wor
 ### Opción B — Compilar en local
 Requisitos: **Android Studio** (con SDK 34 + Build-Tools) y **JDK 17**.
 
-```bash
-npm run apk:build      # build + cap sync + gradlew assembleDebug
+```powershell
+$env:SONORA_APP_URL = "https://sonora.vercel.app"
+$env:VITE_API_BASE_URL = "https://sonora-api.onrender.com"
+npm run apk:build      # config + build + cap sync + gradlew assembleDebug
 # → android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
 Para la APK firmada de producción:
 
-```bash
+```powershell
 npm run apk:release    # requiere configurar un keystore en build.gradle
 ```
 

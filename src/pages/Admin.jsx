@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/Toast.jsx';
 import Icon from '../components/Icon.jsx';
 import { AdminCategories, AdminErrors } from './AdminLive.jsx';
+import { apiUrl } from '../api/apiBase.js';
 
 const CFG_KEY = 'ritmo-admin-config-v1';
 const PAY_KEY = 'ritmo-admin-paystatus-v1';
@@ -662,8 +663,8 @@ export default function Admin() {
             <div className="card-head"><h2>Catálogo</h2></div>
             <p className="muted">Forzar actualización del catálogo en caliente y limpiar caché.</p>
             <div className="card-actions">
-              <button className="btn primary" onClick={() => fetch('/api/update?force=1', { method: 'POST' }).catch(() => {})}><Icon name="globe" size={14} /> Forzar actualización de catálogo</button>
-              <button className="btn" onClick={() => fetch('/api/clear-cache', { method: 'POST' }).catch(() => {})}>Limpiar caché</button>
+              <button className="btn primary" onClick={() => fetch(apiUrl('/api/update?force=1'), { method: 'POST' }).catch(() => {})}><Icon name="globe" size={14} /> Forzar actualización de catálogo</button>
+              <button className="btn" onClick={() => fetch(apiUrl('/api/clear-cache'), { method: 'POST' }).catch(() => {})}>Limpiar caché</button>
             </div>
           </div>
           <div className="admin-card">

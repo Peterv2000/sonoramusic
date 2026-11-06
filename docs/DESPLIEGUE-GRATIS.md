@@ -262,37 +262,23 @@ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 La APK empaqueta la web y la sirve desde `https://localhost`, así que las
 llamadas relativas `/api/...` **no llegan a tu servidor** salvo que le indiques
 la URL. La forma más simple (y la que hace que cada despliegue web actualice la
-APK sin reinstalarla) es cargar la web remota:
+APK sin reinstalarla) es cargar la web remota.
 
-Edita `capacitor.config.json` y deja:
-
-```json
-{
-  "appId": "com.ritmomusic.app",
-  "appName": "Sonora Music",
-  "webDir": "dist",
-  "server": {
-    "androidScheme": "https",
-    "url": "https://TU-APP.onrender.com",
-    "cleartext": false
-  },
-  "plugins": {
-    "CapacitorUpdater": {
-      "autoUpdate": false,
-      "resetWhenUpdate": true,
-      "directUpdate": false
-    }
-  }
-}
-```
-
-Después:
+Ya no edites `capacitor.config.json` a mano: el script de build escribe
+`server.url` desde el entorno.
 
 ```powershell
+# URL pública de la web (Vercel/Netlify)
+$env:SONORA_APP_URL = "https://sonora.vercel.app"
+# URL pública del API, por si compilas la APK con bundle local
+$env:VITE_API_BASE_URL = "https://TU-API.onrender.com"
+
 npm install
-npx cap sync android
 npm run apk:build
 ```
+
+`apk:build` ejecuta `scripts/write-capacitor-config.mjs` → `vite build` →
+`cap sync android` → Gradle. Guía completa: [STACK-DINAMICO.md](STACK-DINAMICO.md).
 
 El APK de prueba queda en:
 
@@ -304,12 +290,12 @@ Cópialo al móvil y actívalo con “Instalar apps desconocidas”. Para una ve
 firmada, abre la carpeta `android` en **Android Studio** (gratis) → *Build →
 Generate Signed App Bundle / APK*, crea un keystore y guárdalo fuera del repo.
 
-Con `server.url`, cualquier cambio que subas a Render/Oracle se ve al instante
-en la APK; no hace falta regenerarla. A cambio, la app necesita Internet y no
-usa el bundle local ni el modo offline. Si más adelante quieres la APK con
+Con `server.url`, cualquier cambio publicado en Vercel/Netlify (web) o en el
+API se ve al instante en la APK; no hace falta regenerarla. A cambio, la app
+necesita Internet para cargar la web remota. Si más adelante quieres la APK con
 bundle local + actualizaciones por ZIP, hay que instalar
-`@capgo/capacitor-updater` y centralizar la URL del API (hoy el cliente usa
-rutas relativas).
+`@capgo/capacitor-updater`; el cliente ya no usa rutas relativas fijas: resuelve
+el API con `VITE_API_BASE_URL` o con el override guardado en el dispositivo.
 
 ### Costes de la APK
 
@@ -345,7 +331,8 @@ rutas relativas).
 - [ ] `/api/search?q=salsa` devuelve resultados.
 - [ ] `#/admin` abre y guarda una categoría (con token si lo configuraste).
 - [ ] La web carga en móvil y escritorio.
-- [ ] `capacitor.config.json` apunta a la URL HTTPS.
+- [ ] `VITE_API_BASE_URL` configurada en Vercel/Netlify.
+- [ ] `npm run apk:build` se ejecutó con `SONORA_APP_URL` (el script escribió `server.url`).
 - [ ] APK instalada y reproduciendo audio.
 - [ ] Monitor de disponibilidad configurado (Render Free).
 - [ ] Copia de seguridad del volumen (Oracle).

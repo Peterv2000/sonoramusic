@@ -37,7 +37,7 @@ import {
   readErrors, recordError, removeCategory, saveCategory, subscribeEvents,
 } from './live.mjs';
 import {
-  catalogTracks, homeFeed, matchesMood, readHistory, recordListen,
+  catalogTracks, homeFeed, matchesMood, readHistory, recordListen, weightedShuffleTracks,
 } from './home.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -659,11 +659,15 @@ function apiV1Tracks(res, url) {
   const mood = (url.searchParams.get('mood') || '').trim();
   const genre = (url.searchParams.get('genre') || '').trim();
   const q = (url.searchParams.get('q') || '').replace(/\s+/g, ' ').trim();
-  if (!categoryId && !mood && !genre && !q) {
-    return sendJson(res, 400, { error: 'envía category_id, mood, genre o q' });
-  }
+  const sort = (url.searchParams.get('sort') || '').trim().toLowerCase();
+  const userId = (url.searchParams.get('user_id') || url.searchParams.get('userId') || '').trim();
+  const seedParam = Number(url.searchParams.get('seed'));
+  const seed = Number.isFinite(seedParam) && seedParam > 0 ? seedParam : Date.now();
+  const offset = Math.max(0, Number(url.searchParams.get('offset')) || 0);
 
-  const limit = Math.max(1, Math.min(300, Number(url.searchParams.get('limit')) || 150));
+  /* Sin filtros ya no es un error: `GET /api/v1/tracks?sort=random&limit=20`
+     es el contrato que usan Inicio, la APK y las pruebas en vivo. */
+  const limit = Math.max(1, Math.min(300, Number(url.searchParams.get('limit')) || 20));
   const catalog = readJson('catalog.json');
   const curated = readJson('curated.json');
 
@@ -673,7 +677,7 @@ function apiV1Tracks(res, url) {
 
   if (categoryId) {
     const result = categoryTracks(categoryId, {
-      catalog, curated, limit: Math.max(limit, 120), coverProxy: proxyCover,
+      catalog, curated, limit: Math.max(limit + offset, 120), coverProxy: proxyCover,
     });
     if (!result) return sendJson(res, 404, { error: 'categoría no encontrada o inactiva' });
     tracks = result.tracks;
@@ -684,11 +688,30 @@ function apiV1Tracks(res, url) {
        si se recorta antes, un chip como «Fiesta latina» pierde casi todas sus
        coincidencias porque viven en la categoría Latino. */
     tracks = catalogTracks({
-      catalog, curated, coverProxy: proxyCover, genre, q, limit: mood ? 1200 : 300,
+      catalog, curated, coverProxy: proxyCover, genre, q, limit: 2000,
     });
   }
 
   if (mood) tracks = tracks.filter((track) => matchesMood(track, mood));
+
+  if (sort === 'random') {
+    /* Mezcla ponderada: cada recarga devuelve otro orden y sube lo que el
+       usuario realmente escucha. */
+    tracks = weightedShuffleTracks(tracks, { userId, seed, limit: Math.min(tracks.length, limit + offset) });
+  } else if (sort === 'popular' || sort === 'views') {
+    tracks = [...tracks].sort((a, b) => (Number(b.views) || 0) - (Number(a.views) || 0));
+  } else if (sort === 'recent' || sort === 'new') {
+    tracks = [...tracks].sort((a, b) => (Number(b.year) || 0) - (Number(a.year) || 0));
+  } else if (sort === 'title' || sort === 'az') {
+    tracks = [...tracks].sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')));
+  } else if (sort === 'id') {
+    /* Orden estable para paginar la descarga completa del catálogo: con años
+       nulos o títulos repetidos, `recent`/`title` pueden saltar o duplicar
+       pistas entre páginas. */
+    tracks = [...tracks].sort((a, b) => String(a.id || a.yt || '').localeCompare(String(b.id || b.yt || '')));
+  }
+
+  if (offset) tracks = tracks.slice(offset);
   tracks = tracks.slice(0, limit);
 
   sendJson(res, 200, {
@@ -697,6 +720,7 @@ function apiV1Tracks(res, url) {
     mood: mood || null,
     genre: genre || null,
     query: q || null,
+    sort: sort || 'default',
     updatedAt,
     source: 'sonora',
     count: tracks.length,

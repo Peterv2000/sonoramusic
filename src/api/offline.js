@@ -10,6 +10,8 @@
    descarga como "simulada" para que la interfaz siga funcionando.
    ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ */
 
+import { apiUrl } from './apiBase.js';
+
 const CACHE = 'ritmo-offline-v1';
 
 export function offlineSupported() {
@@ -49,7 +51,7 @@ export async function downloadTrack(id, onProgress) {
   if (!offlineSupported()) return 'simulated';
   try {
     onProgress?.(5);
-    const res = await fetch(urlFor(id), { headers: { Accept: 'audio/*' } });
+    const res = await fetch(apiUrl(urlFor(id)), { headers: { Accept: 'audio/*' } });
     if (!res.ok) return 'simulated';
     // Leemos por trozos para poder reportar progreso.
     const total = Number(res.headers.get('content-length')) || 0;

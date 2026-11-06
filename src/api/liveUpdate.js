@@ -12,6 +12,8 @@
      queda registrado y se puede publicar la actualización por la tienda.
    ══════════════════════════════════════════════════════════════════════════ */
 
+import { apiUrl, eventUrl } from './apiBase.js';
+
 const CHECK_MS = 15 * 60 * 1000;
 
 export function currentVersion() {
@@ -59,7 +61,7 @@ export function compareVersions(a, b) {
 
 /** Consulta la versión publicada y decide si hay actualización. */
 export async function checkLiveUpdate() {
-  const res = await fetch('/api/v1/version', {
+  const res = await fetch(apiUrl('/api/v1/version'), {
     headers: { Accept: 'application/json' },
     cache: 'no-store',
   });
@@ -155,7 +157,7 @@ export function watchLiveUpdates() {
 
   try {
     if (typeof EventSource !== 'undefined') {
-      es = new EventSource('/api/v1/events');
+      es = new EventSource(eventUrl('/api/v1/events'));
       es.addEventListener('version', run);
     }
   } catch { /* SSE no disponible */ }
