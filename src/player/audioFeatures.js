@@ -61,12 +61,18 @@ const meaningfulGenre = (genre) => {
 const BY_ID = new Map();
 const BY_SONG = new Map();
 const BY_TITLE = new Map();
+/* Títulos ya normalizados. `findCatalogTrack` recorre el catálogo por cada
+   pista candidata y normalizar con regex + NFD es caro; así se hace una sola
+   vez al arrancar en lugar de en cada selección de canción. */
+const CATALOG_ENTRIES = [];
 
 for (const track of TRACKS) {
   if (track.id) BY_ID.set(String(track.id), track);
   if (track.yt) BY_ID.set(String(track.yt), track);
   BY_SONG.set(songKey(track), track);
-  BY_TITLE.set(fold(cleanTitle(track.title)), track);
+  const foldedTitle = fold(cleanTitle(track.title));
+  BY_TITLE.set(foldedTitle, track);
+  CATALOG_ENTRIES.push({ track, title: foldedTitle });
 }
 
 function artistLoose(a, b) {
@@ -89,12 +95,14 @@ function findCatalogTrack(track) {
   if (byTitle) return byTitle;
 
   // Búsqueda tolerante: «Artist - Song (Official Video)» o título con extras.
-  for (const catalog of TRACKS) {
-    const ct = fold(cleanTitle(catalog.title));
+  // `CATALOG_ENTRIES` ya trae los títulos normalizados (antes se recalculaban
+  // 43 veces por cada pista consultada).
+  for (const entry of CATALOG_ENTRIES) {
+    const ct = entry.title;
     if (ct.length < 3) continue;
     const titleHit = title === ct || title.startsWith(ct + ' ') || title.endsWith(' ' + ct);
     if (!titleHit) continue;
-    if (!track.artist || artistLoose(track.artist, catalog.artist)) return catalog;
+    if (!track.artist || artistLoose(track.artist, entry.track.artist)) return entry.track;
   }
   return null;
 }
@@ -387,7 +395,31 @@ function inferYear(track) {
  *   { genre, family, subgenre, bpm, energy, danceability, mood, moods,
  *     year, era, confidence, explicit }
  */
+const FEATURE_CACHE = new WeakMap();
+
+/* Firma de campos primitivos: si una pista se enriquece en sitio (por ejemplo
+   al fusionar catálogo + API), el vector se recalcula en vez de quedarse
+   obsoleto. Concatenar cadenas es mucho más barato que volver a inferir. */
+function featureSignature(track) {
+  const moods = Array.isArray(track.moods) ? track.moods.join(',') : '';
+  return [
+    track.id || '', track.yt || '', track.title || '', track.artist || '',
+    track.album || '', track.genre || '', moods, track.year || '',
+    track.bpm || track.tempo || '', track.energy ?? '', track.danceability ?? '',
+  ].join('\u0001');
+}
+
 export function inferAudioFeatures(input) {
+  if (!input || typeof input !== 'object') return computeAudioFeatures(input);
+  const signature = featureSignature(input);
+  const cached = FEATURE_CACHE.get(input);
+  if (cached && cached.signature === signature) return cached.features;
+  const features = computeAudioFeatures(input);
+  FEATURE_CACHE.set(input, { signature, features });
+  return features;
+}
+
+function computeAudioFeatures(input) {
   const track = withCatalogMetadata(input) || {};
   const title = cleanTitle(track.title);
   const haystack = fold(`${title} ${track.artist || ''} ${track.album || ''} ${track.genre || ''} ${Array.isArray(track.moods) ? track.moods.join(' ') : ''}`);

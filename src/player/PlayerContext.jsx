@@ -103,6 +103,8 @@ export function PlayerProvider({ children }) {
   const handlersRef = useRef({});        // siempre el último advance/handleEnded
   const autoQueueRef = useRef([]);       // copia síncrona de las recomendaciones
   const relatedTokenRef = useRef(0);     // descarta respuestas viejas
+  const relatedTimerRef = useRef(0);     // debounce de recomendaciones al cambiar de pista
+  const lastSelectionRef = useRef(0);    // instante de la última selección manual
   const pendingAdvanceRef = useRef(false); // esperando recomendaciones para seguir
   const playAutoRef = useRef(null);      // reproduce una recomendación (se asigna abajo)
   const liveRef = useRef({ contextList: [], queue: [], index: -1, autoQueue: [] });
@@ -625,6 +627,10 @@ export function PlayerProvider({ children }) {
      había quedado esperando, arranca en cuanto llegan los resultados. */
   const refreshRelated = useCallback(async (tk) => {
     if (!tk) return [];
+    if (relatedTimerRef.current) {
+      window.clearTimeout(relatedTimerRef.current);
+      relatedTimerRef.current = 0;
+    }
     const token = ++relatedTokenRef.current;
     try {
       const list = await fetchSmartRelatedQueue(tk, { limit: 18 });
@@ -646,6 +652,19 @@ export function PlayerProvider({ children }) {
     }
   }, []);
 
+  /* Al cambiar de canción varias veces seguidas (el usuario se equivocó y
+     elige otra), no hace falta calcular recomendaciones para cada intento:
+     solo para la última. Se retrasa ~500 ms e invalida el token al programar
+     para que ninguna respuesta vieja pise la cola. */
+  const scheduleRelated = useCallback((tk) => {
+    const token = ++relatedTokenRef.current;
+    if (relatedTimerRef.current) window.clearTimeout(relatedTimerRef.current);
+    relatedTimerRef.current = window.setTimeout(() => {
+      relatedTimerRef.current = 0;
+      if (token === relatedTokenRef.current) refreshRelated(tk);
+    }, 500);
+  }, [refreshRelated]);
+
   /* ---------- Motor de reproducción ---------- */
   const commitTrack = useCallback((tk, list, idx, extraQueue) => {
     const prev = prevTrackRef.current;
@@ -660,7 +679,7 @@ export function PlayerProvider({ children }) {
     pendingAdvanceRef.current = false;
     autoQueueRef.current = [];
     setAutoQueue([]);
-    refreshRelated(tk);
+    scheduleRelated(tk);
     applyPosition(0);
     setPlaying(true);
     setAudioMode(false);
@@ -687,11 +706,17 @@ export function PlayerProvider({ children }) {
         });
       } catch { /* noop */ }
     }
-  }, [dispatch, emitDj, ads, refreshRelated]);
+  }, [dispatch, emitDj, ads, scheduleRelated]);
 
   const playNow = useCallback((tk, list, idx, extraQueue = [], opts = {}) => {
     if (!tk) return;
     const prev = prevTrackRef.current;
+    // Selección rápida: si el usuario cambió de canción hace menos de 1,5 s
+    // (se equivocó y eligió otra), cargamos directamente en el reproductor
+    // activo. Evita montar dos vídeos a la vez y el trabajo que eso arrastra.
+    const now = Date.now();
+    const rapidSelection = now - lastSelectionRef.current < 1500;
+    lastSelectionRef.current = now;
     // Si veníamos de un fundido, lo cortamos limpiamente antes de decidir:
     // el reproductor que se estaba desvaneciendo vuelve a pausa.
     if (crossfadingRef.current) {
@@ -706,7 +731,7 @@ export function PlayerProvider({ children }) {
     stopAudioFallback();
 
     const fadeMs = Math.max(0, Number(opts.fadeMs) || 0);
-    const canCrossfade = fadeMs > 0 && prev && prev.id !== tk.id &&
+    const canCrossfade = !rapidSelection && fadeMs > 0 && prev && prev.id !== tk.id &&
       !audioModeRef.current && playersReadyRef.current >= 2;
 
     if (canCrossfade && crossfadeTo(tk, fadeMs)) {
@@ -1081,16 +1106,22 @@ export function PlayerProvider({ children }) {
     return () => window.speechSynthesis.removeEventListener?.('voiceschanged', load);
   }, []);
 
-  const value = useMemo(() => {
-    // Lo que sonará después, cuando la cola se vacíe (resto de la lista en curso)
-    const upcoming = (index >= 0 && contextList.length > index + 1) ? contextList.slice(index + 1) : [];
-    // Recomendaciones dinámicas si ya llegaron; si no, radio local inmediata
-    // calculada con el mismo motor (género, BPM, energía y diversidad).
-    const fallbackRelated = track ? smartRelated(track, {
+  /* La radio local de respaldo solo hace falta mientras no han llegado las
+     recomendaciones del servidor. Se memoiza aparte para no recalcularla cada
+     vez que cambia el volumen, el panel o el estado de reproducción. */
+  const fallbackRelated = useMemo(() => {
+    if (!track || autoQueue.length) return [];
+    return smartRelated(track, {
       pool: mergeTracks(contextList, globalPool()),
       limit: 8,
       recent: playedHistoryRef.current,
-    }) : [];
+    });
+  }, [track, autoQueue.length, contextList]);
+
+  const value = useMemo(() => {
+    // Lo que sonará después, cuando la cola se vacíe (resto de la lista en curso)
+    const upcoming = (index >= 0 && contextList.length > index + 1) ? contextList.slice(index + 1) : [];
+    // Recomendaciones dinámicas si ya llegaron; si no, radio local inmediata.
     const recommended = autoQueue.length ? autoQueue : fallbackRelated;
     return {
       ...api, track, queue, autoQueue, recommended, contextList, index, playing,
@@ -1104,7 +1135,7 @@ export function PlayerProvider({ children }) {
       crossfadeSeconds: crossfadeSec,
       activeSlot,
     };
-  }, [api, track, queue, autoQueue, contextList, index, playing, shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode, djText, djTag, djSpeaking, settings.dj, djVoiceURI, audioMode, crossfadeSec, activeSlot]);
+  }, [api, track, queue, autoQueue, contextList, index, playing, shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode, djText, djTag, djSpeaking, settings.dj, djVoiceURI, audioMode, crossfadeSec, activeSlot, fallbackRelated]);
 
   /* Progreso aislado: solo los componentes que lo pintan (mini, panel, full,
      vídeo) se actualizan cada 500 ms. */
