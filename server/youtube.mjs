@@ -44,6 +44,31 @@ const MUSIC_CONTEXT = {
   },
 };
 
+/* Cliente ANDROID: cuando la web bloquea la IP del servidor (Render/Railway),
+   la app móvil suele seguir respondiendo. Es el primer proveedor alternativo. */
+const ANDROID_CONTEXT = {
+  client: {
+    clientName: 'ANDROID',
+    clientVersion: '19.09.37',
+    androidSdkVersion: 30,
+    hl: 'es',
+    gl: 'ES',
+    userAgent: 'com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip',
+  },
+};
+
+/* Instancias públicas de Piped/Invidious. Se consultan en paralelo y solo si
+   YouTube no devolvió suficientes resultados: son la red de seguridad para
+   servidores cuya IP está bloqueada por el proveedor principal. */
+const PIPED_INSTANCES = [
+  'https://pipedapi.kavin.rocks',
+  'https://pipedapi.adminforge.de',
+];
+const INVIDIOUS_INSTANCES = [
+  'https://inv.nadeko.net',
+  'https://invidious.nerdvpn.de',
+];
+
 /** Busca en YouTube y devuelve una lista de pistas.
  *
  *  @param {string} query
@@ -56,29 +81,76 @@ const MUSIC_CONTEXT = {
  *  @param {number} [opts.retries] reintentos con espera creciente
  */
 export async function searchYouTube(query, {
-  limit = 40, pages, music = true, timeout = 12000, retries = 2,
+  limit = 40, pages, music = true, timeout = 8000, retries = 1,
 } = {}) {
   const q = (query || '').trim();
   if (!q) return [];
 
   // Nº de páginas: ~20 resultados por página.
   const wantPages = Math.max(1, Math.min(pages || Math.ceil(limit / 20) || 1, 10));
-
+  /* Con 12 resultados ya hay una búsqueda usable; no se insiste más para no
+     gastar el presupuesto del cliente (16 s) en proveedores caídos. */
+  const minWant = Math.min(limit, 12);
+  const altTimeout = Math.max(2500, Math.min(timeout, 5000));
+  let out = [];
   let lastErr;
-  for (let intento = 0; intento <= retries; intento++) {
+
+  for (let intento = 0; intento <= retries && out.length < minWant; intento++) {
+    // 1) Proveedor principal (WEB InnerTube, paginado y con YouTube Music).
     try {
-      const tracks = await deepSearch(q, { limit, pages: wantPages, music, timeout });
-      if (tracks.length) return tracks;
-      // Sin resultados válidos: probamos el raspado HTML como respaldo.
-      const html = await fetchSearchHtml(q, { limit, timeout });
-      if (html.length) return html;
-      return [];
+      out = mergeTracks(out, await deepSearch(q, { limit, pages: wantPages, music, timeout }));
     } catch (err) {
       lastErr = err;
-      if (intento < retries) await sleep(700 * (intento + 1) + Math.random() * 400);
+    }
+    if (out.length >= minWant) break;
+
+    // 2) Proveedores alternativos en paralelo: ANDROID + Piped/Invidious.
+    const [android, federated] = await Promise.allSettled([
+      deepSearchAndroid(q, { limit, timeout: altTimeout }),
+      searchFederated(q, { limit, timeout: altTimeout }),
+    ]);
+    if (android.status === 'fulfilled') out = mergeTracks(out, android.value);
+    if (federated.status === 'fulfilled') out = mergeTracks(out, federated.value);
+    if (out.length >= minWant) break;
+
+    // 3) Último recurso dentro de YouTube: raspar el HTML.
+    try {
+      out = mergeTracks(out, await fetchSearchHtml(q, { limit, timeout: altTimeout }));
+    } catch (err) {
+      lastErr = lastErr || err;
+    }
+    if (out.length >= minWant || out.length) break;
+
+    if (intento < retries) await sleep(600 * (intento + 1) + Math.random() * 300);
+  }
+
+  if (out.length) return out.slice(0, limit);
+  throw lastErr || new Error('sin resultados del proveedor');
+}
+
+/** Une listas de pistas sin duplicar por `yt`. */
+function mergeTracks(...lists) {
+  const out = [];
+  const seen = new Set();
+  for (const list of lists) {
+    if (!Array.isArray(list)) continue;
+    for (const track of list) {
+      if (!track) continue;
+      const key = String(track.yt || track.id || '');
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      out.push(track);
     }
   }
-  throw lastErr;
+  return out;
+}
+
+/** El cliente numérico que espera la cabecera `X-YouTube-Client-Name`. */
+function clientNumber(context) {
+  const name = context?.client?.clientName;
+  if (name === 'ANDROID') return '3';
+  if (name === 'WEB_REMIX') return '67';
+  return '1';
 }
 
 function sleep(ms) {
@@ -111,6 +183,131 @@ async function deepSearch(query, { limit, pages, music, timeout }) {
     });
   }
 
+  return out.slice(0, limit);
+}
+
+/** Búsqueda con el cliente ANDROID (funciona cuando WEB bloquea la IP). */
+async function deepSearchAndroid(query, { limit = 40, timeout = 5000 } = {}) {
+  const seen = new Set();
+  const out = [];
+  await paginate({
+    query,
+    pages: Math.max(1, Math.min(2, Math.ceil(limit / 20))),
+    limit,
+    timeout,
+    seen,
+    out,
+    endpoint: 'https://www.youtube.com/youtubei/v1/search?key=' + INNERTUBE_KEY,
+    context: ANDROID_CONTEXT,
+    includeChannels: true,
+  });
+  return out.slice(0, limit);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Proveedores federados (Piped / Invidious)
+
+   Devuelven JSON ya listo, sin clave. Si una instancia cae, las demás siguen.
+   Solo se usan cuando el proveedor principal no alcanza el mínimo.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+async function fetchJson(url, timeout) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeout);
+  try {
+    const res = await fetch(url, {
+      signal: ctrl.signal,
+      headers: { 'User-Agent': UA, Accept: 'application/json' },
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function safeDuration(value) {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 && n <= 3600 ? Math.round(n) : 0;
+}
+
+function makeExternalTrack(id, title, artist, dur, thumb, views) {
+  if (!id || !title) return null;
+  const duration = safeDuration(dur);
+  if (!duration) return null;
+  return {
+    yt: id,
+    id: 'yt-' + id,
+    kind: 'video',
+    title,
+    artist: artist || 'Sonora Music',
+    album: 'Sonora',
+    genre: 'Sonora',
+    moods: [],
+    dur: duration,
+    views: Number(views) || 0,
+    thumb: thumb || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+    external: true,
+  };
+}
+
+function normalizePiped(item) {
+  if (!item || item.type === 'channel' || item.type === 'playlist') return null;
+  const fromUrl = String(item.url || '').match(/[?&]v=([\w-]{11})/);
+  const id = item.videoId || (fromUrl && fromUrl[1]);
+  return makeExternalTrack(
+    id,
+    item.title,
+    item.uploaderName || item.uploader,
+    item.duration,
+    item.thumbnail,
+    item.views,
+  );
+}
+
+function normalizeInvidious(item) {
+  if (!item || item.type === 'channel' || item.type === 'playlist') return null;
+  const thumbs = Array.isArray(item.videoThumbnails) ? item.videoThumbnails : [];
+  const thumb = thumbs.length ? thumbs[thumbs.length - 1]?.url : item.thumbnail;
+  return makeExternalTrack(
+    item.videoId,
+    item.title,
+    item.author,
+    item.lengthSeconds,
+    thumb,
+    item.viewCount,
+  );
+}
+
+async function searchPiped(instance, query, { limit, timeout }) {
+  const data = await fetchJson(
+    `${instance}/search?q=${encodeURIComponent(query)}&filter=videos`,
+    timeout,
+  );
+  const items = Array.isArray(data?.items) ? data.items : [];
+  return items.map(normalizePiped).filter(Boolean).slice(0, limit);
+}
+
+async function searchInvidious(instance, query, { limit, timeout }) {
+  const data = await fetchJson(
+    `${instance}/api/v1/search?q=${encodeURIComponent(query)}&type=video&sort_by=relevance`,
+    timeout,
+  );
+  const items = Array.isArray(data) ? data : [];
+  return items.map(normalizeInvidious).filter(Boolean).slice(0, limit);
+}
+
+/** Consulta Piped e Invidious en paralelo. Nunca lanza: devuelve lo que llegue. */
+async function searchFederated(query, { limit = 40, timeout = 5000 } = {}) {
+  const jobs = [
+    ...PIPED_INSTANCES.map((base) => searchPiped(base, query, { limit, timeout })),
+    ...INVIDIOUS_INSTANCES.map((base) => searchInvidious(base, query, { limit, timeout })),
+  ];
+  const settled = await Promise.allSettled(jobs);
+  let out = [];
+  for (const result of settled) {
+    if (result.status === 'fulfilled') out = mergeTracks(out, result.value);
+  }
   return out.slice(0, limit);
 }
 
@@ -160,7 +357,7 @@ async function callInnerTube(endpoint, context, continuation, query, timeout) {
         'Content-Type': 'application/json',
         'User-Agent': UA,
         'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
-        'X-YouTube-Client-Name': '1',
+        'X-YouTube-Client-Name': clientNumber(context),
         'X-YouTube-Client-Version': context.client.clientVersion,
         Origin: 'https://www.youtube.com',
       },

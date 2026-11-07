@@ -17,6 +17,7 @@
 import { TRACKS } from '../data/catalog.js';
 import { cachedCatalogTracks, cachedWarmResults } from './liveData.js';
 import { getCachedSearchResults, searchYouTubeDetailed } from './youtubeSearch.js';
+import { fallbackTracks, rankTracks } from '../../shared/searchIntent.mjs';
 
 /** Presupuesto máximo para la API remota antes de usar el respaldo local. */
 export const REMOTE_BUDGET = 2500;
@@ -63,40 +64,43 @@ function trackHaystack(track) {
 }
 
 /**
- * Búsqueda síncrona en el catálogo que ya vive en el dispositivo: canciones
- * curadas + catálogo descargado (aunque esté caducado) + pistas extra.
+ * Catálogo que ya vive en el dispositivo: canciones curadas + catálogo
+ * descargado (aunque esté caducado) + pistas extra.
+ */
+function localPool(extraTracks = []) {
+  return mergeTrackResults(
+    Array.isArray(TRACKS) ? TRACKS : [],
+    Array.isArray(extraTracks) ? extraTracks : [],
+    cachedCatalogTracks({ allowStale: true }),
+  );
+}
+
+/**
+ * Búsqueda síncrona en el catálogo que ya vive en el dispositivo. Coincide por
+ * título, artista, álbum, género, mood, con tolerancia a errores de escritura.
  */
 export function searchLocalCatalog(query, extraTracks = []) {
   const term = norm(query);
   if (!term) return [];
 
-  const pool = mergeTrackResults(
-    Array.isArray(TRACKS) ? TRACKS : [],
-    Array.isArray(extraTracks) ? extraTracks : [],
-    cachedCatalogTracks({ allowStale: true }),
-  );
-  const tokens = term.split(' ').filter(Boolean);
-  const scored = [];
+  try {
+    return rankTracks(localPool(extraTracks), query).matches;
+  } catch {
+    return [];
+  }
+}
 
-  pool.forEach((track, index) => {
-    const title = norm(track?.title);
-    const artist = norm(track?.artist);
-    const haystack = trackHaystack(track);
-    if (!haystack) return;
-    const matches = haystack.includes(term) || tokens.every((token) => haystack.includes(token));
-    if (!matches) return;
+/** Música parecida/popular para completar una búsqueda vacía o con pocos
+    resultados. La interfaz la muestra como sugerencia, no como coincidencia. */
+export function suggestedLocalCatalog(query, extraTracks = [], limit = 20) {
+  const term = norm(query);
+  if (!term) return [];
 
-    let score = 5;
-    if (title === term) score = 0;
-    else if (title.startsWith(term)) score = 1;
-    else if (artist === term) score = 2;
-    else if (artist.startsWith(term)) score = 3;
-    else if (haystack.includes(term)) score = 4;
-    scored.push({ track, score, index });
-  });
-
-  scored.sort((a, b) => a.score - b.score || a.index - b.index);
-  return scored.map((item) => item.track);
+  try {
+    return fallbackTracks(localPool(extraTracks), query, limit);
+  } catch {
+    return [];
+  }
 }
 
 export function isOffline() {
@@ -119,25 +123,33 @@ function now() {
  * Construye el contrato unificado que consume la interfaz.
  * `global` nunca repite una canción que ya esté en `local`.
  */
-function makeResult(query, localList, globalList, meta) {
+function makeResult(query, localList, globalList, meta, suggestedList = []) {
   const local = mergeTrackResults(localList);
   const localKeys = new Set(local.map(trackKey));
   const global = mergeTrackResults(globalList).filter((item) => {
     if ((item?.kind || 'video') !== 'video') return true;
     return !localKeys.has(trackKey(item));
   });
-  const merged = mergeTrackResults(local, global);
+  const globalKeys = new Set(global.map(trackKey));
+  const suggested = mergeTrackResults(suggestedList).filter((item) => {
+    const key = trackKey(item);
+    return !localKeys.has(key) && !globalKeys.has(key);
+  });
+  const merged = mergeTrackResults(local, global, suggested);
 
   return {
     query,
     local,
     global,
+    suggested,
     merged,
     meta: {
       offline: Boolean(meta.offline),
       degraded: Boolean(meta.degraded),
       cached: Boolean(meta.cached),
       pending: Boolean(meta.pending),
+      suggested: suggested.length > 0,
+      suggestedCount: suggested.length,
       source: meta.source || 'catalog',
       elapsedMs: Math.max(0, Math.round(meta.elapsedMs || 0)),
       budgetMs: meta.budgetMs != null ? meta.budgetMs : REMOTE_BUDGET,
@@ -193,6 +205,19 @@ export function hybridSearchFallback(query, {
     getCachedSearchResults(q, { deep, allowStale: true }),
   );
 
+  /* Si hay muy pocos resultados, completamos con música parecida/popular. La
+     interfaz la pinta como «Sugerencias», así que nunca se confunde con una
+     coincidencia exacta. */
+  const MIN_RESULTS = 8;
+  const suggestionsFor = (knownLocal, knownGlobal) => {
+    if (mergeTrackResults(knownLocal, knownGlobal).length >= MIN_RESULTS) return [];
+    try {
+      return suggestedLocalCatalog(q, catalogTracks, 24);
+    } catch {
+      return [];
+    }
+  };
+
   /* Sin conexión real: respuesta inmediata y elegante. */
   if (isOffline()) {
     const offline = makeResult(q, local, cachedGlobal, {
@@ -203,7 +228,7 @@ export function hybridSearchFallback(query, {
       source: 'offline',
       elapsedMs: now() - started,
       budgetMs: budget,
-    });
+    }, suggestionsFor(local, cachedGlobal));
     emit(offline);
     return Promise.resolve(offline);
   }
@@ -242,13 +267,13 @@ export function hybridSearchFallback(query, {
       const global = mergeTrackResults(cachedGlobal, remoteResult.items);
       const result = makeResult(q, local, global, {
         pending: false,
-        degraded: false,
+        degraded: !remoteResult.items.length && !remoteResult.cached,
         cached: Boolean(remoteResult.cached),
         offline: false,
         source: remoteResult.cached ? 'cache' : 'remote',
         elapsedMs: now() - started,
         budgetMs: budget,
-      });
+      }, suggestionsFor(local, global));
       emit(result);
       return result;
     }
@@ -262,7 +287,7 @@ export function hybridSearchFallback(query, {
       source: cachedGlobal.length ? 'cache' : 'catalog',
       elapsedMs: now() - started,
       budgetMs: budget,
-    });
+    }, suggestionsFor(local, cachedGlobal));
     emit(fallback);
 
     /* Si la respuesta remota llega después, se fusiona sin molestar. */
@@ -280,7 +305,7 @@ export function hybridSearchFallback(query, {
           source: late.value.cached ? 'cache' : 'remote',
           elapsedMs: now() - started,
           budgetMs: budget,
-        });
+        }, suggestionsFor(local, global));
         emit(merged);
       }).catch(() => { /* silencio: el respaldo ya está en pantalla */ });
     }

@@ -16,7 +16,7 @@
    suelto), `hybridSearchFallback` toma el relevo con el catálogo local.
    ══════════════════════════════════════════════════════════════════════════ */
 
-import { apiUrl } from './apiBase.js';
+import { apiUrl, isRemoteApi } from './apiBase.js';
 
 const API = '/api/search';
 const CACHE_KEY = 'ritmo-ytsearch-v1';
@@ -100,6 +100,7 @@ export function mapSearchResult(item) {
     thumb,
     cover_url: item.cover_url || thumb,
     stream_url: item.stream_url || '',
+    suggested: item.suggested === true,
     source: 'sonora',
     external: true,
   };
@@ -110,10 +111,7 @@ export function mapSearchResults(list) {
   return list.map(mapSearchResult).filter(Boolean);
 }
 
-/* Petición JSON con tiempo límite. Nunca deja una promesa colgada si el
-   servidor no responde (móvil con mala señal, API caída, etc.).
-   `signal` permite cancelar desde fuera (al cambiar de consulta o desmontar). */
-async function fetchJSON(path, { timeout = DEFAULT_TIMEOUT, signal, ...opts } = {}) {
+async function fetchOnce(url, { timeout = DEFAULT_TIMEOUT, signal, ...opts } = {}) {
   const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
   const timer = ctrl ? setTimeout(() => ctrl.abort(), timeout) : null;
   const relayAbort = () => { try { ctrl?.abort(); } catch { /* noop */ } };
@@ -122,7 +120,7 @@ async function fetchJSON(path, { timeout = DEFAULT_TIMEOUT, signal, ...opts } = 
     else signal.addEventListener('abort', relayAbort, { once: true });
   }
   try {
-    const res = await fetch(apiUrl(path), {
+    const res = await fetch(url, {
       ...opts,
       headers: { Accept: 'application/json', ...(opts.headers || {}) },
       signal: ctrl?.signal,
@@ -133,6 +131,28 @@ async function fetchJSON(path, { timeout = DEFAULT_TIMEOUT, signal, ...opts } = 
     if (timer) clearTimeout(timer);
     if (signal) signal.removeEventListener('abort', relayAbort);
   }
+}
+
+/* Petición JSON con tiempo límite. Nunca deja una promesa colgada si el
+   servidor no responde (móvil con mala señal, API caída, etc.).
+   `signal` permite cancelar desde fuera (al cambiar de consulta o desmontar).
+
+   Si la app apunta a un backend externo (Render) y este falla, se reintenta
+   contra el mismo origen: la búsqueda no se queda sin intentarlo. */
+async function fetchJSON(path, { timeout = DEFAULT_TIMEOUT, signal, ...opts } = {}) {
+  const targets = [{ url: apiUrl(path), timeout }];
+  if (isRemoteApi()) targets.push({ url: path, timeout: Math.min(timeout, 6000) });
+
+  let lastErr;
+  for (const target of targets) {
+    try {
+      return await fetchOnce(target.url, { ...opts, timeout: target.timeout, signal });
+    } catch (err) {
+      lastErr = err;
+      if (signal?.aborted) break;
+    }
+  }
+  throw lastErr || new Error('sin respuesta del API');
 }
 
 /* ---------- caché ---------- */
@@ -195,7 +215,7 @@ export function getCachedSearchResults(query, { deep = false, allowStale = false
  * Nunca lanza: si YouTube o el servidor fallan, devuelve `{ items: [], error }`
  * para que `hybridSearchFallback` decida el respaldo local sin romper la UI.
  */
-export async function searchYouTubeDetailed(query, { deep = false, limit, timeout, signal } = {}) {
+export async function searchYouTubeDetailed(query, { deep = false, limit, timeout, signal, retries = 1 } = {}) {
   const q = (query || '').trim();
   if (!q) return { items: [], error: null, cached: false };
 
@@ -209,15 +229,28 @@ export async function searchYouTubeDetailed(query, { deep = false, limit, timeou
   params.set('deep', deep ? '1' : '0');
   if (limit) params.set('limit', String(limit));
 
-  try {
-    const data = await fetchJSON(`${API}?${params}`, { timeout, signal });
-    const list = mapSearchResults(Array.isArray(data?.results) ? data.results : []);
-    if (list.length) writeCache(key, list);
-    return { items: list, error: null, cached: false };
-  } catch (err) {
-    const error = err?.name === 'AbortError' ? 'timeout' : 'unavailable';
-    return { items: [], error, cached: false };
+  const started = Date.now();
+  let lastError = 'unavailable';
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const data = await fetchJSON(`${API}?${params}`, { timeout, signal });
+      const list = mapSearchResults(Array.isArray(data?.results) ? data.results : []);
+      if (list.length) writeCache(key, list);
+      return { items: list, error: null, cached: false };
+    } catch (err) {
+      lastError = err?.name === 'AbortError' ? 'timeout' : 'unavailable';
+      if (signal?.aborted) break;
+      /* Solo se reintenta si el fallo fue rápido: así una caída total no
+         mantiene la petición abierta durante minutos. */
+      const elapsed = Date.now() - started;
+      if (attempt >= retries || elapsed > 8000) break;
+      await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+      if (signal?.aborted) break;
+    }
   }
+
+  return { items: [], error: lastError, cached: false };
 }
 
 /** Compatibilidad: devuelve solo la lista (siempre segura, nunca lanza). */

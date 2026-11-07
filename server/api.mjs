@@ -39,6 +39,7 @@ import {
 import {
   catalogTracks, homeFeed, matchesMood, readHistory, recordListen, weightedShuffleTracks,
 } from './home.mjs';
+import { rankTracks, fallbackTracks } from '../shared/searchIntent.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST = path.join(__dirname, '..', 'dist');
@@ -187,6 +188,7 @@ function sanitizeSearchResults(list, context = '') {
       moods,
       duration: item.dur || item.duration || 0,
       views: item.views || 0,
+      suggested: item.suggested === true,
     };
   }).filter(Boolean);
 }
@@ -255,48 +257,61 @@ function mergeSearchResults(...lists) {
 
 /** Respaldo con el catálogo ya sincronizado: la búsqueda nunca queda vacía
     por un fallo temporal del proveedor externo. */
-function catalogSearchFallback(q, limit = 40) {
+/** Convierte una pista del catálogo al contrato interno de búsqueda. */
+function catalogTrackToItem(track, suggested = false) {
+  return {
+    yt: String(track.yt || '').replace(/^yt-/, ''),
+    title: track.title,
+    artist: track.artist,
+    album: track.album,
+    thumb: track.thumb || track.cover_url,
+    dur: track.dur || track.duration,
+    views: track.views,
+    genre: track.genre,
+    moods: track.moods,
+    kind: 'video',
+    suggested,
+  };
+}
+
+function readCatalogPool() {
   const catalog = readJson('catalog.json');
   const curated = readJson('curated.json');
   if ((!catalog || !catalog.tracks?.length) && !curated?.catalog?.length) return [];
+  try {
+    return catalogTracks({ catalog, curated, coverProxy: proxyCover, limit: 2000 });
+  } catch {
+    return [];
+  }
+}
+
+/** Coincidencias reales con el catálogo ya sincronizado (texto, género, mood,
+    tolerancia a errores de escritura). */
+function catalogSearchFallback(q, limit = 40) {
+  const pool = readCatalogPool();
+  if (!pool.length) return [];
 
   try {
-    const pool = catalogTracks({ catalog, curated, coverProxy: proxyCover, limit: 2000 });
-    const needle = searchNorm(q);
-    if (!needle) return [];
-    const terms = needle.split(' ').filter(Boolean);
-    const scored = [];
+    const { matches } = rankTracks(pool, q);
+    const raw = matches.slice(0, Math.max(1, Math.min(120, limit)))
+      .map((track) => catalogTrackToItem(track, false));
+    return sanitizeSearchResults(raw, q);
+  } catch {
+    return [];
+  }
+}
 
-    for (const track of pool) {
-      const hay = searchNorm([
-        track.title, track.artist, track.album, track.genre,
-        ...(Array.isArray(track.moods) ? track.moods : []),
-      ].join(' '));
-      if (!hay.includes(needle)) continue;
+/** Música parecida o popular para completar una búsqueda. Se marca como
+    `suggested` para que la interfaz la muestre aparte y no la confunda con
+    coincidencias exactas. */
+function catalogSuggestions(q, limit = 40) {
+  const pool = readCatalogPool();
+  if (!pool.length) return [];
 
-      const title = searchNorm(track.title);
-      const artist = searchNorm(track.artist);
-      let score = terms.every((term) => hay.includes(term)) ? 0.5 : 0;
-      if (title === needle || artist === needle) score += 3;
-      else if (title.startsWith(needle) || artist.startsWith(needle)) score += 2;
-      else if (title.includes(needle) || artist.includes(needle)) score += 1;
-      scored.push({ track, score });
-    }
-
-    scored.sort((a, b) => b.score - a.score || (Number(b.track.views) || 0) - (Number(a.track.views) || 0));
-    const raw = scored.slice(0, Math.max(1, Math.min(120, limit))).map(({ track }) => ({
-      yt: String(track.yt || '').replace(/^yt-/, ''),
-      title: track.title,
-      artist: track.artist,
-      album: track.album,
-      thumb: track.thumb || track.cover_url,
-      dur: track.dur || track.duration,
-      views: track.views,
-      genre: track.genre,
-      moods: track.moods,
-      kind: 'video',
-    })).filter((item) => item.yt);
-
+  try {
+    const wanted = Math.max(1, Math.min(120, limit));
+    const raw = fallbackTracks(pool, q, wanted)
+      .map((track) => catalogTrackToItem(track, true));
     return sanitizeSearchResults(raw, q);
   } catch {
     return [];
@@ -363,7 +378,13 @@ async function apiSearch(res, url) {
     /* El cliente espera como máximo 30 s. Si YouTube se atasca, devolvemos el
        respaldo local dentro de ese margen en vez de dejar la búsqueda vacía. */
     live = await withSearchBudget(
-      searchYouTube(q, { limit, pages, music: true, retries: 2 }),
+      searchYouTube(q, {
+        limit,
+        pages,
+        music: true,
+        retries: 1,
+        timeout: deep ? 9000 : 7000,
+      }),
       deep ? 26000 : 16000,
     );
   } catch (err) {
@@ -376,33 +397,43 @@ async function apiSearch(res, url) {
     if (cache.size > 200) cache.delete(cache.keys().next().value);
   }
 
-  /* Completamos con el catálogo sincronizado. Sirve tanto si el proveedor
-     falló como si devolvió pocos resultados. */
-  clean = mergeSearchResults(clean, catalogSearchFallback(q, limit)).slice(0, limit);
+  /* 1) Coincidencias reales en el catálogo sincronizado. */
+  const matches = catalogSearchFallback(q, limit);
+  clean = mergeSearchResults(clean, matches).slice(0, limit);
+
+  /* 2) Si no hay coincidencias, rescatamos resultados antiguos/caché caliente
+     antes de recurrir a sugerencias. */
+  if (!clean.length) {
+    const stale = hit?.v?.length ? sanitizeSearchResults(hit.v, q) : [];
+    const recovered = mergeSearchResults(stale, warmSearchFallback(q)).slice(0, limit);
+    if (recovered.length) clean = recovered;
+  }
+
+  /* 3) Relleno garantizado: si hay pocos o ningún resultado, añadimos música
+     relacionada/popular marcada como `suggested`. Así la búsqueda nunca queda
+     vacía mientras el catálogo tenga pistas. */
+  let suggestedCount = 0;
+  const minTarget = Math.min(limit, 12);
+  if (clean.length < Math.min(limit, 8)) {
+    const fill = catalogSuggestions(q, limit)
+      .filter((item) => !clean.some((known) => known.track_id === item.track_id))
+      .slice(0, Math.max(0, minTarget - clean.length));
+    if (fill.length) {
+      clean = mergeSearchResults(clean, fill).slice(0, limit);
+      suggestedCount = fill.length;
+    }
+  }
+
   if (clean.length) {
     return sendJson(res, 200, {
       query: q,
       deep,
       source: 'sonora',
       degraded: !live.length,
+      fallback: !live.length,
+      suggested: suggestedCount > 0,
       count: clean.length,
       results: clean,
-    });
-  }
-
-  /* Último recurso: resultados antiguos de esta consulta o de la caché
-     caliente, para no romper la experiencia por un corte temporal. */
-  const stale = hit?.v?.length ? sanitizeSearchResults(hit.v, q) : [];
-  const recovered = mergeSearchResults(stale, warmSearchFallback(q)).slice(0, limit);
-  if (recovered.length) {
-    return sendJson(res, 200, {
-      query: q,
-      deep,
-      source: 'sonora',
-      cached: true,
-      fallback: true,
-      count: recovered.length,
-      results: recovered,
     });
   }
 

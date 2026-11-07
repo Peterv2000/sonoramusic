@@ -43,6 +43,7 @@ export default function Search() {
   const [liveTracks, setLiveTracks] = useState([]);
   const [liveItems, setLiveItems] = useState(null); // null = cargando
   const [localResults, setLocalResults] = useState([]);
+  const [suggestedResults, setSuggestedResults] = useState([]);
   const [hybridMeta, setHybridMeta] = useState(null);
   const [liveInstant, setLiveInstant] = useState(false);
   const [onlineTick, setOnlineTick] = useState(0);
@@ -106,6 +107,7 @@ export default function Search() {
     if (!term) {
       setLiveItems(null);
       setLocalResults([]);
+      setSuggestedResults([]);
       setHybridMeta(null);
       setLiveInstant(false);
       return undefined;
@@ -116,6 +118,7 @@ export default function Search() {
     const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
     setLiveItems(null);
     setLocalResults([]);
+    setSuggestedResults([]);
     setHybridMeta(null);
     setLiveInstant(false);
 
@@ -123,6 +126,7 @@ export default function Search() {
       if (!alive || id !== liveReq.current || !result) return;
       setLiveItems(Array.isArray(result.global) ? result.global : []);
       setLocalResults(Array.isArray(result.local) ? result.local : []);
+      setSuggestedResults(Array.isArray(result.suggested) ? result.suggested : []);
       setHybridMeta(result.meta || null);
       setLiveInstant(Boolean(result.meta?.cached && !result.meta?.pending && !deep));
     };
@@ -184,18 +188,29 @@ export default function Search() {
     [local.songs, localResults],
   );
 
-  const liveSongs = useMemo(
+  const liveVideos = useMemo(
     () => (liveItems || []).filter((x) => (x.kind || 'video') === 'video'),
     [liveItems],
   );
+  const liveSongs = useMemo(() => liveVideos.filter((x) => !x.suggested), [liveVideos]);
+  const liveSuggested = useMemo(() => liveVideos.filter((x) => x.suggested), [liveVideos]);
   const liveArtists = useMemo(() => (liveItems || []).filter((x) => x.kind === 'channel'), [liveItems]);
   const livePlaylists = useMemo(() => (liveItems || []).filter((x) => x.kind === 'playlist'), [liveItems]);
 
+  /* Sugerencias: coincidencias aproximadas del servidor + relleno local. Se
+     muestran en su propia sección y nunca se mezclan con las exactas. */
+  const suggestedSongs = useMemo(() => {
+    const key = (track) => String(track?.yt || track?.id || `${track?.title}|${track?.artist}`);
+    const known = new Set([...localSongs, ...liveSongs].map(key));
+    return mergeTrackResults(suggestedResults, liveSuggested)
+      .filter((track) => !known.has(key(track)));
+  }, [suggestedResults, liveSuggested, localSongs, liveSongs]);
+
   const counts = {
     all: liveSongs.length + liveArtists.length + livePlaylists.length +
-      localSongs.length + local.albums.length + local.artists.length +
+      localSongs.length + suggestedSongs.length + local.albums.length + local.artists.length +
       local.playlists.length + local.mixes.length + local.stations.length,
-    songs: liveSongs.length + localSongs.length,
+    songs: liveSongs.length + localSongs.length + suggestedSongs.length,
     artists: liveArtists.length + local.artists.length,
     albums: local.albums.length,
     playlists: livePlaylists.length + local.playlists.length + local.mixes.length + local.stations.length,
@@ -217,6 +232,20 @@ export default function Search() {
     if (v.length > 1) { try { dispatch({ type: 'add-search', q: v }); } catch { /* noop */ } }
     nav(`/search?q=${encodeURIComponent(v)}`, { replace: true });
   };
+
+  /* Búsqueda en vivo mientras se escribe: no hace falta pulsar Enter. Se
+     espera una pausa corta para no lanzar una petición por tecla. No guarda
+     cada pulsación en «búsquedas recientes». */
+  useEffect(() => {
+    const term = q.trim();
+    if (!discovery || term.length < 2 || term === submitted.trim()) return undefined;
+    const timer = setTimeout(() => {
+      setSubmitted(term);
+      setFilter('all');
+      nav(`/search?q=${encodeURIComponent(term)}`, { replace: true });
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [q, discovery, submitted, nav]);
 
   const onInputChange = (value) => {
     setQ(value);
@@ -422,6 +451,13 @@ export default function Search() {
             </div>
           )}
 
+          {!hybridMeta?.offline && suggestedSongs.length > 0 && (
+            <div className="search-suggest-banner" role="status">
+              <Icon name="sparkles" size={16} />
+              <span>{t('approxResultsHint')}</span>
+            </div>
+          )}
+
           {loading && (
             <section className="list-section search-youtube-section" aria-busy="true" aria-live="polite">
               <div className="shelf-head">
@@ -504,6 +540,29 @@ export default function Search() {
                   index={i}
                   list={localSongs}
                   showAlbum
+                  onPlay={() => p.playRadio(tr)}
+                  onQueue={() => p.enqueue(tr)}
+                />
+              ))}
+            </section>
+          )}
+
+          {visible('songs') && suggestedSongs.length > 0 && (
+            <section className="list-section search-suggest-section">
+              <SectionHead icon="sparkles" title={t('suggestedResults')} count={suggestedSongs.length}>
+                <button className="btn small" onClick={() => queueAll(suggestedSongs)}>
+                  <Icon name="plus" size={14} /> {t('addToQueue')}
+                </button>
+                <button className="btn primary small" onClick={() => playAll(suggestedSongs)}>
+                  <Icon name="play" size={15} /> {t('playAll')}
+                </button>
+              </SectionHead>
+              {suggestedSongs.map((tr, i) => (
+                <TrackRow
+                  key={tr.id}
+                  track={tr}
+                  index={i}
+                  list={suggestedSongs}
                   onPlay={() => p.playRadio(tr)}
                   onQueue={() => p.enqueue(tr)}
                 />

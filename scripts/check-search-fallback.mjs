@@ -62,13 +62,55 @@ check(
   String(salsa.json?.degraded),
 );
 
-/* 2) Consulta sin coincidencias: error limpio, no una lista inventada. */
+/* 1b) Consultas reales multi-palabra: las palabras vacías («para», «en»…) no
+   deben impedir que el catálogo encuentre la parte con contenido. */
+const realQueries = [
+  'cumbia para bailar',
+  'rock en español',
+  'música romántica',
+  'lady gaga',
+];
+for (const term of realQueries) {
+  const result = await request(`/api/search?q=${encodeURIComponent(term)}&deep=0&limit=20`);
+  check(
+    `«${term}» no se queda vacía con el proveedor caído`,
+    result.status === 200 && Number(result.json?.count) > 0,
+    `HTTP ${result.status} · ${result.json?.count ?? 0} resultados`,
+  );
+}
+
+/* 2) Consulta sin coincidencias: nunca queda vacía; ofrece sugerencias
+   claramente marcadas en vez de una lista inventada sin aviso. */
 const missing = await request('/api/search?q=zzzzqqqxyz&deep=0');
 check(
-  'consulta sin coincidencias no inventa resultados',
-  missing.status === 502 || Number(missing.json?.count) === 0,
-  `HTTP ${missing.status}`,
+  'consulta sin coincidencias devuelve sugerencias en vez de vacío',
+  missing.status === 200 && Number(missing.json?.count) > 0 && missing.json?.suggested === true,
+  `HTTP ${missing.status} · ${missing.json?.count ?? 0} resultados`,
 );
+check(
+  'las sugerencias se marcan para no confundirlas con coincidencias',
+  Array.isArray(missing.json?.results) && missing.json.results.every((item) => item.suggested === true),
+  `${missing.json?.results?.filter((item) => item.suggested).length ?? 0} marcadas`,
+);
+
+/* 2b) Consultas difíciles: frases, estados de ánimo, errores y artistas que no
+   existen. Todas deben traer algo (coincidencia o sugerencia). */
+const hardQueries = [
+  'canciones para llorar',
+  'música para estudiar',
+  'rock de los 80',
+  'algo movidito para la fiesta',
+  'juanito perez desconocido',
+  'asdfgh',
+];
+for (const term of hardQueries) {
+  const result = await request(`/api/search?q=${encodeURIComponent(term)}&deep=0&limit=20`);
+  check(
+    `«${term}» nunca queda vacía`,
+    result.status === 200 && Number(result.json?.count) > 0,
+    `HTTP ${result.status} · ${result.json?.count ?? 0} resultados`,
+  );
+}
 
 /* 3) 300 carátulas seguidas no deben agotar el cupo de la API. */
 const cover = '/api/cover/' + Buffer.from('https://i.ytimg.com/vi/kJQP7kiw5Fk/hqdefault.jpg').toString('base64url');
