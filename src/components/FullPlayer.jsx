@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { usePlayer, fmt } from '../player/PlayerContext.jsx';
+import { usePlayer, usePlayerProgress, fmt } from '../player/PlayerContext.jsx';
 import { useApp } from '../state/AppState.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
 import { fetchLyrics, activeLineIndex } from '../api/lyrics.js';
@@ -40,6 +40,7 @@ function LyricsPane({ track, position, fullscreen = false }) {
 
 export default function FullPlayer() {
   const p = usePlayer();
+  const { position, duration } = usePlayerProgress();
   const { state, dispatch } = useApp();
   const { t } = useI18n();
   const toast = useToast();
@@ -48,7 +49,7 @@ export default function FullPlayer() {
   if (!track) return null;
 
   const liked = state.library.liked.includes(track.id);
-  const frac = p.duration ? p.position / p.duration : 0;
+  const frac = duration ? position / duration : 0;
   const inPl = state.library.playlists;
   const panel = p.panel; // player | queue | lyrics
   const auto = p.autoQueue || [];
@@ -115,8 +116,8 @@ export default function FullPlayer() {
           }}>
             <div className="seek-track"><div className="seek-fill" style={{ width: `${frac * 100}%` }} /></div>
             <div className="seek-times">
-              <span>{p.track.live ? `● ${t('liveNow')}` : fmt(p.position)}</span>
-              <span>{p.track.live ? '' : fmt(p.duration)}</span>
+              <span>{p.track.live ? `● ${t('liveNow')}` : fmt(position)}</span>
+              <span>{p.track.live ? '' : fmt(duration)}</span>
             </div>
           </div>
 
@@ -316,7 +317,7 @@ export default function FullPlayer() {
         </div>
       )}
 
-      {panel === 'lyrics' && (state.settings.lyricsFullscreen ? <div className="lyrics-fullscreen-wrap" style={{ '--art': `url(${track.thumb})` }}><div className="lyrics-fullscreen-scrim" /><div className="lyrics-fullscreen-head"><button className="icon-btn" onClick={() => p.setPanel('player')}><Icon name="chevronDown" /></button><div>{track.title} · {track.artist}</div></div><LyricsPane track={track} position={p.position} fullscreen /></div> : <LyricsPane track={track} position={p.position} />)}
+      {panel === 'lyrics' && (state.settings.lyricsFullscreen ? <div className="lyrics-fullscreen-wrap" style={{ '--art': `url(${track.thumb})` }}><div className="lyrics-fullscreen-scrim" /><div className="lyrics-fullscreen-head"><button className="icon-btn" onClick={() => p.setPanel('player')}><Icon name="chevronDown" /></button><div>{track.title} · {track.artist}</div></div><LyricsPane track={track} position={position} fullscreen /></div> : <LyricsPane track={track} position={position} />)}
 
       {showSleep && (
         <div className="modal-backdrop" onClick={() => setShowSleep(false)}>

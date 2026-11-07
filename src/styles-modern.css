@@ -1456,3 +1456,24 @@ html[data-theme='light'] .mini-volume { background: rgba(0, 0, 0, 0.16); }
 @media (max-width: 860px) {
   .admin-form-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Modo rendimiento (equipos modestos / ahorro de datos) ────────────────
+   El desenfoque de fondo del chrome fijo (TopBar, MiniPlayer, panel, nav)
+   obliga a recomponer la capa en cada frame mientras se desplaza el
+   contenido. Con `perf-lite` usamos fondos sólidos equivalentes: misma
+   jerarquía visual, sin coste de blur por frame. */
+.perf-lite .topbar,
+.perf-lite .bottom-nav,
+.perf-lite .mini-player,
+.perf-lite .np-panel,
+.perf-lite .search-dropdown,
+.perf-lite .toast,
+.perf-lite .modal {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.perf-lite .topbar,
+.perf-lite .bottom-nav { background: var(--bg); }
+.perf-lite .mini-player,
+.perf-lite .np-panel { background: var(--bg-2); }
+

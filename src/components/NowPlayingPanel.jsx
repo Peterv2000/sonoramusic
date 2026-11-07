@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { usePlayer, fmt } from '../player/PlayerContext.jsx';
+import { usePlayer, usePlayerProgress, fmt } from '../player/PlayerContext.jsx';
 import { useApp } from '../state/AppState.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
 import { fetchLyrics, activeLineIndex } from '../api/lyrics.js';
@@ -9,6 +9,7 @@ import Icon from './Icon.jsx';
 /* Panel derecho de escritorio: carátula, controles, letra y cola. */
 export default function NowPlayingPanel() {
   const p = usePlayer();
+  const { position, duration } = usePlayerProgress();
   const { state, dispatch } = useApp();
   const { t } = useI18n();
   const track = p.track;
@@ -57,7 +58,7 @@ export default function NowPlayingPanel() {
     );
   }
 
-  const frac = p.duration ? Math.min(1, p.position / p.duration) : 0;
+  const frac = duration ? Math.min(1, position / duration) : 0;
   const liked = state.library.liked.includes(track.id);
   const usingQueue = p.queue.length > 0;
   const usingAuto = !usingQueue && (p.autoQueue?.length || 0) > 0;
@@ -70,7 +71,7 @@ export default function NowPlayingPanel() {
 
   let lines = [];
   if (lyr?.synced?.length) {
-    const active = activeLineIndex(lyr.synced, p.position);
+    const active = activeLineIndex(lyr.synced, position);
     const start = Math.max(0, Math.min(Math.max(0, lyr.synced.length - 7), active > 0 ? active - 1 : 0));
     lines = lyr.synced.slice(start, start + 7).map((line, i) => ({
       ...line,
@@ -117,7 +118,7 @@ export default function NowPlayingPanel() {
         aria-valuenow={Math.round(frac * 100)}
         tabIndex={0}
         onClick={(e) => {
-          if (!p.duration) return;
+          if (!duration) return;
           const r = e.currentTarget.getBoundingClientRect();
           p.seek((e.clientX - r.left) / Math.max(1, r.width));
         }}
@@ -129,8 +130,8 @@ export default function NowPlayingPanel() {
         <span style={{ width: `${frac * 100}%` }} />
       </div>
       <div className="np-times">
-        <span>{fmt(p.position)}</span>
-        <span>{track.live ? 'LIVE' : fmt(p.duration)}</span>
+        <span>{fmt(position)}</span>
+        <span>{track.live ? 'LIVE' : fmt(duration)}</span>
       </div>
 
       <div className="np-controls">

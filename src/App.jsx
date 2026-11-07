@@ -40,6 +40,18 @@ export default function App() {
   // Web/PWA + APK: versión publicada, SSE y bundle nativo (Capacitor Updater).
   useEffect(() => watchLiveUpdates(), []);
 
+  /* Equipos modestos, pantallas táctiles o «Ahorro de datos»: apagamos los
+     desenfoques de fondo del chrome fijo. El contenido se sigue viendo igual,
+     pero el desplazamiento no recalcula blur en cada frame. */
+  useEffect(() => {
+    const root = document.documentElement;
+    const cores = Number(navigator.hardwareConcurrency) || 8;
+    const memory = Number(navigator.deviceMemory) || 8;
+    const coarse = window.matchMedia?.('(pointer: coarse)')?.matches;
+    const lite = !!state.settings.dataSaver || cores <= 4 || memory <= 4 || !!coarse;
+    root.classList.toggle('perf-lite', lite);
+  }, [state.settings.dataSaver]);
+
   return (
     <I18nCtx.Provider value={state.settings.lang}>
       <ToastProvider>

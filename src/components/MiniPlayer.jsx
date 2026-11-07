@@ -1,4 +1,4 @@
-import { usePlayer, fmt } from '../player/PlayerContext.jsx';
+import { usePlayer, usePlayerProgress, fmt } from '../player/PlayerContext.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
 import Icon from './Icon.jsx';
 
@@ -6,9 +6,10 @@ import Icon from './Icon.jsx';
    controles centrados y volumen/expansión a la derecha. */
 export default function MiniPlayer() {
   const p = usePlayer();
+  const { position, duration } = usePlayerProgress();
   const { t } = useI18n();
   if (!p.track) return null;
-  const frac = p.duration ? p.position / p.duration : 0;
+  const frac = duration ? position / duration : 0;
 
   return (
     <div
@@ -57,7 +58,7 @@ export default function MiniPlayer() {
           </button>
         </div>
         <div className="mini-time">
-          {p.track.live ? 'LIVE' : `${fmt(p.position)} / ${fmt(p.duration)}`}
+          {p.track.live ? 'LIVE' : `${fmt(position)} / ${fmt(duration)}`}
         </div>
       </div>
 

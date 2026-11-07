@@ -20,7 +20,7 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { usePlayer, fmt } from './PlayerContext.jsx';
+import { usePlayer, usePlayerProgress, fmt } from './PlayerContext.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
 import Icon from '../components/Icon.jsx';
 
@@ -28,6 +28,7 @@ const SKIP_SECONDS = 10;
 
 export default function VideoStage({ hostsRef, activeSlot = 0, videoMode }) {
   const p = usePlayer();
+  const { position, duration } = usePlayerProgress();
   const { t } = useI18n();
   const [hideUi, setHideUi] = useState(false);
   const [fs, setFs] = useState(false);            // pantalla completa activa
@@ -73,7 +74,7 @@ export default function VideoStage({ hostsRef, activeSlot = 0, videoMode }) {
     }
   }, [open]);
 
-  const pct = p.duration ? Math.min(100, (p.position / p.duration) * 100) : 0;
+  const pct = duration ? Math.min(100, (position / duration) * 100) : 0;
   const shownPct = dragPct != null ? dragPct : pct;
 
   const toggleFullscreen = () => {
@@ -244,7 +245,7 @@ export default function VideoStage({ hostsRef, activeSlot = 0, videoMode }) {
               </button>
 
               <span className="vstage-time">
-                {fmt(p.position)} <span className="vstage-time-sep">/</span> {fmt(p.duration)}
+                {fmt(position)} <span className="vstage-time-sep">/</span> {fmt(duration)}
               </span>
 
               <div className="vstage-right">

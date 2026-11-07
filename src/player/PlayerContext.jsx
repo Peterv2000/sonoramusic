@@ -14,6 +14,10 @@ import { recordCatalogListen } from '../api/catalogStore.js';
 import { apiUrl } from '../api/apiBase.js';
 
 const PlayerCtx = createContext(null);
+/* El progreso (posición/duración) vive en su propio contexto: cambia cada
+   500 ms y si compartiera el contexto principal volvería a renderizar toda la
+   app (portada, filas, búsqueda, biblioteca...) dos veces por segundo. */
+const PlayerProgressCtx = createContext({ position: 0, duration: 0 });
 
 const MANUAL_FADE_MS = 300;   // salto manual: fundido corto para evitar clics
 const MIN_AUDIO_SECONDS = 60; // por debajo de esto no es una canción completa
@@ -59,6 +63,20 @@ export function PlayerProvider({ children }) {
   const [playing, setPlaying] = useState(false);
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
+  /* Espejo síncrono del progreso: la API pública (seek/nudge/prev) lee los
+     refs y así no depende de position/duration ni se recrea cada 500 ms. */
+  const positionRef = useRef(0);
+  const durationRef = useRef(0);
+  const applyPosition = useCallback((value) => {
+    const next = Number(value) || 0;
+    positionRef.current = next;
+    setPosition(next);
+  }, []);
+  const applyDuration = useCallback((value) => {
+    const next = Number(value) || 0;
+    durationRef.current = next;
+    setDuration(next);
+  }, []);
   const [shuffle, setShuffle] = useState(false);
   const [repeat, setRepeat] = useState('off'); // off | all | one
   const [volume, setVolumeState] = useState(() => {
@@ -275,15 +293,15 @@ export function PlayerProvider({ children }) {
           setTrack(next);
           setPlaying(true);
           setReady(true);
-          setPosition(0);
+          applyPosition(0);
           setError(null);
           try { await audioRef.current.play(); } catch {}
           if (audioSyncRef.current) clearInterval(audioSyncRef.current);
           audioSyncRef.current = setInterval(() => {
             if (!audioRef.current) return;
             try {
-              setPosition(audioRef.current.currentTime || 0);
-              if (audioRef.current.duration && isFinite(audioRef.current.duration)) setDuration(audioRef.current.duration);
+              applyPosition(audioRef.current.currentTime || 0);
+              if (audioRef.current.duration && isFinite(audioRef.current.duration)) applyDuration(audioRef.current.duration);
               if (audioRef.current.ended) {
                 clearInterval(audioSyncRef.current);
                 audioSyncRef.current = null;
@@ -309,7 +327,7 @@ export function PlayerProvider({ children }) {
             setTrack(next);
             setPlaying(true);
             setReady(true);
-            setPosition(0);
+            applyPosition(0);
             sameSongLockRef.current = false;
             return true;
           } catch { /* noop */ }
@@ -472,8 +490,8 @@ export function PlayerProvider({ children }) {
         d = p.getDuration() || 0;
       } catch { return; }
 
-      setPosition(t);
-      if (d) setDuration(d);
+      applyPosition(t);
+      if (d) applyDuration(d);
 
       const cur = trackRef.current;
       const expected = Number(cur?.duration || cur?.dur || 0);
@@ -643,7 +661,7 @@ export function PlayerProvider({ children }) {
     autoQueueRef.current = [];
     setAutoQueue([]);
     refreshRelated(tk);
-    setPosition(0);
+    applyPosition(0);
     setPlaying(true);
     setAudioMode(false);
     sameSongLockRef.current = false;
@@ -904,31 +922,31 @@ export function PlayerProvider({ children }) {
     },
     next: () => { try { advance(1, { force: true }); } catch { /* noop */ } },
     prev() {
-      if (position > 4) { try { getPlayer()?.seekTo?.(0, true); } catch { /* noop */ } return; }
+      if (positionRef.current > 4) { try { getPlayer()?.seekTo?.(0, true); } catch { /* noop */ } return; }
       try { advance(-1, { force: true }); } catch { /* noop */ }
     },
     seek(frac) {
       if (audioMode && audioRef.current && audioRef.current.duration) {
         const to = audioRef.current.duration * frac;
-        try { audioRef.current.currentTime = Math.max(0, Math.min(audioRef.current.duration, to)); setPosition(audioRef.current.currentTime); } catch { /* noop */ }
+        try { audioRef.current.currentTime = Math.max(0, Math.min(audioRef.current.duration, to)); applyPosition(audioRef.current.currentTime); } catch { /* noop */ }
         return;
       }
-      if (!duration) return;
-      const to = Math.max(0, Math.min(duration, duration * frac));
-      try { getPlayer()?.seekTo?.(to, true); setPosition(to); } catch { /* noop */ }
+      if (!durationRef.current) return;
+      const to = Math.max(0, Math.min(durationRef.current, durationRef.current * frac));
+      try { getPlayer()?.seekTo?.(to, true); applyPosition(to); } catch { /* noop */ }
     },
     nudge(sec) {
       if (audioMode && audioRef.current) {
         try {
           const to = Math.max(0, (audioRef.current.currentTime || 0) + sec);
           audioRef.current.currentTime = to;
-          setPosition(audioRef.current.currentTime);
+          applyPosition(audioRef.current.currentTime);
         } catch { /* noop */ }
         return;
       }
       try {
-        const to = Math.max(0, Math.min(duration, position + sec));
-        getPlayer()?.seekTo?.(to, true); setPosition(to);
+        const to = Math.max(0, Math.min(durationRef.current, positionRef.current + sec));
+        getPlayer()?.seekTo?.(to, true); applyPosition(to);
       } catch { /* noop */ }
     },
     setVolume(v) {
@@ -1027,7 +1045,7 @@ export function PlayerProvider({ children }) {
       if (typeof window === 'undefined' || !window.speechSynthesis) return [];
       return window.speechSynthesis.getVoices?.() || [];
     },
-  }), [track, playing, position, duration, advance, playNow, playAutoFromQueue, refreshRelated, contextList, djText, speak, stopDjSpeech, settings.lang, djVoiceURI, audioMode, getPlayer]);
+  }), [track, playing, advance, playNow, playAutoFromQueue, refreshRelated, contextList, djText, speak, stopDjSpeech, settings.lang, djVoiceURI, audioMode, getPlayer]);
 
   /* Acciones de MediaSession */
   useEffect(() => {
@@ -1075,7 +1093,7 @@ export function PlayerProvider({ children }) {
     }) : [];
     const recommended = autoQueue.length ? autoQueue : fallbackRelated;
     return {
-      ...api, track, queue, autoQueue, recommended, contextList, index, playing, position, duration,
+      ...api, track, queue, autoQueue, recommended, contextList, index, playing,
       shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode,
       djText, djTag, djSpeaking, djOn: settings.dj, djVoiceURI,
       related: recommended.slice(0, 6),
@@ -1086,26 +1104,33 @@ export function PlayerProvider({ children }) {
       crossfadeSeconds: crossfadeSec,
       activeSlot,
     };
-  }, [api, track, queue, autoQueue, contextList, index, playing, position, duration, shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode, djText, djTag, djSpeaking, settings.dj, djVoiceURI, audioMode, crossfadeSec, activeSlot]);
+  }, [api, track, queue, autoQueue, contextList, index, playing, shuffle, repeat, volume, fullOpen, panel, ready, error, sleepEndsAt, videoMode, djText, djTag, djSpeaking, settings.dj, djVoiceURI, audioMode, crossfadeSec, activeSlot]);
+
+  /* Progreso aislado: solo los componentes que lo pintan (mini, panel, full,
+     vídeo) se actualizan cada 500 ms. */
+  const progressValue = useMemo(() => ({ position, duration }), [position, duration]);
 
   return (
     <PlayerCtx.Provider value={value}>
-      {children}
-      {/* Dos hosts estables: el crossfade entra con el reproductor libre. */}
-      <VideoStage hostsRef={hostsRef} activeSlot={activeSlot} videoMode={videoMode} />
-      {settings.dj && (
-        <DJDrop
-          text={djText}
-          tag={djTag}
-          onClose={api.djDismiss}
-          onRepeat={api.djRepeat}
-        />
-      )}
+      <PlayerProgressCtx.Provider value={progressValue}>
+        {children}
+        {/* Dos hosts estables: el crossfade entra con el reproductor libre. */}
+        <VideoStage hostsRef={hostsRef} activeSlot={activeSlot} videoMode={videoMode} />
+        {settings.dj && (
+          <DJDrop
+            text={djText}
+            tag={djTag}
+            onClose={api.djDismiss}
+            onRepeat={api.djRepeat}
+          />
+        )}
+      </PlayerProgressCtx.Provider>
     </PlayerCtx.Provider>
   );
 }
 
 export const usePlayer = () => useContext(PlayerCtx);
+export const usePlayerProgress = () => useContext(PlayerProgressCtx);
 
 export const fmt = (s) => {
   if (!s || s < 0 || !isFinite(s)) return '0:00';

@@ -12,7 +12,7 @@ export function Card({ item, onPlay, onOpen, onQueue, sub, round, badge }) {
   return (
     <div className={`card ${round ? 'round' : ''}`} onClick={onOpen || onPlay}>
       <div className="card-art">
-        <img src={item.thumb || item.cover} alt="" loading="lazy" />
+        <img src={item.thumb || item.cover} alt="" loading="lazy" decoding="async" />
         {badge && <span className="card-badge">{badge}</span>}
         <div className="card-actions">
           {onQueue && (
@@ -57,7 +57,7 @@ export function TrackRow({ track, list, index, onPlay, onQueue, showAlbum }) {
     <div className={`track-row ${isCurrent ? 'current' : ''}`}>
       <div className="tr-left" onClick={() => (onPlay ? onPlay() : p.playList(list, track.id))}>
         <span className="tr-index">{isCurrent && p.playing ? '♪' : index != null ? index + 1 : '▶'}</span>
-        <img src={track.thumb} alt="" loading="lazy" />
+        <img src={track.thumb} alt="" loading="lazy" decoding="async" />
         <div className="tr-meta">
           <strong>{track.title}</strong>
           <small>

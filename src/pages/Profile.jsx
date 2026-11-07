@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../state/AppState.jsx';
 import { useI18n } from '../i18n/useI18n.jsx';
-import { usePlayer } from '../player/PlayerContext.jsx';
+import { usePlayer, usePlayerProgress } from '../player/PlayerContext.jsx';
 import { TrackRow } from '../components/widgets.jsx';
 import { trackById, ARTISTS } from '../data/catalog.js';
 import Icon from '../components/Icon.jsx';
@@ -20,12 +20,13 @@ function tally(ids) {
 export default function Profile() {
   const { state, dispatch } = useApp();
   const p = usePlayer();
+  const { position } = usePlayerProgress();
   const nav = useNavigate();
   const { t } = useI18n();
   const { profile, pro, library } = state;
 
   const plays = library.history.length;
-  const minutes = Math.round(library.history.length * 3.5 + (p.position > 0 ? p.position / 60 : 0));
+  const minutes = Math.round(library.history.length * 3.5 + (position > 0 ? position / 60 : 0));
 
   /* ── "Tu 2026 en música" (Spotify Wrapped / Apple Replay) ── */
   const replay = useMemo(() => {
