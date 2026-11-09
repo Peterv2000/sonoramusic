@@ -7,7 +7,12 @@ import Icon from '../components/Icon.jsx';
 import { tracksByGenre, formatViews, nf } from '../data/catalog.js';
 import { useApp } from '../state/AppState.jsx';
 import { categoryTag, fetchCategoryTracks, useCategories } from '../api/categories.js';
+import { listeningProfile, weightedShuffle } from '../state/listeningHistory.js';
 import { useHomeFeed } from '../api/home.js';
+
+/* Cuántas filas se pintan de cada categoría. Se descargan hasta 300 y se
+   muestran 150 barajadas según lo escuchado: la lista cambia en cada visita. */
+const DISPLAY_LIMIT = 150;
 
 export default function Explore() {
   const p = usePlayer();
@@ -20,6 +25,9 @@ export default function Explore() {
   const [genre, setGenre] = useState(loc.state?.categoryId || null);
   const [remoteTracks, setRemoteTracks] = useState([]);
   const [tracksLoading, setTracksLoading] = useState(false);
+  /* Cambia cuando el usuario pide «Renovar» o entra de nuevo a la categoría:
+     fuerza una mezcla nueva sin recargar la página. */
+  const [mixSeed, setMixSeed] = useState(0);
 
   /* La portada trae las categorías ya ordenadas por escucha; si aún no llegó,
      se usa la lista en vivo del API (nunca datos estáticos). */
@@ -40,11 +48,24 @@ export default function Explore() {
     let dead = false;
     setTracksLoading(true);
     setRemoteTracks([]);
-    fetchCategoryTracks(genre)
-      .then((tracks) => { if (!dead && tracks?.length) setRemoteTracks(tracks); })
+    /* Siempre positiva: `^` devuelve un int32 con signo y una semilla negativa
+       rompería la mezcla ponderada. */
+    const seed = (((Date.now() ^ (mixSeed || 0)) >>> 0) % 2147483647) || 1;
+    fetchCategoryTracks(genre, { limit: 300, seed, userId: state.auth.userId || '' })
+      .then((tracks) => {
+        if (dead || !tracks?.length) return;
+        /* Mezcla ponderada por el historial local: sube lo que el usuario
+           escucha últimamente y hunde lo que acaba de sonar. */
+        const ordered = weightedShuffle(tracks, {
+          profile: listeningProfile(),
+          seed: seed ^ 0x9e3779b9,
+          limit: DISPLAY_LIMIT,
+        });
+        setRemoteTracks(ordered.length ? ordered : tracks.slice(0, DISPLAY_LIMIT));
+      })
       .finally(() => { if (!dead) setTracksLoading(false); });
     return () => { dead = true; };
-  }, [genre]);
+  }, [genre, mixSeed, state.auth.userId]);
 
   // Si el administrador desactiva la categoría abierta, volvemos a la rejilla.
   useEffect(() => {
@@ -80,11 +101,27 @@ export default function Explore() {
   const gridGenres = categories.map((c) => ({ ...c, tag: categoryTag(c, lang) }));
 
   const playCategory = async (id) => {
-    const remote = await fetchCategoryTracks(id);
+    const seed = ((Date.now() % 2147483647) || 1);
+    const remote = await fetchCategoryTracks(id, { limit: 300, seed, userId: state.auth.userId || '' });
     const wanted = new Set((categories.find((c) => c.id === id)?.genres || [id]).map((g) => String(g).toLowerCase()));
     const local = tracksByGenre(id).filter((t) => wanted.has(String(t.genre || '').toLowerCase()));
-    const l = remote?.length ? remote : local;
+    const base = remote?.length ? remote : local;
+    const l = weightedShuffle(base, {
+      profile: listeningProfile(),
+      seed: seed ^ 0x9e3779b9,
+      limit: DISPLAY_LIMIT,
+    });
     if (l.length) p.playList(l);
+  };
+
+  const renewMix = () => setMixSeed(Date.now());
+  const playShuffled = () => {
+    if (!list.length) return;
+    p.playList(weightedShuffle(list, {
+      profile: listeningProfile(),
+      seed: Date.now(),
+      limit: list.length,
+    }));
   };
 
   return (
@@ -112,7 +149,8 @@ export default function Explore() {
               {list.length > 0 && (
                 <>
                   <button className="btn primary" onClick={() => p.playList(list)}><Icon name="play" size={15} /> {t('playAll')}</button>
-                  <button className="btn" onClick={() => p.playList([...list].sort(() => Math.random() - 0.5))}><Icon name="shuffle" size={15} /> {t('shuffle')}</button>
+                  <button className="btn" onClick={playShuffled}><Icon name="shuffle" size={15} /> {t('shuffle')}</button>
+                  <button className="btn" onClick={renewMix} disabled={tracksLoading}><Icon name="refresh" size={15} /> {t('renew')}</button>
                 </>
               )}
             </div>

@@ -183,8 +183,9 @@ export function affinityScore(track, profile = listeningProfile()) {
   const mood = moods.reduce((sum, m) => sum + asNumber(profile.moods?.[fold(m)]), 0) /
     (Math.max(1, ...Object.values(profile.moods || {}).map((n) => asNumber(n))) * Math.max(1, moods.length));
   const targetBpm = averageBpm(profile);
-  const bpm = targetBpm && featuresFor(track)?.bpm
-    ? Math.max(0, 1 - Math.abs(featuresFor(track).bpm - targetBpm) / Math.max(targetBpm, 1))
+  const features = featuresFor(track);
+  const bpm = targetBpm && features?.bpm
+    ? Math.max(0, 1 - Math.abs(features.bpm - targetBpm) / Math.max(targetBpm, 1))
     : 0;
 
   return Math.max(0, Math.min(1,
@@ -222,29 +223,48 @@ function hash(value) {
  * verdad. Devuelve una lista nueva sin mutar la original.
  */
 export function weightedShuffle(list, { profile = listeningProfile(), seed = Date.now(), limit, novelty = true } = {}) {
-  const pool = (Array.isArray(list) ? list : []).filter(Boolean).slice();
+  const pool = (Array.isArray(list) ? list : []).filter(Boolean);
   const out = [];
   const wanted = limit == null ? pool.length : Math.max(0, Math.min(pool.length, Number(limit) || 0));
   const random = mulberry32((asNumber(seed) || Date.now()) ^ hash(profile.updatedAt || 0));
 
-  while (pool.length && out.length < wanted) {
+  /* Lo escuchado recientemente pesa mucho menos: así la lista se renueva de
+     verdad en cada visita en lugar de repetir el mismo bloque de siempre. */
+  const recent = new Set();
+  for (const item of (profile.recent || []).slice(0, 40)) {
+    const id = String(item?.id || '');
+    const yt = String(item?.yt || '');
+    if (id) recent.add(id);
+    if (yt) recent.add(yt);
+  }
+
+  /* Los pesos se calculan una sola vez: recalcularlos dentro del bucle hacía
+     O(n²) inferencias de audio con listas de 300 canciones. */
+  const entries = pool.map((track) => {
+    const affinity = affinityScore(track, profile);
+    const plays = playCount(track, profile);
+    const repetition = novelty ? 1 / (1 + plays * 1.6) : 1;
+    // Base mínima para que una pista nueva también pueda entrar.
+    let weight = Math.max(0.04, (0.35 + affinity * 1.65) * repetition);
+    if (novelty && (
+      recent.has(String(track.id || '')) ||
+      (track.yt && (recent.has(String(track.yt)) || recent.has(`yt-${track.yt}`)))
+    )) {
+      weight *= 0.12;
+    }
+    return { track, weight };
+  });
+
+  while (entries.length && out.length < wanted) {
     let total = 0;
-    const weights = pool.map((track) => {
-      const affinity = affinityScore(track, profile);
-      const plays = playCount(track, profile);
-      const repetition = novelty ? 1 / (1 + plays * 1.6) : 1;
-      // Base mínima para que una pista nueva también pueda entrar.
-      const weight = Math.max(0.04, (0.35 + affinity * 1.65) * repetition);
-      total += weight;
-      return weight;
-    });
+    for (let i = 0; i < entries.length; i += 1) total += entries[i].weight;
     let hit = random() * total;
     let index = 0;
-    for (; index < pool.length - 1; index += 1) {
-      hit -= weights[index];
+    for (; index < entries.length - 1; index += 1) {
+      hit -= entries[index].weight;
       if (hit <= 0) break;
     }
-    out.push(pool.splice(index, 1)[0]);
+    out.push(entries.splice(index, 1)[0].track);
   }
   return out;
 }

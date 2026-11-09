@@ -871,17 +871,28 @@ export function PlayerProvider({ children }) {
     pauseAllPlayers();
     const localFallback = () => {
       if (!pendingAdvanceRef.current) return;
-      const fallbackPool = mergeTracks(list, globalPool()).filter(
+      /* El contexto que el usuario puso (categoría, playlist…) siempre es del
+         mismo género; solo se añade el pool global si respeta ese mundo. Antes
+         se caía a `fallbackPool[0]`, que podía ser de cualquier género. */
+      const contextPool = mergeTracks(list).filter((t) => t && t.id !== current.id);
+      const globalCandidates = mergeTracks(globalPool()).filter(
         (t) => t && t.id !== current.id && !visitedRef.current.has(t.id),
       );
       const next = pickSmartNext({
         current,
-        candidates: fallbackPool,
+        candidates: mergeTracks(contextPool, globalCandidates),
         recent: playedHistoryRef.current,
         exclude: [current.id],
-      }) || fallbackPool[0];
-      if (!next) return;
+      }) || contextPool.find((t) => !visitedRef.current.has(t.id)) || contextPool[0];
       pendingAdvanceRef.current = false;
+      if (!next) {
+        /* Sin nada coherente: repetimos la canción actual antes que saltar a
+           otro género. La música sigue sonando. */
+        try { getPlayer()?.seekTo?.(0, true); getPlayer()?.playVideo?.(); } catch { /* noop */ }
+        setPlaying(true);
+        applyPosition(0);
+        return;
+      }
       const at = list.findIndex((t) => t.id === next.id);
       if (at >= 0) playNow(next, list, at, [], { fadeMs });
       else playNow(next, [...list, next], list.length, [], { fadeMs });

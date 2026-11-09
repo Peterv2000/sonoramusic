@@ -155,7 +155,10 @@ export function familyCompatible(seed, candidate) {
     // popular/regional no debe mezclarse con ningún otro mundo.
     return candidate.family === 'hiphop' && latinGroup(seed.subgenre) === 'urban';
   }
-  return familyAffinity(seed.family, candidate.family) >= 0.62;
+  /* Sin más puentes: dentro de una sesión no se salta de familia. Pop y R&B
+     pueden sonar parecido, pero son categorías distintas y el usuario pidió
+     que la siguiente canción no cambie de género. */
+  return false;
 }
 
 /** Filtro duro de subgénero dentro del mundo latino. */
@@ -247,14 +250,28 @@ export function buildSmartQueue(seed, candidates, {
      pequeño: la similitud audio (género/BPM/energía) sigue mandando, pero la
      cola se inclina hacia lo que la persona escucha de verdad. */
   const profile = listeningProfile();
+  const seedCategory = fold(seed.categoryId);
+  /* Si hay suficientes pistas de la misma categoría, la cola se queda dentro
+     de ella: así Rock no salta a Pop ni K-Pop a Latino. Solo se usa la familia
+     como red de seguridad cuando la categoría es pequeña (Lo-Fi, Indie…) o
+     sus pistas están mal etiquetadas. */
+  const sameCategory = seedCategory
+    ? ranked.filter((entry) => fold(entry.track.categoryId) === seedCategory)
+    : [];
+  const coherent = sameCategory.length >= 4 ? sameCategory : ranked;
+
+  const stagePools = (pool) => [
+    pool.filter((entry) => entry.strictOk),
+    pool.filter((entry) => !entry.strictOk && entry.languageOk && entry.familyOk && entry.subgenreOk),
+  ].filter((list) => list.length);
 
   /* Etapa 1: solo coincidencias estrictas (idioma, género, subgénero,
      ±15 % BPM, energía ±0.24). Etapa 2: se relajan tempo/energía para
      completar la cola, pero NUNCA se relajan idioma, género ni subgénero. */
-  const stages = [
-    ranked.filter((entry) => entry.strictOk),
-    ranked.filter((entry) => !entry.strictOk && entry.languageOk && entry.familyOk && entry.subgenreOk),
-  ].filter((pool) => pool.length);
+  let stages = stagePools(coherent);
+  /* Red de seguridad: si la categoría no aporta ninguna candidata compatible,
+     no dejamos la cola vacía; se completa con su misma familia. */
+  if (!stages.length && coherent !== ranked) stages = stagePools(ranked);
 
   const chosen = [];
   for (const pool of stages) {
@@ -277,7 +294,10 @@ export function buildSmartQueue(seed, candidates, {
         const uses = artist ? context.filter((t) => sameTrackArtist(t, entry.track)).length : 0;
         const uncertainty = entry.features.language === 'unknown' ? 0.03 : 0;
         const taste = affinityScore(entry.track, profile) * 0.12;
-        const adjusted = entry.score + taste - Math.min(0.14, uses * 0.018) - Math.min(0.04, run * 0.02) - uncertainty;
+        const categoryDelta = seedCategory && entry.track.categoryId
+          ? (fold(entry.track.categoryId) === seedCategory ? 0.08 : -0.02)
+          : 0;
+        const adjusted = entry.score + taste + categoryDelta - Math.min(0.14, uses * 0.018) - Math.min(0.04, run * 0.02) - uncertainty;
         if (adjusted > bestScore) {
           bestScore = adjusted;
           bestIdx = i;

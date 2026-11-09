@@ -88,10 +88,19 @@ export async function fetchCategories({ force = false } = {}) {
 }
 
 /** Pistas de una categoría. Devuelve `null` si la API no está disponible. */
-export async function fetchCategoryTracks(categoryId, { limit = 150 } = {}) {
+export async function fetchCategoryTracks(categoryId, { limit = 300, seed = 0, userId = '' } = {}) {
   if (!categoryId) return null;
+  const params = new URLSearchParams();
+  params.set('category_id', categoryId);
+  /* Sin `sort=random` el servidor devuelve siempre las mismas pistas en el
+     mismo orden, que es justo lo que hacía que las categorías parecieran
+     congeladas. La semilla cambia en cada visita. */
+  params.set('sort', 'random');
+  params.set('limit', String(Math.max(1, Math.min(300, Number(limit) || 300))));
+  params.set('seed', String(Number(seed) > 0 ? Number(seed) : Date.now()));
+  if (userId) params.set('user_id', userId);
   try {
-    const res = await fetch(apiUrl(`/api/v1/tracks?category_id=${encodeURIComponent(categoryId)}&limit=${limit}`), {
+    const res = await fetch(apiUrl(`/api/v1/tracks?${params}`), {
       headers: { Accept: 'application/json' },
       cache: 'no-store',
     });
