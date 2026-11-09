@@ -5,6 +5,7 @@ import { useI18n } from '../i18n/useI18n.jsx';
 import { Card, Shelf, TrackRow, GenreGrid } from '../components/widgets.jsx';
 import Icon from '../components/Icon.jsx';
 import { tracksByGenre, formatViews, nf } from '../data/catalog.js';
+import { catalogPool, useCatalog } from '../api/catalogStore.js';
 import { useApp } from '../state/AppState.jsx';
 import { categoryTag, fetchCategoryTracks, useCategories } from '../api/categories.js';
 import { listeningProfile, weightedShuffle } from '../state/listeningHistory.js';
@@ -14,6 +15,24 @@ import { useHomeFeed } from '../api/home.js';
    muestran 150 barajadas según lo escuchado: la lista cambia en cada visita. */
 const DISPLAY_LIMIT = 150;
 
+/* Semilla positiva y distinta en cada visita. Sin esto la semilla podía ser
+   negativa (XOR de int32) y la mezcla ponderada se repetía. */
+const makeSeed = () => (((Date.now() ^ Math.floor(Math.random() * 0x7fffffff)) >>> 0) % 2147483647) || 1;
+
+/* Catálogo local de una categoría. Usa la caché completa (no solo las pistas
+   semilla): primero por `categoryId` real del API y, si falta, por sus
+   géneros. Así el respaldo offline también tiene variedad suficiente. */
+function localCategoryPool(categoryId, category, pool) {
+  const id = String(categoryId || '').toLowerCase();
+  const wanted = new Set((category?.genres || [categoryId]).map((g) => String(g).toLowerCase()));
+  return (pool || []).filter((track) => {
+    if (!track) return false;
+    const trackCategory = String(track.categoryId || '').toLowerCase();
+    if (id && trackCategory && trackCategory === id) return true;
+    return wanted.has(String(track.genre || '').toLowerCase());
+  });
+}
+
 export default function Explore() {
   const p = usePlayer();
   const nav = useNavigate();
@@ -22,12 +41,15 @@ export default function Explore() {
   const { state } = useApp();
   const { categories: remoteCategories, loading: categoriesLoading } = useCategories();
   const { feed } = useHomeFeed({ userId: state.auth.userId || undefined, lang });
+  /* Se re-renderiza cuando termina de cargar el catálogo dinámico: el respaldo
+     local debe incluir las pistas nuevas sin esperar a recargar la página. */
+  const { size: catalogSize } = useCatalog({ load: false });
   const [genre, setGenre] = useState(loc.state?.categoryId || null);
   const [remoteTracks, setRemoteTracks] = useState([]);
   const [tracksLoading, setTracksLoading] = useState(false);
-  /* Cambia cuando el usuario pide «Renovar» o entra de nuevo a la categoría:
-     fuerza una mezcla nueva sin recargar la página. */
-  const [mixSeed, setMixSeed] = useState(0);
+  /* Semilla de la mezcla. Cambia al entrar y al pulsar «Renovar»: se usa tanto
+     para pedir el orden aleatorio al API como para barajar el respaldo local. */
+  const [mixSeed, setMixSeed] = useState(makeSeed);
 
   /* La portada trae las categorías ya ordenadas por escucha; si aún no llegó,
      se usa la lista en vivo del API (nunca datos estáticos). */
@@ -48,9 +70,9 @@ export default function Explore() {
     let dead = false;
     setTracksLoading(true);
     setRemoteTracks([]);
-    /* Siempre positiva: `^` devuelve un int32 con signo y una semilla negativa
-       rompería la mezcla ponderada. */
-    const seed = (((Date.now() ^ (mixSeed || 0)) >>> 0) % 2147483647) || 1;
+    /* La misma semilla se usa para el API y para el respaldo local, así la
+       lista cambia aunque no haya conexión. */
+    const seed = mixSeed;
     fetchCategoryTracks(genre, { limit: 300, seed, userId: state.auth.userId || '' })
       .then((tracks) => {
         if (dead || !tracks?.length) return;
@@ -74,9 +96,15 @@ export default function Explore() {
 
   const localForGenre = useMemo(() => {
     if (!genre) return [];
-    const wanted = new Set((category?.genres || [genre]).map((g) => String(g).toLowerCase()));
-    return tracksByGenre(genre).filter((t) => wanted.has(String(t.genre || '').toLowerCase()));
-  }, [category, genre]);
+    const pool = localCategoryPool(genre, category, catalogPool());
+    /* También el respaldo local se baraja por historial: antes se pintaba en
+       el orden fijo del catálogo y por eso siempre salían las mismas pistas. */
+    return weightedShuffle(pool, {
+      profile: listeningProfile(),
+      seed: mixSeed ^ 0x85ebca6b,
+      limit: DISPLAY_LIMIT,
+    });
+  }, [category, genre, mixSeed, catalogSize]);
 
   const list = useMemo(() => {
     if (!genre) return [];
@@ -101,10 +129,9 @@ export default function Explore() {
   const gridGenres = categories.map((c) => ({ ...c, tag: categoryTag(c, lang) }));
 
   const playCategory = async (id) => {
-    const seed = ((Date.now() % 2147483647) || 1);
+    const seed = makeSeed();
     const remote = await fetchCategoryTracks(id, { limit: 300, seed, userId: state.auth.userId || '' });
-    const wanted = new Set((categories.find((c) => c.id === id)?.genres || [id]).map((g) => String(g).toLowerCase()));
-    const local = tracksByGenre(id).filter((t) => wanted.has(String(t.genre || '').toLowerCase()));
+    const local = localCategoryPool(id, categories.find((c) => c.id === id), catalogPool());
     const base = remote?.length ? remote : local;
     const l = weightedShuffle(base, {
       profile: listeningProfile(),
@@ -114,12 +141,12 @@ export default function Explore() {
     if (l.length) p.playList(l);
   };
 
-  const renewMix = () => setMixSeed(Date.now());
+  const renewMix = () => setMixSeed(makeSeed());
   const playShuffled = () => {
     if (!list.length) return;
     p.playList(weightedShuffle(list, {
       profile: listeningProfile(),
-      seed: Date.now(),
+      seed: makeSeed(),
       limit: list.length,
     }));
   };
