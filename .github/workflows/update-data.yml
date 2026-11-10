@@ -34,14 +34,12 @@ jobs:
         with:
           node-version: '20'
           cache: npm
-          cache-dependency-path: ritmo-music/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Instalar dependencias
-        working-directory: ritmo-music
         run: npm ci
 
       - name: Actualizar catálogo, gráficos y caché
-        working-directory: ritmo-music
         run: node scripts/run-update.mjs --force
         env:
           UPDATE_PAUSE_MS: '900'   # pausa entre consultas (anti-bloqueo de YouTube)
@@ -50,7 +48,7 @@ jobs:
         run: |
           git config user.name  "ritmo-bot"
           git config user.email "ritmo-bot@users.noreply.github.com"
-          git add ritmo-music/server/data/*.json
+          git add server/data/*.json
           if git diff --cached --quiet; then
             echo "Sin cambios que publicar."
           else
