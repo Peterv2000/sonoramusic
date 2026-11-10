@@ -57,6 +57,32 @@ const meaningfulGenre = (genre) => {
   return Boolean(g) && !GENERIC_GENRES.has(g);
 };
 
+/* ── Estilo declarado en el título ─────────────────────────────────────────
+   El catálogo automático a veces etiqueta un «Bachata Mix» como Salsa porque
+   el recopilatorio se encontró buscando salsa. Si el título nombra un único
+   estilo, manda sobre la etiqueta: así la radio no cambia de género al pulsar
+   la canción. Los títulos que mezclan estilos («Bachata, Merengue, Salsa») no
+   fuerzan nada y se quedan con los metadatos. */
+const TITLE_STYLE_RULES = [
+  [/dembow/, 'Dembow'],
+  [/trap\s*latino|trap latino/, 'Trap Latino'],
+  [/dancehall/, 'Dancehall Latino'],
+  [/urbano\s*latino|perreo/, 'Urbano Latino'],
+  [/\breggaeton\b|\bregueton\b/, 'Reggaetón'],
+  [/\bmerengue\b/, 'Merengue'],
+  [/\bsalsa\b/, 'Salsa'],
+  [/\bbachata\b/, 'Bachata'],
+  [/\bcumbia\b/, 'Cumbia'],
+  [/\bvallenato\b/, 'Vallenato'],
+];
+
+export function titleStyle(value) {
+  const text = fold(cleanTitle(value));
+  if (!text) return '';
+  const hits = TITLE_STYLE_RULES.filter(([re]) => re.test(text));
+  return hits.length === 1 ? hits[0][1] : '';
+}
+
 /* ── Índice del catálogo para reconocer canciones vistas en búsquedas ───── */
 const BY_ID = new Map();
 const BY_SONG = new Map();
@@ -365,6 +391,13 @@ function detectSubgenre(family, track, haystack, energy) {
   const g = fold(track?.genre);
   const artist = fold(track?.artist);
   const all = `${g} ${haystack}`;
+  /* El título suele ser más fiable que la etiqueta del catálogo: «Bachata Mix
+     Vol. 2» no debe sonar a salsa solo porque la etiqueta diga Salsa. */
+  const declared = titleStyle(track?.title);
+  if (declared) {
+    const tagged = titleStyle(track?.genre);
+    if (tagged && fold(tagged) !== fold(declared)) return declared;
+  }
   if (/dembow/.test(all)) return 'Dembow';
   if (/trap\s*latino|trap\s*argentino|trap latino/.test(all)) return 'Trap Latino';
   if (/dancehall/.test(all)) return 'Dancehall Latino';
@@ -441,7 +474,7 @@ function computeAudioFeatures(input) {
   const title = cleanTitle(track.title);
   const haystack = fold(`${title} ${track.artist || ''} ${track.album || ''} ${track.genre || ''} ${Array.isArray(track.moods) ? track.moods.join(' ') : ''}`);
 
-  const family = detectFamily(track, haystack);
+  const family = titleStyle(track.title) ? 'latin' : detectFamily(track, haystack);
   const moods = moodList(track, haystack);
   const primary = moods[0] || '';
 

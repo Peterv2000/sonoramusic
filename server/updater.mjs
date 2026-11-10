@@ -23,7 +23,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { searchYouTube } from './youtube.mjs';
 import { curateBatch } from './ai-curator.mjs';
-import { guessGenre as aiGenre, guessMoods as aiMoods } from './ai-curator.mjs';
+import { guessGenre as aiGenre, guessMoods as aiMoods, titleGenre } from './ai-curator.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, 'data');
@@ -262,7 +262,9 @@ async function updateCatalog(log) {
          JSON acababa con `moods: {}`, perdiendo la pista de estado de ánimo. */
       const fresh = await Promise.all(dedupe(found, seen).map(async (tr) => ({
         ...tr,
-        genre,
+        /* La pista manda sobre la consulta: un «Bachata Mix» hallado buscando
+           salsa es bachata, no salsa. */
+        genre: titleGenre(tr.title) || genre,
         moods: await guessMoods(`${tr.title} ${tr.artist}`, genre),
       })));
       tracks.push(...fresh);
@@ -310,7 +312,7 @@ async function updateCharts(log) {
       const list = found
         .sort((a, b) => (b.views || 0) - (a.views || 0))
         .slice(0, 50)
-        .map((tr, i) => ({ ...tr, rank: i + 1, genre: guessGenre(`${tab.label} ${tr.artist} ${tr.title}`) }));
+        .map((tr, i) => ({ ...tr, rank: i + 1, genre: titleGenre(tr.title) || guessGenre(`${tab.label} ${tr.artist} ${tr.title}`) }));
       tabs.push({ id: tab.id, label: tab.label, tracks: list });
       log(`  · gráficos «${tab.label}» → ${list.length} pistas`);
     }

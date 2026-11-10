@@ -7,7 +7,7 @@
 
 import assert from 'node:assert/strict';
 import { TRACKS } from '../src/data/catalog.js';
-import { featuresFor } from '../src/player/audioFeatures.js';
+import { featuresFor, titleStyle } from '../src/player/audioFeatures.js';
 import { isQueueCandidate } from '../src/player/queue.js';
 import { buildSmartQueue, hasExcessiveArtistRun, scoreTracks } from '../src/player/smartQueue.js';
 
@@ -221,6 +221,48 @@ assert.equal(featuresFor(merengueQueue[0]).subgenre, 'Merengue', 'el primer tema
 assert.ok(
   merengueQueue.every((t) => ['Merengue', 'Salsa', 'Bachata', 'Cumbia'].includes(featuresFor(t).subgenre)),
   'la radio de merengue incluyó un subgénero que no es tropical',
+);
+
+/* Caso etiqueta contradictoria: el catálogo automático guardó algunos mixes de
+   bachata como Salsa porque se encontraron buscando salsa. El título manda:
+   pulsar «Bachata Mix Vol. 2» debe dejar la radio en bachata, no en salsa. */
+const mismatched = {
+  id: 'mismatched', yt: 'mismatched', title: 'Bachata Mix Vol.2 (The Best of Aventura)',
+  artist: 'Official Dream TV', genre: 'Salsa', dur: 1236,
+};
+const mismatchedF = featuresFor(mismatched);
+assert.equal(mismatchedF.family, 'latin', 'un mix de bachata debe seguir siendo latino');
+assert.equal(mismatchedF.subgenre, 'Bachata', 'el título «Bachata» debe imponerse a la etiqueta Salsa');
+
+const ambiguous = {
+  id: 'ambiguous', yt: 'ambiguous', title: 'Salsa - Merengue', artist: 'Dance Fitness',
+  genre: 'Salsa', dur: 300,
+};
+assert.equal(titleStyle(ambiguous.title), '', 'un título que mezcla estilos no debe declarar uno solo');
+assert.ok(
+  ['Merengue', 'Salsa'].includes(featuresFor(ambiguous).subgenre),
+  'un título ambiguo debe quedarse dentro del mundo tropical',
+);
+
+const bachataSeed = {
+  id: 'bachata-seed', yt: 'bachata-seed', title: 'La Bachata', artist: 'Manuel Turizo',
+  genre: 'Bachata', moods: ['Romántico'], year: 2022, dur: 200,
+};
+const bachataCandidates = [
+  { id: 'bt1', title: 'Que Se Mueran', artist: 'Romeo Santos', genre: 'Bachata', moods: ['Romántico'], dur: 210 },
+  { id: 'bt2', title: 'Propuesta Indecente', artist: 'Romeo Santos', genre: 'Bachata', moods: ['Romántico'], dur: 220 },
+  { id: 'bt3', title: 'Amnesia', artist: 'Dalvin La Melodía', genre: 'Bachata', moods: ['Romántico'], dur: 200 },
+  { id: 'sl1', title: 'La Vida Es Un Carnaval', artist: 'Celia Cruz', genre: 'Salsa', moods: ['Fiesta'], dur: 260 },
+  { id: 'rg1', title: 'Tití Me Preguntó', artist: 'Bad Bunny', genre: 'Reggaetón', moods: ['Fiesta'], dur: 240 },
+];
+const bachataQueue = buildSmartQueue(bachataSeed, bachataCandidates, {
+  limit: 5, recent: [bachataSeed], minCount: 1,
+});
+assert.ok(bachataQueue.length >= 3, `cola de bachata demasiado corta (${bachataQueue.length})`);
+assert.equal(featuresFor(bachataQueue[0]).subgenre, 'Bachata', 'la radio de bachata debe empezar en bachata');
+assert.ok(
+  bachataQueue.every((t) => featuresFor(t).subgenre !== 'Reggaetón'),
+  'la radio de bachata saltó a reggaetón',
 );
 
 /* Sin candidatas tropicales, la cola debe quedar vacía (el reproductor repite

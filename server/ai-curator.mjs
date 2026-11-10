@@ -89,6 +89,30 @@ export function guessGenre(text, artist) {
   return 'Pop';
 }
 
+/* Estilo que el propio título declara. Un recopilatorio encontrado buscando
+   salsa («Bachata Mix 2024») se guardaba como Salsa y rompía la radio. Si el
+   título nombra un único estilo, manda sobre la consulta o la pestaña; si
+   mezcla varios, se conserva la etiqueta de contexto. */
+const TITLE_GENRE_RULES = [
+  [/dembow/i, 'Dembow'],
+  [/trap\s*latino|trap latino|trap\s*argentino/i, 'Trap Latino'],
+  [/dancehall/i, 'Dancehall Latino'],
+  [/urbano\s*latino|perreo/i, 'Urbano Latino'],
+  [/reggaeton|reggaet[oó]n|regueton|reguet[oó]n/i, 'Reggaetón'],
+  [/merengue/i, 'Merengue'],
+  [/salsa/i, 'Salsa'],
+  [/bachata/i, 'Bachata'],
+  [/cumbia/i, 'Cumbia'],
+  [/vallenato/i, 'Vallenato'],
+];
+
+export function titleGenre(title) {
+  const text = String(title || '');
+  if (!text) return '';
+  const hits = TITLE_GENRE_RULES.filter(([re]) => re.test(text));
+  return hits.length === 1 ? hits[0][1] : '';
+}
+
 /* ── Moods ── */
 const MOOD_RULES = [
   [/party|fiesta|dance|bailar|hit|hits|top|club/i, 'Fiesta'],
