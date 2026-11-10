@@ -24,8 +24,22 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      # Los runners de GitHub ya traen el Android SDK instalado en
+      # /usr/local/lib/android/sdk (plataformas 34/35 incluidas). Solo hay que
+      # exponerlo; setup-android@v3 falla con las cmdline-tools actuales.
+      - name: Configurar Android SDK preinstalado
+        run: |
+          SDK=/usr/local/lib/android/sdk
+          CMD="$SDK/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$CMD" ]; then
+            CMD=$(find "$SDK/cmdline-tools" -name sdkmanager -type f 2>/dev/null | head -n 1)
+          fi
+          if [ -n "$CMD" ] && [ ! -d "$SDK/platforms/android-34" ]; then
+            yes | "$CMD" --licenses >/dev/null 2>&1 || true
+            yes | "$CMD" "platforms;android-34" "build-tools;34.0.0" >/dev/null 2>&1 || true
+          fi
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
 
       - name: Install dependencies
         run: npm ci
