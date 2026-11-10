@@ -34,6 +34,8 @@ jobs:
         run: npm run icons
 
       - name: Build web + sync Capacitor
+        env:
+          SONORA_APP_URL: https://sonora-music-qrdg.onrender.com
         run: |
           if [ ! -d android ]; then npx cap add android; fi
           npm run apk:prepare
