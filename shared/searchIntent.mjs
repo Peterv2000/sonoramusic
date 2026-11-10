@@ -47,6 +47,92 @@ export function contentTokens(query) {
   return content.length ? content : tokens;
 }
 
+/* Coincidencia por palabras completas: «rock» coincide con «rock en español»,
+   pero no con «rockstar». También admite frases de varias palabras
+   («hip hop», «regional mexicano»). */
+function phraseInTokens(tokens, phrase) {
+  const want = normalizeSearch(phrase).split(' ').filter(Boolean);
+  if (!want.length || want.length > tokens.length) return false;
+  for (let i = 0; i <= tokens.length - want.length; i++) {
+    let ok = true;
+    for (let j = 0; j < want.length; j++) {
+      if (tokens[i + j] !== want[j]) { ok = false; break; }
+    }
+    if (ok) return true;
+  }
+  return false;
+}
+
+/* Géneros comodín que no describen ningún estilo. */
+const GENERIC_GENRES = new Set([
+  '', 'sonora', 'sonora music', 'ritmo', 'otros', 'other', 'music', 'musica',
+  'varios', 'unknown', 'artista', 'artista desconocido', 'youtube', 'album',
+  'lista',
+]);
+
+export function isGenericGenre(value) {
+  return GENERIC_GENRES.has(normalizeSearch(value));
+}
+
+/* Estilos que se pueden deducir directamente de una consulta («merengue»,
+   «rock de los 80», «bachata dominicana»). Se usan para etiquetar resultados
+   del buscador que llegan sin género y para que la semilla de la radio no
+   pierda el estilo. El orden importa: lo específico va antes que lo genérico. */
+const STYLE_RULES = [
+  { genre: 'Dembow', terms: ['dembow', 'dembow dominicano'] },
+  { genre: 'Trap Latino', terms: ['trap', 'trap latino', 'trap argentino', 'trap chileno'] },
+  { genre: 'Dancehall Latino', terms: ['dancehall', 'dancehall latino'] },
+  { genre: 'Reggaetón', terms: ['reggaeton', 'regueton', 'perreo', 'perrear', 'urbano latino', 'urbana latina', 'musica urbana', 'urbano', 'urbana'] },
+  { genre: 'Merengue', terms: ['merengue', 'merengues', 'merengue tipico', 'merengue dominicano'] },
+  { genre: 'Salsa', terms: ['salsa', 'salsas', 'salsera', 'timba'] },
+  { genre: 'Bachata', terms: ['bachata', 'bachatas'] },
+  { genre: 'Cumbia', terms: ['cumbia', 'cumbias', 'sonidera', 'chicha', 'tecno cumbia'] },
+  { genre: 'Vallenato', terms: ['vallenato', 'vallenatos', 'vallenata'] },
+  { genre: 'Popular', terms: ['popular', 'populares', 'ranchera', 'rancheras', 'corrido', 'corridos', 'banda', 'bandas', 'norteno', 'nortena', 'regional mexicano', 'mariachi', 'despecho'] },
+  { genre: 'Rock', terms: ['rock', 'rock en espanol', 'metal', 'punk', 'grunge', 'alternativo', 'alternativa'] },
+  { genre: 'Pop', terms: ['pop', 'pop latino'] },
+  { genre: 'Hip-Hop', terms: ['hip hop', 'hiphop', 'rap', 'drill', 'hip hop latino'] },
+  { genre: 'R&B', terms: ['r&b', 'rnb', 'soul', 'neo soul'] },
+  { genre: 'Electrónica', terms: ['electronica', 'edm', 'techno', 'house', 'dubstep', 'dance', 'trance'] },
+  { genre: 'K-Pop', terms: ['kpop', 'k pop', 'coreano', 'coreana'] },
+  { genre: 'Lo-Fi', terms: ['lofi', 'lo fi', 'chillhop'] },
+  { genre: 'Indie', terms: ['indie'] },
+  { genre: 'Latino', terms: ['latino', 'latina', 'latin', 'musica latina'] },
+  { genre: 'Clásica', terms: ['clasica', 'clasico', 'opera', 'instrumental', 'piano', 'violin'] },
+  { genre: 'Jazz', terms: ['jazz', 'blues', 'swing'] },
+  { genre: 'Cristiana', terms: ['cristiana', 'cristiano', 'gospel', 'alabanza', 'adoracion'] },
+  { genre: 'Navidad', terms: ['navidad', 'navideno', 'navidena', 'christmas', 'villancico', 'villancicos'] },
+  { genre: 'Infantil', terms: ['infantil', 'ninos', 'ninas'] },
+  { genre: 'Balada', terms: ['balada', 'baladas', 'bolero', 'boleros'] },
+  { genre: 'Acústico', terms: ['acustico', 'acustica', 'acoustic', 'folk'] },
+];
+
+/**
+ * Estilo musical deducido de la consulta, o '' cuando la consulta no describe
+ * un género (por ejemplo el nombre de un artista o una canción).
+ */
+export function styleForQuery(query) {
+  const tokens = queryTokens(query);
+  if (!tokens.length) return '';
+  for (const rule of STYLE_RULES) {
+    if (rule.terms.some((term) => phraseInTokens(tokens, term))) return rule.genre;
+  }
+  return '';
+}
+
+/**
+ * Devuelve una copia de la pista con el estilo de la consulta si su género es
+ * un comodín («Sonora»). No toca pistas con género real ni títulos homónimos
+ * de una consulta de varias palabras («El Merengue»).
+ */
+export function tagTrackWithQueryStyle(track, query, style = styleForQuery(query)) {
+  if (!track || !style || !isGenericGenre(track.genre)) return track;
+  const q = normalizeSearch(query);
+  const titleLike = q.split(' ').filter(Boolean).length > 1;
+  if (titleLike && normalizeSearch(track.title) === q) return track;
+  return { ...track, genre: style };
+}
+
 /* ── Reglas de intención ────────────────────────────────────────────────── */
 
 /* Cada regla aporta géneros/moods del catálogo. `terms` se compara contra la
@@ -135,9 +221,10 @@ const INTENT_RULES = [
 /* Alias de género → géneros reales del catálogo. */
 const GENRE_RULES = [
   { terms: ['reggaeton', 'regueton', 'reggaetton', 'perreo', 'dembow', 'urbano', 'urbana', 'trap'], genres: ['Reggaetón', 'Latino', 'Hip-Hop'] },
+  { terms: ['merengue', 'merengues', 'merengue tipico'], genres: ['Merengue', 'Latino'] },
   { terms: ['cumbia', 'cumbiambera', 'sonidera', 'chicha', 'tecno cumbia'], genres: ['Cumbia', 'Latino'] },
   { terms: ['salsa', 'salsera', 'timba'], genres: ['Salsa', 'Latino'] },
-  { terms: ['bachata'], genres: ['Bachata', 'Salsa', 'Latino'] },
+  { terms: ['bachata', 'bachatas'], genres: ['Bachata', 'Salsa', 'Latino'] },
   { terms: ['vallenato', 'vallenata'], genres: ['Vallenato', 'Latino', 'Cumbia'] },
   { terms: ['rock', 'metal', 'punk', 'grunge', 'alternativo', 'alternativa'], genres: ['Rock', 'Indie'] },
   { terms: ['pop'], genres: ['Pop'] },
@@ -162,6 +249,7 @@ const GENRE_RULES = [
  */
 export function inferIntent(query) {
   const q = normalizeSearch(query);
+  const tokens = q ? q.split(' ').filter(Boolean) : [];
   const genres = new Set();
   const moods = new Set();
   const tags = new Set();
@@ -179,7 +267,8 @@ export function inferIntent(query) {
     }
   }
   for (const rule of GENRE_RULES) {
-    if (rule.terms.some((term) => q.includes(term))) {
+    /* Palabras completas: «rockstar» no debe convertirse en Rock. */
+    if (rule.terms.some((term) => phraseInTokens(tokens, term))) {
       rule.genres.forEach((g) => genres.add(g));
     }
   }

@@ -11,6 +11,8 @@ import {
   inferIntent,
   rankTracks,
   scoreTrackText,
+  styleForQuery,
+  tagTrackWithQueryStyle,
 } from '../shared/searchIntent.mjs';
 
 let failures = 0;
@@ -53,6 +55,28 @@ const study = inferIntent('música para estudiar');
 check('«para estudiar» infiere concentración', study.ids.includes('focus'), study.ids.join('+'));
 const rock80 = inferIntent('rock de los 80');
 check('«rock de los 80» infiere rock clásico', rock80.genres.includes('Rock') && rock80.ids.includes('classic'), rock80.ids.join('+'));
+const merengueIntent = inferIntent('merengue');
+check(
+  '«merengue» se reconoce como género tropical',
+  merengueIntent.genres.includes('Merengue') && merengueIntent.genres.includes('Latino'),
+  merengueIntent.genres.join('+'),
+);
+
+/* 3b) Estilo de la consulta: etiqueta resultados sin género y evita falsos
+   positivos por subcadena. */
+check('la consulta «merengue» aporta el estilo Merengue', styleForQuery('merengue') === 'Merengue');
+check('la consulta «bachata dominicana» aporta Bachata', styleForQuery('bachata dominicana') === 'Bachata');
+check('la consulta «reggaetón» aporta Reggaetón', styleForQuery('reggaetón') === 'Reggaetón');
+check('la consulta «rock en español» aporta Rock', styleForQuery('rock en español') === 'Rock');
+check('«Rockstar» no se confunde con Rock', styleForQuery('Rockstar') === '', styleForQuery('Rockstar') || 'sin estilo');
+check(
+  'un resultado «Sonora» de una búsqueda de merengue se etiqueta',
+  tagTrackWithQueryStyle({ title: 'La Bilirrubina', artist: 'Juan Luis Guerra', genre: 'Sonora' }, 'merengue').genre === 'Merengue',
+);
+check(
+  'una canción homónima no se etiqueta como estilo',
+  tagTrackWithQueryStyle({ title: 'El Merengue', artist: 'Marshmello', genre: 'Sonora' }, 'El Merengue').genre === 'Sonora',
+);
 
 /* 4) Relacionados por intención, aunque el texto no coincida. */
 const sadRank = rankTracks(TRACKS, 'canciones para llorar');

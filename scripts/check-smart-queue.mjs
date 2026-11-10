@@ -180,6 +180,56 @@ assert.ok(
   'la radio urbana dejó pasar bachata, popular o pop en inglés',
 );
 
+/* Caso merengue: la radio no puede saltar a reggaetón. Los resultados de una
+   búsqueda suelen venir con genre «Sonora»; el artista debe bastar para
+   clasificarlos como merengue. */
+const merengue = {
+  id: 'merengue-seed', yt: 'merengue-seed', title: 'Ojalá Que Llueva Café', artist: 'Juan Luis Guerra',
+  genre: 'Merengue', moods: ['Fiesta'], year: 1989, dur: 240,
+};
+const merengueF = featuresFor(merengue);
+assert.equal(merengueF.family, 'latin', 'el merengue debe pertenecer a la familia latina');
+assert.equal(merengueF.subgenre, 'Merengue', 'el merengue debe detectarse como Merengue');
+assert.equal(merengueF.language, 'es', 'el merengue debe detectarse como español');
+
+const searchMerengue = { id: 'search-merengue', title: 'La Bilirrubina', artist: 'Juan Luis Guerra', genre: 'Sonora', dur: 240 };
+const searchMerengueF = featuresFor(searchMerengue);
+assert.equal(searchMerengueF.family, 'latin', 'un resultado de búsqueda de Juan Luis Guerra debe ser latino');
+assert.equal(searchMerengueF.subgenre, 'Merengue', 'un resultado de búsqueda de Juan Luis Guerra debe ser merengue');
+
+const merengueCandidates = [
+  { id: 'm1', title: 'La Bilirrubina', artist: 'Juan Luis Guerra', genre: 'Merengue', moods: ['Fiesta'], dur: 240 },
+  { id: 'm2', title: 'Suavemente', artist: 'Elvis Crespo', genre: 'Merengue', moods: ['Fiesta'], dur: 260 },
+  { id: 'm3', title: 'Píntame', artist: 'Elvis Crespo', genre: 'Merengue', moods: ['Fiesta'], dur: 230 },
+  { id: 'm4', title: 'La Ventanita', artist: 'Sergio Vargas', genre: 'Merengue', moods: ['Fiesta'], dur: 240 },
+  { id: 's1', title: 'La Vida Es Un Carnaval', artist: 'Celia Cruz', genre: 'Salsa', moods: ['Fiesta'], dur: 260 },
+  { id: 'b1', title: 'Obsesión', artist: 'Aventura', genre: 'Bachata', moods: ['Romántico'], dur: 260 },
+  { id: 'c1', title: 'La Cumbia del Sol', artist: 'Los Ángeles Azules', genre: 'Cumbia', moods: ['Fiesta'], dur: 220 },
+  { id: 'r1', title: 'Tití Me Preguntó', artist: 'Bad Bunny', genre: 'Reggaetón', moods: ['Fiesta'], dur: 240 },
+  { id: 'r2', title: 'Gasolina', artist: 'Daddy Yankee', genre: 'Reggaetón', moods: ['Fiesta'], dur: 220 },
+  { id: 'p1', title: 'Perfect', artist: 'Ed Sheeran', genre: 'Pop', moods: ['Romántico'], dur: 240 },
+];
+const merengueQueue = buildSmartQueue(merengue, merengueCandidates, {
+  limit: 10, recent: [merengue], minCount: 1,
+});
+assert.ok(merengueQueue.length >= 4, `cola de merengue demasiado corta (${merengueQueue.length})`);
+assert.ok(
+  merengueQueue.every((t) => !['r1', 'r2', 'p1'].includes(t.id)),
+  'la radio de merengue saltó a reggaetón o pop',
+);
+assert.equal(featuresFor(merengueQueue[0]).subgenre, 'Merengue', 'el primer tema de la radio debe ser merengue exacto');
+assert.ok(
+  merengueQueue.every((t) => ['Merengue', 'Salsa', 'Bachata', 'Cumbia'].includes(featuresFor(t).subgenre)),
+  'la radio de merengue incluyó un subgénero que no es tropical',
+);
+
+/* Sin candidatas tropicales, la cola debe quedar vacía (el reproductor repite
+   la canción actual) en lugar de rellenar con reggaetón. */
+const onlyUrban = buildSmartQueue(merengue, [merengueCandidates[7], merengueCandidates[8]], {
+  limit: 10, recent: [merengue], minCount: 1,
+});
+assert.equal(onlyUrban.length, 0, 'un merengue sin candidatas tropicales no debe saltar a reggaetón');
+
 // Los recopilatorios y mixes nunca deben entrar en «A continuación».
 assert.equal(isQueueCandidate({ id: 'junk', title: 'Top 50 Global | Mejores Canciones', artist: 'TopLauMusic', dur: 573 }), false);
 assert.equal(isQueueCandidate({ id: 'junk2', title: 'Baladas Romanticas Mix Vol. 3', artist: 'ZJ Music', dur: 2400 }), false);
@@ -191,7 +241,7 @@ const chill = byTitle('Someone Like You');
 assert.ok(scoreTracks(ballad, chill) > scoreTracks(ballad, party), 'la balada debería puntuar más cerca de otra balada que de un tema de fiesta');
 
 console.log('✓ inferencia y diversidad OK\n');
-for (const seed of [ballad, reggaeton, rock, andariego]) {
+for (const seed of [ballad, reggaeton, rock, andariego, merengue]) {
   const s = summarize(seed);
   console.log(`${s.seed}\n  ${s.family} / ${s.subgenre} · ${s.bpm} BPM · energía ${s.energy} · bailabilidad ${s.danceability} · ${s.mood}`);
   console.log(`  cola: ${s.count} temas · diversidad ${s.diverse ? 'OK' : 'FALLA'}`);

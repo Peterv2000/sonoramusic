@@ -17,7 +17,7 @@
 import { TRACKS } from '../data/catalog.js';
 import { cachedCatalogTracks, cachedWarmResults } from './liveData.js';
 import { getCachedSearchResults, searchYouTubeDetailed } from './youtubeSearch.js';
-import { fallbackTracks, rankTracks } from '../../shared/searchIntent.mjs';
+import { fallbackTracks, rankTracks, styleForQuery, tagTrackWithQueryStyle } from '../../shared/searchIntent.mjs';
 
 /** Presupuesto máximo para la API remota antes de usar el respaldo local. */
 export const REMOTE_BUDGET = 2500;
@@ -120,13 +120,32 @@ function now() {
 }
 
 /**
+ * El servidor de búsqueda no suele devolver género (llega como «Sonora»). Si
+ * la consulta describe un estilo («merengue», «rock», «bachata»…), se etiqueta
+ * el resultado con ese estilo. Así la canción semilla conserva el género al
+ * reproducirse y la radio no salta a otro mundo musical.
+ *
+ * No se tocan las sugerencias de relleno: pueden ser de otro género y
+ * etiquetarlas sería mentir sobre su contenido.
+ */
+function applyQueryStyle(list, style, query) {
+  const items = Array.isArray(list) ? list : [];
+  if (!style) return items;
+  /* Una consulta de varias palabras puede ser el título de una canción
+     («El Merengue»). En ese caso el resultado homónimo no es una consulta de
+     estilo y conserva sus metadatos. */
+  return items.map((item) => tagTrackWithQueryStyle(item, query, style));
+}
+
+/**
  * Construye el contrato unificado que consume la interfaz.
  * `global` nunca repite una canción que ya esté en `local`.
  */
 function makeResult(query, localList, globalList, meta, suggestedList = []) {
-  const local = mergeTrackResults(localList);
+  const style = styleForQuery(query);
+  const local = mergeTrackResults(applyQueryStyle(localList, style, query));
   const localKeys = new Set(local.map(trackKey));
-  const global = mergeTrackResults(globalList).filter((item) => {
+  const global = mergeTrackResults(applyQueryStyle(globalList, style, query)).filter((item) => {
     if ((item?.kind || 'video') !== 'video') return true;
     return !localKeys.has(trackKey(item));
   });

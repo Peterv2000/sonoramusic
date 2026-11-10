@@ -118,16 +118,24 @@ export function scoreFeatures(seed, candidate) {
 }
 
 /* Grupos de subgénero con bloqueo duro. Un reggaetón no debe saltar a una
-   balada latina, y una ranchera no debe saltar a reggaetón, aunque ambos sean
-   «latinos». */
+   balada latina, una ranchera no debe saltar a reggaetón y un merengue no debe
+   saltar a reggaetón, aunque todos sean «latinos». */
 const URBAN_LATIN = new Set(['reggaeton', 'dembow', 'trap latino', 'dancehall latino', 'urbano latino', 'perreo']);
 const POPULAR_LATIN = new Set(['popular', 'ranchera', 'vallenato', 'banda', 'norteno', 'regional mexicano', 'corrido', 'mariachi', 'despecho']);
+/* Merengue, salsa, bachata y cumbia comparten el mundo tropical/bailable: se
+   parecen entre sí, pero nunca se mezclan con urbano ni con popular regional. */
+const TROPICAL_LATIN = new Set(['merengue', 'salsa', 'bachata', 'cumbia', 'tropical']);
+
+/* Subgéneros tan amplios que no permiten bloquear nada: si la semilla es
+   «Latino» sin más, cualquier pista latina sigue siendo compatible. */
+const GENERIC_SUBGENRES = new Set(['', 'latino', 'latin', 'musica latina', 'sonora', 'otros', 'other', 'unknown']);
 
 function latinGroup(subgenre) {
   const key = fold(subgenre);
   if (!key) return '';
   if (URBAN_LATIN.has(key)) return 'urban';
   if (POPULAR_LATIN.has(key)) return 'popular';
+  if (TROPICAL_LATIN.has(key)) return 'tropical';
   return '';
 }
 
@@ -161,11 +169,22 @@ export function familyCompatible(seed, candidate) {
   return false;
 }
 
-/** Filtro duro de subgénero dentro del mundo latino. */
+/** Filtro duro de subgénero: mismo estilo, no solo misma familia.
+ *
+ *  - Dentro del mundo latino se agrupa por urbano / popular / tropical. Así un
+ *    merengue puede seguir en merengue, salsa o bachata (mismo mundo), pero
+ *    nunca en reggaetón.
+ *  - En el resto de familias basta con que la familia coincida (ya es un filtro
+ *    duro); el subgénero solo afina la puntuación.
+ */
 export function subgenreCompatible(seed, candidate) {
-  if (!seed?.family || seed.family !== 'latin') return true;
+  const s = fold(seed?.subgenre);
+  const c = fold(candidate?.subgenre);
+  if (!s || GENERIC_SUBGENRES.has(s)) return true;
+  if (s === c) return true;
+  if (seed?.family !== 'latin') return true;
   const group = latinGroup(seed.subgenre);
-  if (!group) return true;
+  if (!group) return false;
   return latinGroup(candidate?.subgenre) === group;
 }
 
@@ -189,6 +208,11 @@ function candidateEntries(seed, candidates, exclude = []) {
     const languageOk = languageCompatible(seedFeatures, features);
     const familyOk = familyCompatible(seedFeatures, features);
     const subgenreOk = subgenreCompatible(seedFeatures, features);
+    /* 2 = mismo subgénero exacto, 1 = mismo grupo (p. ej. merengue → salsa),
+       0 = incompatible. Se usa para que el estilo exacto mande siempre. */
+    const sameSubgenre = Boolean(fold(seedFeatures.subgenre))
+      && fold(features.subgenre) === fold(seedFeatures.subgenre);
+    const subgenreTier = sameSubgenre ? 2 : (subgenreOk ? 1 : 0);
     const bpmDiff = Math.abs(features.bpm - seedFeatures.bpm) / Math.max(seedFeatures.bpm, features.bpm);
     const energyDiff = Math.abs(features.energy - seedFeatures.energy);
 
@@ -199,6 +223,7 @@ function candidateEntries(seed, candidates, exclude = []) {
       languageOk,
       familyOk,
       subgenreOk,
+      subgenreTier,
       strictOk: languageOk && familyOk && subgenreOk && bpmDiff <= 0.15 && energyDiff <= 0.24,
     });
   }
@@ -260,17 +285,26 @@ export function buildSmartQueue(seed, candidates, {
     : [];
   const coherent = sameCategory.length >= 4 ? sameCategory : ranked;
 
-  const stagePools = (pool) => [
-    pool.filter((entry) => entry.strictOk),
-    pool.filter((entry) => !entry.strictOk && entry.languageOk && entry.familyOk && entry.subgenreOk),
-  ].filter((list) => list.length);
+  /* Etapas de selección. El subgénero exacto manda sobre el tempo: primero se
+     agotan los merengues para una semilla de merengue y solo después se admite
+     otra pista del mismo grupo (salsa, bachata, cumbia). Nunca se relajan
+     idioma, familia ni subgénero; si no hay nada compatible, la cola queda
+     vacía y el reproductor repite antes que saltar de género. */
+  const stagePools = (pool) => {
+    const usable = pool.filter((entry) => entry.languageOk && entry.familyOk && entry.subgenreOk);
+    const exact = usable.filter((entry) => entry.subgenreTier >= 2);
+    const group = usable.filter((entry) => entry.subgenreTier < 2);
+    return [
+      exact.filter((entry) => entry.strictOk),
+      exact.filter((entry) => !entry.strictOk),
+      group.filter((entry) => entry.strictOk),
+      group.filter((entry) => !entry.strictOk),
+    ].filter((list) => list.length);
+  };
 
-  /* Etapa 1: solo coincidencias estrictas (idioma, género, subgénero,
-     ±15 % BPM, energía ±0.24). Etapa 2: se relajan tempo/energía para
-     completar la cola, pero NUNCA se relajan idioma, género ni subgénero. */
   let stages = stagePools(coherent);
   /* Red de seguridad: si la categoría no aporta ninguna candidata compatible,
-     no dejamos la cola vacía; se completa con su misma familia. */
+     se intenta con el resto del catálogo, pero con los mismos filtros duros. */
   if (!stages.length && coherent !== ranked) stages = stagePools(ranked);
 
   const chosen = [];

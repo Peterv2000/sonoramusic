@@ -7,6 +7,7 @@ import { Card, Shelf, TrackRow } from '../components/widgets.jsx';
 import { TRACKS, MIXES, STATIONS, ALBUMS, ARTISTS, trackById, nf } from '../data/catalog.js';
 import { suggestYouTube } from '../api/youtubeSearch.js';
 import { hybridSearchFallback, mergeTrackResults } from '../api/hybridSearch.js';
+import { tagTrackWithQueryStyle } from '../../shared/searchIntent.mjs';
 import { getCatalog } from '../api/liveData.js';
 import { useCategories } from '../api/categories.js';
 import Icon from '../components/Icon.jsx';
@@ -170,7 +171,7 @@ export default function Search() {
         const moods = Array.isArray(tr?.moods) ? tr.moods : [];
         return [tr?.title, tr?.artist, tr?.album, tr?.genre, ...moods].join(' ').toLowerCase().includes(term);
       } catch { return false; }
-    });
+    }).map((tr) => tagTrackWithQueryStyle(tr, submitted));
     return {
       songs,
       albums: Array.isArray(ALBUMS) ? ALBUMS.filter((al) => hit(`${al?.title} ${al?.artist} ${al?.year}`)) : [],

@@ -136,6 +136,9 @@ const FAMILY_RULES = [
 ];
 
 const ARTIST_HINTS = [
+  /* Mundo tropical: merengue, salsa, bachata y cumbia. Va antes de la lista
+     latina general para que sus artistas no acaben clasificados como urbano. */
+  [/juan luis guerra|elvis crespo|olga ta[nñ][oó]n|hermanos rosario|toros band|sergio vargas|fernando villalona|wilfrido vargas|kinito m[eé]ndez|jhonny ventura|to[nñ]o rosario|milly quezada|eddy herrera|grupo man[ií]a|zafra negra|frankie ruiz|h[eé]ctor lavoe|willie col[oó]n|rub[eé]n blades|celia cruz|tito puente|grupo niche|joe arroyo|fania all|marc anthony|jerry rivera|gilberto santa rosa|monchy|zacar[ií]as ferreira|joe veras|anthony santos|raulin rodr[ií]guez|frank reyes|los [aá]ngeles azules|sonora dinamita|aniceto molina|los askis|chicos de barrio|super grupo colombia/i, 'latin'],
   [/bad bunny|karol g|feid|daddy yankee|\banuel\b|ozuna|rauw|maluma|j balvin|arcangel|arcángel|myke towers|sech|blessd|ryan castro|brytiago|shakira|luis fonsi|juanes|marc anthony|romeo santos|prince royce|don omar|wisin|yandel|nicky jam|jhayco|jhay cortez|darell|ñengo flow|nengo flow|farruko|quevedo|eladio carrion|eladio carrión|dei v|j quiles|lenny tavarez|lenny tavárez|grupo firme|natanael cano|peso pluma|carin leon|carin león|christian nodal|calibre 50|tigres del norte|intocable|jenni rivera|vicente fernandez|vicente fernández|joan sebastian|joan sebastián|los bukis|marco antonio solis|marco antonio solís|jorge celedon|jorge celedón|peter manjarres|silvestre dangond|diomedes diaz|el andariego/i, 'latin'],
   [/queen|nirvana|guns n|metallica|ac\/?dc|deep purple|led zeppelin|pink floyd|foo fighters|linkin park|green day|offspring|ramones|muse|u2|oasis|radiohead|arctic monkeys|the strokes|survivor|smash mouth|a-ha|imagine dragons|coldplay/i, 'rock'],
   [/avicii|alan walker|daft punk|tiesto|marshmello|calvin harris|david guetta|martin garrix|kygo|armin|hardwell|skrillex|deadmau5|zedd/i, 'electronic'],
@@ -351,20 +354,34 @@ const DESPECHO_HINT = /despecho|popular|andariego|los betos|los inquietos|los gi
 const URBAN_HINT = /dembow|trap\s*latino|trap\s*argentino|dancehall|urbano\s*latino|perreo|reggaeton|reggaetón|bad bunny|karol g|feid|daddy yankee|\banuel\b|ozuna|rauw|maluma|j balvin|arcangel|arcángel|myke towers|sech|blessd|nicky jam|wisin|yandel|don omar|jhayco|jhay cortez|darell|ñengo flow|nengo flow|farruko|quevedo|eladio carrion|eladio carrión|dei v|j quiles|lenny tavarez|lenny tavárez/i;
 const POPULAR_HINT = /popular|ranchera|mariachi|banda|norte[nñ]o|regional mexicano|corrido|grupo firme|natanael cano|peso pluma|carin le[oó]n|christian nodal|calibre 50|tigres del norte|intocable|arrolladora|espinoza paz|pepe aguilar|alejandro fern[aá]ndez|los temerarios|recodo|ms de|los plebes|el fantasma|edwin luna|jenni rivera|vicente fern[aá]ndez|joan sebasti[aá]n|los bukis|marco antonio sol[ií]s/i;
 
+/* Artistas del mundo tropical. El texto se compara ya plegado (sin acentos),
+   así que las expresiones se escriben sin tildes. */
+const MERENGUE_HINT = /\bmerengue\b|juan luis guerra|elvis crespo|olga tanon|hermanos rosario|toros band|sergio vargas|fernando villalona|wilfrido vargas|kinito mendez|jhonny ventura|tono rosario|milly quezada|eddy herrera|grupo mania|zafra negra/i;
+const SALSA_HINT = /\bsalsa\b|frankie ruiz|hector lavoe|willie colon|ruben blades|celia cruz|tito puente|grupo niche|joe arroyo|fania all|marc anthony|jerry rivera|gilberto santa rosa|gran combo|sonora poncena/i;
+const BACHATA_HINT = /\bbachata\b|romeo santos|\baventura\b|prince royce|monchy|zacarias ferreira|joe veras|anthony santos|luis vargas|raulin rodriguez|frank reyes/i;
+const CUMBIA_HINT = /\bcumbia\b|angeles azules|sonora dinamita|aniceto molina|los askis|chicos de barrio|super grupo colombia/i;
+
 function detectSubgenre(family, track, haystack, energy) {
   const g = fold(track?.genre);
+  const artist = fold(track?.artist);
   const all = `${g} ${haystack}`;
   if (/dembow/.test(all)) return 'Dembow';
   if (/trap\s*latino|trap\s*argentino|trap latino/.test(all)) return 'Trap Latino';
   if (/dancehall/.test(all)) return 'Dancehall Latino';
   if (/urbano\s*latino|perreo/.test(all)) return 'Urbano Latino';
   if (URBAN_HINT.test(all)) return 'Reggaetón';
-  if (/salsa/.test(g) || /\bsalsa\b/.test(haystack)) return 'Salsa';
-  if (/bachata/.test(g) || /\bbachata\b/.test(haystack)) return 'Bachata';
-  if (/cumbia/.test(g) || /\bcumbia\b/.test(haystack)) return 'Cumbia';
-  if (/merengue/.test(g) || /\bmerengue\b/.test(haystack)) return 'Merengue';
-  if (/vallenato/.test(g) || /\bvallenato\b/.test(haystack) || DESPECHO_HINT.test(all)) return 'Vallenato';
+  /* Primero la palabra explícita (género, título o álbum) y después el artista:
+     «Bachata Rosa» de Juan Luis Guerra es bachata, no merengue. */
+  if (/merengue/.test(all)) return 'Merengue';
+  if (/salsa/.test(all)) return 'Salsa';
+  if (/bachata/.test(all)) return 'Bachata';
+  if (/cumbia/.test(all)) return 'Cumbia';
+  if (/vallenato/.test(all) || DESPECHO_HINT.test(all)) return 'Vallenato';
   if (POPULAR_HINT.test(all)) return 'Popular';
+  if (MERENGUE_HINT.test(artist)) return 'Merengue';
+  if (SALSA_HINT.test(artist)) return 'Salsa';
+  if (BACHATA_HINT.test(artist)) return 'Bachata';
+  if (CUMBIA_HINT.test(artist)) return 'Cumbia';
 
   switch (family) {
     case 'pop':

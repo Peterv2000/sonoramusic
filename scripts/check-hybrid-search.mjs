@@ -129,6 +129,22 @@ check(
   `globales: ${remoteIds.join(', ') || 'ninguno'}`,
 );
 
+/* 5b) El servidor devuelve resultados sin género («Sonora»). La consulta de
+   estilo debe etiquetarlos para que la semilla conserve su género. */
+setOnline(true);
+globalThis.fetch = async () => jsonResponse({
+  results: [
+    remoteTrack('mmm12345678', 'La Bilirrubina', 'Juan Luis Guerra'),
+    remoteTrack('nnn12345678', 'Suavemente', 'Elvis Crespo'),
+  ],
+});
+const styleSearch = await hybridSearchFallback('merengue', { budgetMs: 500, remoteTimeout: 1000 });
+check(
+  'una búsqueda de merengue etiqueta sus resultados sin género',
+  styleSearch.global.length === 2 && styleSearch.global.every((item) => item.genre === 'Merengue'),
+  styleSearch.global.map((item) => `${item.title}: ${item.genre}`).join(', '),
+);
+
 /* 6) Caché antigua: sin red, se usa antes de rendirse. */
 setOnline(false);
 const cacheKey = 'consulta-cache-hibrida';

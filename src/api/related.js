@@ -14,7 +14,7 @@
 
 import { searchYouTubeDetailed } from './youtubeSearch.js';
 import { globalPool, isQueueCandidate, mergeTracks } from '../player/queue.js';
-import { featuresFor, fold, songKey } from '../player/audioFeatures.js';
+import { featuresFor, fold, isMeaningfulGenre, songKey } from '../player/audioFeatures.js';
 import { buildSmartQueue } from '../player/smartQueue.js';
 
 const CACHE = new Map();
@@ -48,19 +48,28 @@ function styleQueries(features) {
   switch (features.family) {
     case 'latin': {
       /* Consultas estrictas por subgénero: el urbano latino solo busca urbano
-         latino y la música popular solo busca popular/regional. */
+         latino, la música popular solo busca popular/regional y el merengue
+         solo busca merengue/tropical. Nunca consultas latinas amplias que
+         devuelven reggaetón para cualquier ritmo. */
       const sub = fold(features.subgenre);
       if (sub === 'reggaeton') out.push('reggaeton', 'reggaeton urbano', 'latin urbano');
       else if (sub === 'trap latino') out.push('trap latino', 'trap latino 2024', 'urbano latino');
       else if (sub === 'dembow') out.push('dembow', 'dembow dominicano', 'urbano latino');
       else if (sub === 'dancehall latino') out.push('dancehall', 'dancehall latino', 'reggaeton');
       else if (sub === 'urbano latino') out.push('urbano latino', 'reggaeton urbano', 'latin urbano');
+      else if (sub === 'merengue') out.push('merengue', 'merengue dominicano', 'merengue clasico');
+      else if (sub === 'salsa') out.push('salsa clasica', 'salsa', 'salsa romantica');
+      else if (sub === 'bachata') out.push('bachata', 'bachata romantica', 'bachata clasica');
+      else if (sub === 'cumbia') out.push('cumbia', 'cumbia clasica', 'cumbia sonidera');
       else if (sub === 'popular') out.push('musica popular', 'ranchera', 'corrido');
       else if (sub === 'vallenato') out.push('vallenato', 'musica popular', 'despecho');
-      else if (sub === 'salsa') out.push('salsa clasica', 'salsa');
-      else if (sub === 'cumbia') out.push('cumbia', 'cumbia clasica');
-      else if (sub === 'bachata') out.push('bachata', 'bachata romantica');
-      else out.push('musica latina', low ? 'latin romanticas' : 'latin party hits');
+      else {
+        /* Sin subgénero claro: se usa el género real de la pista antes que una
+           lista genérica que devuelve reggaetón para cualquier ritmo latino. */
+        const genre = fold(features.genre);
+        if (genre && !/latino|latin|sonora/.test(genre)) out.push(`${features.genre} musica`);
+        out.push(low ? 'latin romanticas' : 'latin party hits');
+      }
       break;
     }
     case 'rock':
@@ -104,25 +113,35 @@ function styleQueries(features) {
 
 function buildQueries(track, features) {
   const artist = bareArtistName(track?.artist);
+  const hint = features?.subgenre || '';
   const queries = [];
-  if (artist) queries.push(artist);
-  queries.push(...styleQueries(features));
+  if (artist) queries.push({ q: artist, hint: '' });
+  for (const q of styleQueries(features)) queries.push({ q, hint });
 
   if (!queries.length) {
     const title = String(track?.title || '').trim();
-    if (title) queries.push(`${title} ${artist}`.trim());
+    if (title) queries.push({ q: `${title} ${artist}`.trim(), hint: '' });
   }
 
   const seen = new Set();
   return queries
-    .map((q) => String(q || '').replace(/\s+/g, ' ').trim())
-    .filter((q) => {
+    .map(({ q, hint: h }) => ({ q: String(q || '').replace(/\s+/g, ' ').trim(), hint: h }))
+    .filter(({ q }) => {
       const key = fold(q);
       if (!key || seen.has(key)) return false;
       seen.add(key);
       return true;
     })
     .slice(0, 3);
+}
+
+/* Los resultados de búsqueda suelen llegar con `genre: 'Sonora'`, que no dice
+   nada. Como sabemos para qué estilo se hizo la consulta, se etiqueta el
+   resultado con ese subgénero. Así un tema de merengue no entra a la radio
+   como «desconocido» (y termina descartado o confundido con otro género). */
+function withStyleHint(item, hint) {
+  if (!item || !hint || isMeaningfulGenre(item.genre)) return item;
+  return { ...item, genre: hint };
 }
 
 /**
@@ -134,7 +153,7 @@ export async function fetchSmartRelatedQueue(track, { limit = 16, timeout = 1200
 
   const wanted = Math.max(10, Math.min(20, Number(limit) || 16));
   const features = featuresFor(track);
-  const key = `${songKey(track)}|${fold(features?.family)}|${fold(features?.mood)}|${fold(track.genre)}`;
+  const key = `${songKey(track)}|${fold(features?.family)}|${fold(features?.subgenre)}|${fold(features?.mood)}|${fold(track.genre)}`;
 
   const hit = CACHE.get(key);
   if (hit && Date.now() - hit.t < TTL) return hit.v.slice(0, wanted);
@@ -145,13 +164,17 @@ export async function fetchSmartRelatedQueue(track, { limit = 16, timeout = 1200
   let live = [];
   if (queries.length) {
     const settled = await Promise.allSettled(
-      queries.map((q) => searchYouTubeDetailed(q, { limit: MAX, timeout })),
+      queries.map(async ({ q, hint }) => {
+        const result = await searchYouTubeDetailed(q, { limit: MAX, timeout });
+        return { hint, items: result?.items || [] };
+      }),
     );
     const collected = [];
     for (const result of settled) {
       if (result.status !== 'fulfilled') continue;
-      for (const item of result.value?.items || []) {
-        if (usableResult(item, track)) collected.push(item);
+      for (const item of result.value.items) {
+        const tagged = withStyleHint(item, result.value.hint);
+        if (usableResult(tagged, track)) collected.push(tagged);
       }
     }
     live = collected;
