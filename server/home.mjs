@@ -458,7 +458,9 @@ export function homeFeed({
     ...category,
     tracks: rotated,
     count: tracks.length || category.count || 0,
-  }));
+  /* Una categoría sin pistas reproducibles no debe aparecer en Inicio: la
+     tarjeta se veía con "3 canciones" pero al abrirla no había nada. */
+  })).filter((category) => (category.tracks || []).length > 0);
 
   const mixes = categoryEntries
     .map((entry, i) => mixFromCategory(entry.category, entry.tracks, i, seen, random))
@@ -487,9 +489,19 @@ export function homeFeed({
   const artists = uniqueArtists(pool, 8);
   const videos = weightedTake(charts.slice(0, 30), 6, random, seen);
 
+  /* «Escuchado recientemente» se resuelve contra el catálogo COMPLETO: antes
+     solo se buscaba en la muestra de cada categoría y las pistas del historial
+     que no caían en esa muestra desaparecían. */
+  const recentLookup = new Map();
+  for (const track of moodPool) {
+    if (track.id) recentLookup.set(`id:${track.id}`, track);
+    if (track.yt) recentLookup.set(`yt:${track.yt}`, track);
+  }
   const recentPool = (user.listens || [])
     .map((item) => {
-      const hit = pool.find((t) => (item.id && t.id === item.id) || (item.yt && t.yt === item.yt));
+      const hit = (item.id && recentLookup.get(`id:${item.id}`)) ||
+        (item.yt && recentLookup.get(`yt:${item.yt}`)) ||
+        pool.find((t) => (item.id && t.id === item.id) || (item.yt && t.yt === item.yt));
       return hit ? { ...hit, at: item.at } : null;
     })
     .filter(Boolean);

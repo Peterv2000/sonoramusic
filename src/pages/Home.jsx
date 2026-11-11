@@ -49,7 +49,9 @@ export default function Home() {
   }, [loc.key]);
 
   const sections = feed?.sections || {};
-  const categories = feed?.categories || [];
+  /* Solo categorías con pistas: las que el catálogo no puede llenar se veían
+     en Inicio con un contador pero sin nada dentro. */
+  const categories = (feed?.categories || []).filter((c) => (c.tracks?.length || 0) > 0);
   const moods = feed?.moods || [];
 
   /* Si el servidor aún no tiene historial, usa el historial local como apoyo. */
@@ -223,14 +225,6 @@ export default function Home() {
         </section>
       )}
 
-      {show('recent') && recent.length > 0 && (
-        <Shelf title={t('recent')}>
-          {recent.map((tr) => (
-            <Card key={tr.id} item={tr} onPlay={() => p.playRadio(tr)} onOpen={() => p.playRadio(tr)} />
-          ))}
-        </Shelf>
-      )}
-
       {show('quick') && quickPicks.length > 0 && (
         <Shelf title={t('quickPicks')}>
           {quickPicks.map((tr) => (
@@ -250,6 +244,16 @@ export default function Home() {
               onOpen={() => p.playRadio(mx.tracks[0])}
               sub={state.pro.active ? `${mx.desc} · ${t('enhancedMix')}` : mx.desc}
             />
+          ))}
+        </Shelf>
+      )}
+
+      {/* «Escuchado recientemente» va después de las baldas que rotan: si
+          aparecía primero, el Inicio parecía idéntico en cada visita. */}
+      {show('recent') && recent.length > 0 && (
+        <Shelf title={t('recent')}>
+          {recent.map((tr) => (
+            <Card key={tr.id} item={tr} onPlay={() => p.playRadio(tr)} onOpen={() => p.playRadio(tr)} />
           ))}
         </Shelf>
       )}

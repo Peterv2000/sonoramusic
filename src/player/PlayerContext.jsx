@@ -21,6 +21,10 @@ const PlayerProgressCtx = createContext({ position: 0, duration: 0 });
 
 const MANUAL_FADE_MS = 300;   // salto manual: fundido corto para evitar clics
 const MIN_AUDIO_SECONDS = 60; // por debajo de esto no es una canción completa
+/* Intentos de rescatar UNA canción antes de rendirse. Cada intento prueba
+   varias alternativas; al agotarlas se salta (nunca se encadenan saltos). */
+const MAX_RESOLVE_TRIES = 4;
+const PROBE_MS = 4500;        // espera máxima a que arranque una alternativa
 const STALL_MS = 12000;       // sin avanzar durante 12 s → reintentar el stream
 const HARD_STALL_MS = 30000;  // 30 s atascado → buscar otra fuente
 
@@ -115,7 +119,8 @@ export function PlayerProvider({ children }) {
   const loadStartedRef = useRef(null);   // QA Robot: latencia hasta el primer play
   const sameSongLockRef = useRef(false);
   const sameSongRef = useRef(null);
-  const triedResolveRef = useRef(new Set());
+  const triedVideosRef = useRef(new Set());   // vídeos ya probados para la canción activa
+  const resolveTriesRef = useRef(new Map());  // intentos de rescate por canción
   const earlyEndTriedRef = useRef(new Set());
   const [audioMode, setAudioMode] = useState(false);
   const audioModeRef = useRef(false);
@@ -254,93 +259,246 @@ export function PlayerProvider({ children }) {
     return true;
   }, [rampVolume, targetVolume]);
 
+  /* Prueba VARIAS alternativas a la vez en reproductores ocultos y muteados.
+     YouTube responde con error 150 (no insertable) a la mayoría de las
+     re-subidas, así que probarlas de una en una dejaba 10-15 s de silencio.
+     En paralelo, una canción recuperable vuelve a sonar en 3-5 s. Solo cuenta
+     el estado 1 (reproduciendo) y con el tiempo avanzando: el estado 3
+     (buffering) también aparece con vídeos bloqueados y daba falsos positivos.
+     Devuelve el candidato que mejor puntúa entre los que arrancan. */
+  const probeCandidates = useCallback(async (candidates) => {
+    const YT = typeof window !== 'undefined' ? window.YT : null;
+    if (!YT?.Player || !candidates.length) return null;
+
+    const CHUNK = 5;
+    for (let start = 0; start < candidates.length; start += CHUNK) {
+      const batch = candidates.slice(start, start + CHUNK);
+      const winners = await new Promise((resolve) => {
+        const found = [];
+        let left = batch.length;
+        const done = () => { if (--left === 0) resolve(found); };
+        for (const candidate of batch) {
+          const videoId = candidate.videoId;
+          const host = document.createElement('div');
+          host.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;pointer-events:none;';
+          document.body.appendChild(host);
+          let player = null;
+          let settled = false;
+          let confirmTimer = 0;
+          let timer = 0;
+          const settle = (ok) => {
+            if (settled) return;
+            settled = true;
+            window.clearTimeout(timer);
+            window.clearTimeout(confirmTimer);
+            try { player?.destroy?.(); } catch { /* noop */ }
+            try { host.remove(); } catch { /* noop */ }
+            if (ok) found.push(candidate);
+            done();
+          };
+          timer = window.setTimeout(() => settle(false), PROBE_MS);
+          try {
+            player = new YT.Player(host, {
+              height: '1',
+              width: '1',
+              videoId,
+              playerVars: { autoplay: 1, controls: 0, playsinline: 1, mute: 1 },
+              events: {
+                onReady: (e) => {
+                  try { e.target.mute?.(); } catch { /* noop */ }
+                  try { e.target.playVideo?.(); } catch { /* noop */ }
+                },
+                onStateChange: (e) => {
+                  if (e?.data !== 1 || confirmTimer) return;
+                  confirmTimer = window.setTimeout(() => {
+                    let t = 0;
+                    try { t = e.target.getCurrentTime?.() || 0; } catch { /* noop */ }
+                    settle(t > 0.15);
+                  }, 1000);
+                },
+                onError: () => settle(false),
+              },
+            });
+          } catch {
+            settle(false);
+          }
+        }
+      });
+      if (winners.length) {
+        winners.sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
+        return winners[0];
+      }
+    }
+    return null;
+  }, []);
+
+  /* Pregunta al servidor por otra fuente de la MISMA canción. Nunca tarda
+     más de 9 s: si el API no contesta, se salta rápido en vez de dejar el
+     reproductor en silencio durante medio minuto. */
+  const resolveAlternative = useCallback(async (failedTrack, exclude) => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 9000);
+    try {
+      const params = new URLSearchParams({
+        title: failedTrack.title || '',
+        artist: failedTrack.artist || '',
+      });
+      const duration = Number(failedTrack.duration || failedTrack.dur || 0);
+      if (duration > 0) params.set('duration', String(Math.round(duration)));
+      if (exclude.length) params.set('exclude', exclude.slice(-12).join(','));
+      const res = await fetch(apiUrl(`/api/resolve?${params}`), {
+        cache: 'no-store', signal: controller.signal,
+      });
+      if (!res.ok) return { ok: false };
+      return await res.json();
+    } catch {
+      return { ok: false };
+    } finally {
+      window.clearTimeout(timer);
+    }
+  }, []);
+
   const playSameSongGuaranteed = useCallback(async (failedTrack) => {
     if (!failedTrack || sameSongLockRef.current) return false;
-    if (triedResolveRef.current.has(failedTrack.id)) return false;
+
+    const key = `${String(failedTrack.title || '').toLowerCase()}|${String(failedTrack.artist || '').toLowerCase()}`;
+    const tries = resolveTriesRef.current.get(key) || 0;
+    if (tries >= MAX_RESOLVE_TRIES) return false;
+
+    const tried = triedVideosRef.current;
+    if (failedTrack.yt) tried.add(String(failedTrack.yt));
+    if (String(failedTrack.id || '').startsWith('yt-')) tried.add(String(failedTrack.id).slice(3));
+
     sameSongLockRef.current = true;
-    triedResolveRef.current.add(failedTrack.id);
     try {
       setError('Buscando esta canción en otra fuente...');
-      const url = apiUrl(`/api/resolve?title=${encodeURIComponent(failedTrack.title || '')}&artist=${encodeURIComponent(failedTrack.artist || '')}`);
-      const res = await fetch(url, { cache: 'no-store' }).then(r => r.json()).catch(() => ({ ok: false }));
-      if (res?.ok) {
-        if (res.type === 'audio' && res.audioUrl) {
-          try { pauseAllPlayers(); } catch { /* noop */ }
-          if (!audioRef.current) {
-            audioRef.current = new Audio();
-            audioRef.current.preload = 'auto';
-            audioRef.current.playsInline = true;
-            audioRef.current.onerror = () => {
-              reportIssue({
-                type: 'playback', severity: 'error',
-                message: 'la fuente alternativa de audio también falló',
-                code: String(audioRef.current?.error?.code || ''),
-                track: failedTrack, source: 'audio',
-              });
-              /* Auditor: un 404/500 del stream de audio no detiene la música.
-                 Se pide otro espejo/vídeo de la misma canción; si tampoco hay,
-                 se salta en silencio a la siguiente de la cola. */
-              if (!sameSongLockRef.current) {
-                sameSongRef.current?.(failedTrack).then((ok) => {
-                  if (!ok) handlersRef.current.advance?.(1, { force: true });
-                }).catch(() => handlersRef.current.advance?.(1, { force: true }));
-              }
-            };
-          }
-          audioRef.current.src = res.audioUrl;
-          audioRef.current.volume = targetVolume() / 100;
-          setAudioMode(true);
-          const next = { ...failedTrack, _guaranteed: true, source: res.source };
-          trackRef.current = next;
-          setTrack(next);
-          setPlaying(true);
-          setReady(true);
-          applyPosition(0);
-          setError(null);
-          try { await audioRef.current.play(); } catch {}
-          if (audioSyncRef.current) clearInterval(audioSyncRef.current);
-          audioSyncRef.current = setInterval(() => {
-            if (!audioRef.current) return;
-            try {
-              applyPosition(audioRef.current.currentTime || 0);
-              if (audioRef.current.duration && isFinite(audioRef.current.duration)) applyDuration(audioRef.current.duration);
-              if (audioRef.current.ended) {
-                clearInterval(audioSyncRef.current);
-                audioSyncRef.current = null;
-                handlersRef.current.handleEnded?.();
-              }
-            } catch { /* noop */ }
-          }, 400);
-          sameSongLockRef.current = false;
-          return true;
-        }
-        if (res.type === 'video' && res.videoId && res.videoId !== failedTrack.id) {
-          try {
-            setAudioMode(false);
-            setError(null);
-            const p = getPlayer();
-            if (p?.loadVideoById) {
-              try { p.setVolume(targetVolume()); } catch { /* noop */ }
-              p.loadVideoById({ videoId: res.videoId, startSeconds: 0 });
-              p.playVideo?.();
+      resolveTriesRef.current.set(key, tries + 1);
+
+      /* Una sola consulta por rescate: el servidor devuelve hasta 12
+         candidatos de la MISMA canción y aquí se prueban en paralelo hasta
+         que uno reproduzca de verdad. Antes se encadenaban rondas y cada una
+         volvía a tardar ~1 s (o hasta 32 s si el API estaba lento). */
+      const res = await resolveAlternative(failedTrack, [...tried]);
+
+      /* Fuente de audio directa (espejo): no depende del iframe. */
+      if (res?.ok && res.type === 'audio' && res.audioUrl) {
+        try { pauseAllPlayers(); } catch { /* noop */ }
+        if (!audioRef.current) {
+          audioRef.current = new Audio();
+          audioRef.current.preload = 'auto';
+          audioRef.current.playsInline = true;
+          audioRef.current.onerror = () => {
+            reportIssue({
+              type: 'playback', severity: 'error',
+              message: 'la fuente alternativa de audio también falló',
+              code: String(audioRef.current?.error?.code || ''),
+              track: failedTrack, source: 'audio',
+            });
+            /* Auditor: un 404/500 del stream de audio no detiene la música.
+               Se pide otro espejo/vídeo de la misma canción; si tampoco hay,
+               se salta en silencio a la siguiente de la cola. */
+            if (!sameSongLockRef.current) {
+              sameSongRef.current?.(failedTrack).then((ok) => {
+                if (!ok) handlersRef.current.advance?.(1, { force: true });
+              }).catch(() => handlersRef.current.advance?.(1, { force: true }));
             }
-            const next = { ...failedTrack, id: res.videoId, yt: res.videoId, _guaranteed: true };
-            trackRef.current = next;
-            setTrack(next);
-            setPlaying(true);
-            setReady(true);
-            applyPosition(0);
-            sameSongLockRef.current = false;
-            return true;
-          } catch { /* noop */ }
+          };
         }
+        audioRef.current.src = res.audioUrl;
+        audioRef.current.volume = targetVolume() / 100;
+        setAudioMode(true);
+        const next = { ...failedTrack, _guaranteed: true, source: res.source };
+        trackRef.current = next;
+        setTrack(next);
+        setPlaying(true);
+        setReady(true);
+        applyPosition(0);
+        setError(null);
+        try { await audioRef.current.play(); } catch { /* noop */ }
+        if (audioSyncRef.current) clearInterval(audioSyncRef.current);
+        audioSyncRef.current = setInterval(() => {
+          if (!audioRef.current) return;
+          try {
+            applyPosition(audioRef.current.currentTime || 0);
+            if (audioRef.current.duration && isFinite(audioRef.current.duration)) applyDuration(audioRef.current.duration);
+            if (audioRef.current.ended) {
+              clearInterval(audioSyncRef.current);
+              audioSyncRef.current = null;
+              handlersRef.current.handleEnded?.();
+            }
+          } catch { /* noop */ }
+        }, 400);
+        return true;
       }
+
+      /* Alternativas de vídeo: se prueban en paralelo hasta que una arranque. */
+      const list = res?.ok
+        ? (Array.isArray(res.candidates) && res.candidates.length
+          ? res.candidates
+          : [{ videoId: res.videoId }])
+        : [];
+      const fresh = [];
+      const seen = new Set();
+      for (const item of list) {
+        const videoId = String(item?.videoId || '').replace(/^yt-/, '');
+        if (!/^[A-Za-z0-9_-]{11}$/.test(videoId) || tried.has(videoId) || seen.has(videoId)) continue;
+        seen.add(videoId);
+        tried.add(videoId);
+        fresh.push({ videoId, score: Number(item?.score) || 0 });
+        if (fresh.length >= 10) break;
+      }
+      if (!fresh.length) return false;
+
+      const player = getPlayer();
+      if (!player?.loadVideoById) {
+        /* El iframe aún no está listo: se encarga `hardPlay` al arrancar. */
+        const videoId = fresh[0].videoId;
+        const next = { ...failedTrack, yt: videoId, _guaranteed: true, source: 'resolver' };
+        trackRef.current = next;
+        setTrack(next);
+        setPlaying(true);
+        setReady(true);
+        applyPosition(0);
+        setError(null);
+        hardPlay(next);
+        return true;
+      }
+
+      const winner = await probeCandidates(fresh);
+      if (!winner) {
+        reportIssue({
+          type: 'playback', severity: 'warning',
+          message: 'ninguna alternativa de esta canción reprodujo',
+          track: failedTrack, source: 'resolver',
+          context: { probados: fresh.map((c) => c.videoId) },
+        });
+        return false;
+      }
+
+      setAudioMode(false);
+      try {
+        player.setVolume?.(targetVolume());
+        player.loadVideoById({ videoId: winner.videoId, startSeconds: 0 });
+        player.playVideo?.();
+      } catch { /* noop */ }
+      /* Se conserva el id original: la pista sigue siendo la misma en la
+         cola, el historial y los "me gusta"; solo cambia el vídeo. */
+      const next = { ...failedTrack, yt: winner.videoId, _guaranteed: true, source: 'resolver' };
+      trackRef.current = next;
+      setTrack(next);
+      setPlaying(true);
+      setReady(true);
+      applyPosition(0);
+      setError(null);
+      loadStartedRef.current = { id: next.id, at: Date.now() };
+      return true;
     } catch (e) {
       console.warn('[guaranteed] err', e);
+    } finally {
+      sameSongLockRef.current = false;
     }
-    sameSongLockRef.current = false;
     return false;
-  }, [getPlayer, pauseAllPlayers, targetVolume]);
+  }, [getPlayer, hardPlay, pauseAllPlayers, probeCandidates, resolveAlternative, targetVolume]);
   sameSongRef.current = playSameSongGuaranteed;
 
   /* ---------- init de los dos reproductores ---------- */
@@ -440,6 +598,8 @@ export function PlayerProvider({ children }) {
                 track: cur, source: 'youtube',
                 context: { audioMode: audioModeRef.current, code: e?.data },
               });
+              /* Un solo rescate: prueba alternativas de la MISMA canción. Si
+                 ninguna arranca, se salta una vez (sin cadenas de saltos). */
               if (cur) {
                 const ok = await sameSongRef.current?.(cur);
                 if (ok) {
@@ -452,19 +612,11 @@ export function PlayerProvider({ children }) {
                   return;
                 }
               }
-              // Último recurso: un reintento y, si tampoco, saltar.
-              setError('Reintentando...');
-              setTimeout(async () => {
-                if (sameSongLockRef.current) return;
-                const ok2 = await sameSongRef.current?.(trackRef.current).catch(() => false);
-                if (!ok2) {
-                  setError('No disponible. Saltando...');
-                  sameSongLockRef.current = false;
-                  setTimeout(() => handlersRef.current.advance?.(1, { force: true }), 600);
-                } else {
-                  setError(null);
-                }
-              }, 500);
+              setError('No disponible. Saltando...');
+              setTimeout(() => {
+                sameSongLockRef.current = false;
+                handlersRef.current.advance?.(1, { force: true });
+              }, 700);
             },
           },
         });
@@ -528,11 +680,14 @@ export function PlayerProvider({ children }) {
             try { p.seekTo?.(Math.max(0, t - 0.4), true); p.playVideo?.(); } catch { /* noop */ }
             setTimeout(() => { stallRetryRef.current = false; }, 5000);
           }
-          if (stallMsRef.current >= HARD_STALL_MS && !stallResolveRef.current) {
+          if (stallMsRef.current >= HARD_STALL_MS && !stallResolveRef.current && !sameSongLockRef.current) {
             stallResolveRef.current = true;
-            sameSongRef.current?.(cur).finally(() => {
-              setTimeout(() => { stallResolveRef.current = false; }, 5000);
-            });
+            sameSongRef.current?.(cur).then((ok) => {
+              if (!ok) handlersRef.current.advance?.(1, { force: true });
+            }).catch(() => handlersRef.current.advance?.(1, { force: true }))
+              .finally(() => {
+                setTimeout(() => { stallResolveRef.current = false; }, 5000);
+              });
           }
         }
       }
@@ -684,7 +839,8 @@ export function PlayerProvider({ children }) {
     setPlaying(true);
     setAudioMode(false);
     sameSongLockRef.current = false;
-    triedResolveRef.current.clear();
+    triedVideosRef.current.clear();
+    resolveTriesRef.current.clear();
     visitedRef.current.add(tk.id);
     playedHistoryRef.current = [...playedHistoryRef.current, tk].slice(-8);
     try { ads?.incrementPlay?.(); } catch { /* noop */ }

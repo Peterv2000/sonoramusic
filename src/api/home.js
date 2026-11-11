@@ -12,8 +12,9 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 import { useEffect, useRef, useState } from 'react';
-import { TRACKS, GENRES, tracksByGenre } from '../data/catalog.js';
+import { TRACKS, GENRES } from '../data/catalog.js';
 import { cachedCategories } from './categories.js';
+import { catalogPool } from './catalogStore.js';
 import { apiUrl, eventUrl } from './apiBase.js';
 import { weightedShuffle, listeningProfile } from '../state/listeningHistory.js';
 
@@ -115,6 +116,49 @@ function hash(value) {
   return h >>> 0;
 }
 
+/* ── Coincidencia tolerante de género ─────────────────────────────────────
+   El catálogo etiqueta las pistas con nombres libres («Reggaetón», «R&B/Soul»,
+   «Latin Pop»…) y las categorías con sus propios géneros. Comparar por
+   igualdad exacta dejaba categorías vacías y, al caer al respaldo local, la
+   portada mostraba siempre las ~43 pistas semilla. */
+
+function normKey(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function categoryKeys(category) {
+  const keys = new Set();
+  const push = (value) => {
+    const key = normKey(value);
+    if (key) keys.add(key);
+  };
+  push(category?.id);
+  push(category?.label);
+  for (const genre of Array.isArray(category?.genres) ? category.genres : []) push(genre);
+  return [...keys];
+}
+
+function matchesCategory(track, category, keys = categoryKeys(category)) {
+  const values = [track?.categoryId, track?.genre].map(normKey).filter(Boolean);
+  if (!values.length) return false;
+  for (const value of values) {
+    if (keys.includes(value)) return true;
+    const compact = value.replace(/\s+/g, '');
+    const words = new Set(value.split(' '));
+    for (const key of keys) {
+      if (compact === key.replace(/\s+/g, '')) return true;
+      const keyWords = key.split(' ');
+      if (keyWords.length && keyWords.every((word) => words.has(word))) return true;
+    }
+  }
+  return false;
+}
+
 function rotate(list, seed, count) {
   const arr = (list || []).slice();
   let s = seed || 1;
@@ -128,30 +172,37 @@ function rotate(list, seed, count) {
 
 function localFeed({ lang = 'es', seed = Date.now(), mood = '' } = {}) {
   const profile = listeningProfile();
-  /* El respaldo offline también rota de forma ponderada: sube lo que el
-     usuario escucha y evita repetir en exceso. */
-  const localTracksFor = (category) => TRACKS.filter((t) =>
-    !t.live && (t.genre === category.id || t.categoryId === category.id ||
-      (category.genres || []).some((g) => t.genre === g)));
-  const categories = (cachedCategories().length ? cachedCategories() : GENRES).map((c, i) => {
-    const pool = localTracksFor(c);
-    return normalizeCategory({
-      ...c,
-      tracks: weightedShuffle(pool, { profile, seed: seed + i * 17, limit: 18 }),
-      count: pool.length || tracksByGenre(c.id).length,
-    }, i);
-  }).filter(Boolean);
+  /* El respaldo offline usa TODO el catálogo cacheado (cientos de pistas), no
+     solo las ~43 semilla. Antes `TRACKS.filter(t => t.genre === category.id)`
+     dejaba fuera casi todo y el Inicio parecía congelado. */
+  const catalog = catalogPool();
+  const source = (Array.isArray(catalog) && catalog.length ? catalog : TRACKS)
+    .filter((track) => track && !track.live);
+  const normalizedAll = normalizeList(source);
 
-  const pool = [];
+  const categories = (cachedCategories().length ? cachedCategories() : GENRES)
+    .map((category, index) => {
+      const keys = categoryKeys(category);
+      const matches = source.filter((track) => matchesCategory(track, category, keys));
+      const tracks = weightedShuffle(normalizeList(matches), {
+        profile, seed: seed + index * 17, limit: 18,
+      });
+      return normalizeCategory({ ...category, tracks, count: matches.length }, index);
+    })
+    .filter((category) => category && category.tracks.length);
+
   const seen = new Set();
-  for (const cat of categories) {
-    for (const track of cat.tracks) {
+  const pool = [];
+  for (const category of categories) {
+    for (const track of category.tracks) {
       if (seen.has(track.id)) continue;
       seen.add(track.id);
-      pool.push({ ...track, categoryId: cat.id });
+      pool.push({ ...track, categoryId: category.id });
     }
   }
-  const fallbackPool = pool.length ? pool : normalizeList(TRACKS).map((t) => ({ ...t, categoryId: t.genre }));
+  const fallbackPool = pool.length
+    ? pool
+    : normalizedAll.map((track) => ({ ...track, categoryId: track.genre }));
   const selectedMood = MOODS.find((m) => m.toLowerCase() === String(mood || '').toLowerCase()) || '';
   return {
     ok: true,
@@ -263,28 +314,48 @@ export async function fetchHomeFeed({ userId = getClientUserId(), lang = 'es', m
   });
   if (mood) params.set('mood', mood);
 
-  try {
-    const res = await fetch(apiUrl(`/api/v1/home/feed?${params}`), {
-      headers: { Accept: 'application/json' },
-      cache: 'no-store',
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = normalizeFeed(await res.json());
-    memory = memory || new Map();
-    memory.set(key, { t: Date.now(), data });
-    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), data })); } catch { /* cuota */ }
-    return data;
-  } catch {
-    // Caché persistida de la última sesión (puede seguir sirviendo sin red).
+  /* Dos intentos con límite de tiempo: un servidor dormido (Render Free) no
+     debe congelar el Inicio ni hacerlo caer para siempre al respaldo local. */
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), attempt === 0 ? 8000 : 12000);
     try {
-      const raw = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
-      if (raw?.data && Date.now() - (raw.t || 0) < 1000 * 60 * 30) {
-        const cached = normalizeFeed(raw.data);
-        if (cached.categories.length) return { ...cached, source: 'cache' };
-      }
-    } catch { /* sin caché */ }
-    return localFeed({ lang, seed: useSeed, mood });
+      const res = await fetch(apiUrl(`/api/v1/home/feed?${params}`), {
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+        signal: controller.signal,
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = normalizeFeed(await res.json());
+      memory = memory || new Map();
+      memory.set(key, { t: Date.now(), data });
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), data })); } catch { /* cuota */ }
+      return data;
+    } catch {
+      /* reintento */
+    } finally {
+      clearTimeout(timer);
+    }
   }
+
+  /* Si el API no responde, se prefiere el catálogo disponible (caché completa
+     o semilla) con rotación real: la caché del feed se queda congelada y el
+     Inicio parecía no cambiar nunca. La caché solo se usa cuando el catálogo
+     local es pobre (primera instalación sin red). */
+  const local = localFeed({ lang, seed: useSeed, mood });
+  const poolSize = catalogPool().length;
+  if (poolSize >= 100 && local.categories.length) return local;
+
+  // Caché persistida reciente (sigue sirviendo sin red durante la sesión).
+  try {
+    const raw = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+    if (raw?.data && Date.now() - (raw.t || 0) < 1000 * 60 * 30) {
+      const cached = normalizeFeed(raw.data);
+      if (cached.categories.length) return { ...cached, source: 'cache' };
+    }
+  } catch { /* sin caché */ }
+
+  return local;
 }
 
 /** Pistas de un chip de estado de ánimo desde todo el catálogo. */
@@ -341,10 +412,12 @@ export function useHomeFeed({ userId, lang = 'es', mood = '', enabled = true } =
   const [error, setError] = useState(null);
   const [nonce, setNonce] = useState(0);
   const requestRef = useRef(0);
+  const retryRef = useRef(0);
+  const retryTimerRef = useRef(0);
 
-  const load = async ({ force = true, freshSeed = true } = {}) => {
+  const load = async ({ force = true, freshSeed = true, retry = false } = {}) => {
     const token = ++requestRef.current;
-    setLoading(true);
+    if (!retry) setLoading(true);
     try {
       const data = await fetchHomeFeed({
         userId: uid,
@@ -355,17 +428,31 @@ export function useHomeFeed({ userId, lang = 'es', mood = '', enabled = true } =
       });
       if (token !== requestRef.current) return;
       setFeed(data);
+      const degraded = data.source === 'local' || data.source === 'cache';
       setError(data.source === 'local' ? 'offline' : null);
+      /* Si el API no respondió, se reintenta en segundo plano: cuando vuelve
+         la conexión la portada se reemplaza sola por la del servidor. */
+      if (degraded && retryRef.current < 3) {
+        const wait = 5000 * (retryRef.current + 1);
+        retryRef.current += 1;
+        if (retryTimerRef.current) window.clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = window.setTimeout(() => {
+          if (token === requestRef.current) load({ force: true, freshSeed: true, retry: true });
+        }, wait);
+      } else if (!degraded) {
+        retryRef.current = 0;
+      }
     } catch (err) {
       if (token === requestRef.current) setError(String(err?.message || err));
     } finally {
-      if (token === requestRef.current) setLoading(false);
+      if (token === requestRef.current && !retry) setLoading(false);
     }
   };
 
   useEffect(() => {
     if (!enabled) return undefined;
     let dead = false;
+    retryRef.current = 0;
     load({ force: true, freshSeed: true });
     let es = null;
     try {
@@ -378,6 +465,7 @@ export function useHomeFeed({ userId, lang = 'es', mood = '', enabled = true } =
     } catch { /* sin SSE: la app sigue con la caché */ }
     return () => {
       dead = true;
+      if (retryTimerRef.current) window.clearTimeout(retryTimerRef.current);
       try { es?.close(); } catch { /* noop */ }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

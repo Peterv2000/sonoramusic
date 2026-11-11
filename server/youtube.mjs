@@ -607,6 +607,7 @@ function parseSearchResults(data, { includeChannels = true } = {}) {
       id: 'yt-' + id,
       kind: 'video',
       title: cleanTitle(rawTitle, artist) || rawTitle,
+      rawTitle,
       artist,
       album: 'Ritmo',
       genre: 'Ritmo',

@@ -1007,7 +1007,15 @@ export async function handleApi(req, res, url) {
   if (pathname === '/api/resolve') {
     const title = url.searchParams.get('title') || '';
     const artist = url.searchParams.get('artist') || '';
-    resolveTrack(title, artist)
+    const duration = Number(url.searchParams.get('duration') || url.searchParams.get('dur') || 0) || 0;
+    /* `exclude` evita devolver el vídeo que acaba de fallar; el cliente puede
+       enviar varios separados por coma (los ya probados). */
+    const exclude = String(url.searchParams.get('exclude') || '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean)
+      .slice(0, 12);
+    resolveTrack(title, artist, { exclude, duration })
       .then((r) => sendJson(res, 200, r))
       .catch(() => sendJson(res, 200, { ok: false }));
     return true;
