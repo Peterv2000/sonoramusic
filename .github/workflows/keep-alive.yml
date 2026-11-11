@@ -1,0 +1,45 @@
+name: Mantener despierto
+
+# Render Free apaga la instancia tras 15 minutos sin tráfico. Este ping cada
+# 5 minutos la mantiene en marcha 24/7 sin coste (Actions es gratis en repos
+# públicos). Si GitHub retrasa una ejecución, los 15 minutos de margen y los
+# reintentos de abajo evitan que llegue a dormirse.
+#
+# Límite a vigilar: el plan Free de Render da 750 h de instancia al mes y un
+# mes tiene ~744 h, así que mantenerla siempre encendida cabe por poco. Si
+# Render suspendiera el servicio por exceso, hay que pasar a un plan de pago
+# o mover el hosting.
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: keep-alive
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Despertar y comprobar /api/health
+        run: |
+          URL="https://sonora-music-qrdg.onrender.com/api/health"
+          for i in 1 2 3 4; do
+            code=$(curl -s -o /tmp/health.json -w '%{http_code}' --max-time 75 "$URL" || true)
+            echo "intento $i -> HTTP ${code:-sin respuesta}"
+            if [ "$code" = "200" ]; then
+              head -c 200 /tmp/health.json; echo
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::warning::No respondió tras 4 intentos (puede estar arrancando)"
+          # No se marca el workflow como fallido para no llenar de avisos:
+          # en un arranque en frío puede tardar más que el margen del job.
+          exit 0
