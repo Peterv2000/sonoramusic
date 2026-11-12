@@ -5,6 +5,10 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
+# Necesario para publicar el APK como asset de una Release (enlace público).
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -66,3 +70,20 @@ jobs:
           name: ritmo-music-debug-apk
           path: android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+
+      # Enlace fijo y público para descargar desde el móvil, sin iniciar sesión:
+      # https://github.com/Peterv2000/sonoramusic/releases/download/apk-latest/sonora-music.apk
+      - name: Preparar APK con nombre fijo
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk sonora-music.apk
+
+      - name: Publicar APK en la Release apk-latest
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-latest
+          name: Sonora Music APK
+          body: |
+            APK de Sonora Music generado automáticamente desde el último commit de `main`.
+            Instalable en Android 7 o superior (permite orígenes desconocidos).
+          files: sonora-music.apk
+          overwrite_files: true
+          make_latest: true
