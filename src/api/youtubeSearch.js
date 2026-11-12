@@ -16,7 +16,7 @@
    suelto), `hybridSearchFallback` toma el relevo con el catálogo local.
    ══════════════════════════════════════════════════════════════════════════ */
 
-import { apiUrl, isRemoteApi } from './apiBase.js';
+import { apiUrl, absMedia, isRemoteApi } from './apiBase.js';
 
 const API = '/api/search';
 const CACHE_KEY = 'ritmo-ytsearch-v1';
@@ -63,7 +63,7 @@ export function mapSearchResult(item) {
   if (item.yt && item.id) {
     return {
       ...item,
-      thumb: item.thumb || item.cover_url || '',
+      thumb: absMedia(item.thumb || item.cover_url || ''),
       dur: Number(item.dur || item.duration || 0),
       source: 'sonora',
     };
@@ -81,8 +81,8 @@ export function mapSearchResult(item) {
   const source = b64urlDecode(encoded) || encoded;
   if (!source) return null;
 
-  const thumb = item.cover_url || item.thumb ||
-    (kind === 'video' ? `/api/cover/${b64urlEncode(`https://i.ytimg.com/vi/${source}/hqdefault.jpg`)}` : '');
+  const thumb = absMedia(item.cover_url || item.thumb ||
+    (kind === 'video' ? `/api/cover/${b64urlEncode(`https://i.ytimg.com/vi/${source}/hqdefault.jpg`)}` : ''));
 
   return {
     yt: ytPrefix + source,
@@ -289,7 +289,7 @@ export function trackFromYouTubeId(id, title, artist, thumb) {
     genre: 'Sonora',
     moods: [],
     dur: 0,
-    thumb: thumb || `/api/cover/${b64urlEncode(`https://i.ytimg.com/vi/${id}/hqdefault.jpg`)}`,
+    thumb: absMedia(thumb || `/api/cover/${b64urlEncode(`https://i.ytimg.com/vi/${id}/hqdefault.jpg`)}`),
     source: 'sonora',
     external: true,
   };

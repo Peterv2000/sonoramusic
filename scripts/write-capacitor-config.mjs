@@ -1,15 +1,16 @@
 /* ══════════════════════════════════════════════════════════════════════════
-   Configura la APK para que cargue la web pública (Vercel/Netlify).
+   Configura la APK.
 
-   Sin `server.url`, una APK empaquetada abre `https://localhost` y falla: el
-   catálogo, la búsqueda y el reproductor no tienen backend. Este script
-   escribe esa URL desde el entorno antes de `cap sync`:
+   Por defecto la APK usa el bundle local de `dist/` (sin `server.url`): abre
+   al instante, aunque el servidor esté dormido o sin red, y llama al API por
+   su URL absoluta (`VITE_API_BASE_URL`).
+
+   Si se define `SONORA_APP_URL`, la APK carga la web remota en el WebView
+   (útil para probar cambios sin reinstalar):
 
      SONORA_APP_URL=https://sonora.vercel.app npm run apk:build
 
-   También acepta `CAPACITOR_SERVER_URL` como alias. Si no hay ninguna
-   variable, se elimina `server.url` para que la APK use el bundle local
-   (desarrollo con el móvil conectado por USB).
+   También acepta `CAPACITOR_SERVER_URL` como alias.
    ══════════════════════════════════════════════════════════════════════════ */
 
 import { readFile, writeFile } from 'node:fs/promises';

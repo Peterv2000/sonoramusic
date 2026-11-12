@@ -17,7 +17,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { TRACKS, mergeCatalogTracks } from '../data/catalog.js';
-import { apiUrl, eventUrl } from './apiBase.js';
+import { apiUrl, absMedia, eventUrl } from './apiBase.js';
 import { recordLocalListen, listeningProfile, weightedShuffle, recommendFromHistory } from '../state/listeningHistory.js';
 
 const CACHE_KEY = 'sonora-catalog-v3';
@@ -67,7 +67,7 @@ export function normalizeApiTrack(raw) {
   if (!raw || typeof raw !== 'object') return null;
   const yt = String(raw.yt || (String(raw.id || '').startsWith('yt-') ? String(raw.id).slice(3) : ''));
   if (!yt) return null;
-  const thumb = String(raw.thumb || raw.cover_url || `https://i.ytimg.com/vi/${yt}/hqdefault.jpg`);
+  const thumb = absMedia(String(raw.thumb || raw.cover_url || `https://i.ytimg.com/vi/${yt}/hqdefault.jpg`));
   const dur = Number(raw.dur || raw.duration || 0);
   return {
     ...raw,

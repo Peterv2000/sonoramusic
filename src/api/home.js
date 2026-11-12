@@ -15,7 +15,7 @@ import { useEffect, useRef, useState } from 'react';
 import { TRACKS, GENRES } from '../data/catalog.js';
 import { cachedCategories } from './categories.js';
 import { catalogPool } from './catalogStore.js';
-import { apiUrl, eventUrl } from './apiBase.js';
+import { apiUrl, absMedia, eventUrl } from './apiBase.js';
 import { weightedShuffle, listeningProfile } from '../state/listeningHistory.js';
 
 const CACHE_KEY = 'sonora-home-v2';
@@ -44,7 +44,7 @@ function normalizeTrack(raw) {
   const yt = String(raw.yt || (String(raw.id || '').startsWith('yt-') ? String(raw.id).slice(3) : ''));
   const id = String(raw.id || (yt ? `yt-${yt}` : ''));
   if (!id && !yt) return null;
-  const thumb = String(raw.thumb || raw.cover_url || raw.cover || (yt ? `https://i.ytimg.com/vi/${yt}/hqdefault.jpg` : ''));
+  const thumb = absMedia(String(raw.thumb || raw.cover_url || raw.cover || (yt ? `https://i.ytimg.com/vi/${yt}/hqdefault.jpg` : '')));
   return {
     ...raw,
     id: id || `yt-${yt}`,

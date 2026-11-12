@@ -54,6 +54,16 @@ export function apiUrl(path) {
   return `${API_BASE}${value.startsWith('/') ? value : `/${value}`}`;
 }
 
+/** Convierte rutas de medios del API (`/api/cover/…`) en absolutas.
+    La APK carga la web desde su propio bundle, así que una ruta relativa
+    apuntaría a `https://localhost` y las portadas saldrían rotas. */
+export function absMedia(url) {
+  const value = String(url || '');
+  if (!value || !/^\/(?!\/)/.test(value)) return value;
+  if (!API_BASE) return value;
+  return `${API_BASE}${value}`;
+}
+
 /** URL para EventSource (SSE) con la misma base que el resto del API. */
 export function eventUrl(path = '/api/v1/events') {
   return apiUrl(path);

@@ -51,9 +51,13 @@ jobs:
       - name: Generate icons
         run: npm run icons
 
+      # La APK carga la interfaz desde su propio bundle (sin `server.url`):
+      # abre al instante aunque el servidor esté dormido. Las llamadas al API
+      # van a la URL absoluta de abajo; si no responde, la app usa el catálogo
+      # local y el reproductor sigue funcionando.
       - name: Build web + sync Capacitor
         env:
-          SONORA_APP_URL: https://sonora-music-qrdg.onrender.com
+          VITE_API_BASE_URL: https://sonora-music-qrdg.onrender.com
         run: |
           if [ ! -d android ]; then npx cap add android; fi
           npm run apk:prepare
