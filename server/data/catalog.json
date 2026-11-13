@@ -1,6 +1,6 @@
 {
- "updatedAt": 1794525966464,
- "count": 605,
+ "updatedAt": 1794549577831,
+ "count": 613,
  "curated": 48,
  "tracks": [
   {
@@ -729,21 +729,6 @@
    "external": true
   },
   {
-   "yt": "60ItHLz5WEA",
-   "id": "yt-60ItHLz5WEA",
-   "kind": "video",
-   "title": "Faded",
-   "rawTitle": "Alan Walker - Faded",
-   "artist": "Alan Walker",
-   "album": "Ritmo",
-   "genre": "Electrónica",
-   "moods": [],
-   "dur": 213,
-   "views": 4062000000,
-   "thumb": "https://i.ytimg.com/vi/60ItHLz5WEA/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "lp-EO5I60KA",
    "id": "yt-lp-EO5I60KA",
    "kind": "video",
@@ -894,18 +879,18 @@
    "external": true
   },
   {
-   "yt": "lWA2pjMjpBs",
-   "id": "yt-lWA2pjMjpBs",
+   "yt": "34Na4j8AVgA",
+   "id": "yt-34Na4j8AVgA",
    "kind": "video",
-   "title": "Diamonds",
-   "rawTitle": "Rihanna - Diamonds",
-   "artist": "Rihanna",
+   "title": "Starboy ft. Daft Punk",
+   "rawTitle": "The Weeknd - Starboy ft. Daft Punk (Official Video) ft. Daft Punk",
+   "artist": "The Weeknd",
    "album": "Ritmo",
-   "genre": "Pop",
+   "genre": "R&B",
    "moods": [],
-   "dur": 283,
-   "views": 2644000000,
-   "thumb": "https://i.ytimg.com/vi/lWA2pjMjpBs/hqdefault.jpg",
+   "dur": 274,
+   "views": 2819000000,
+   "thumb": "https://i.ytimg.com/vi/34Na4j8AVgA/hqdefault.jpg",
    "external": true
   },
   {
@@ -939,6 +924,21 @@
    "external": true
   },
   {
+   "yt": "FM7MFYoylVs",
+   "id": "yt-FM7MFYoylVs",
+   "kind": "video",
+   "title": "Something Just Like This",
+   "rawTitle": "The Chainsmokers & Coldplay - Something Just Like This (Official Lyric Video)",
+   "artist": "The Chainsmokers",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 248,
+   "views": 2567000000,
+   "thumb": "https://i.ytimg.com/vi/FM7MFYoylVs/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "V1Pl8CzNzCw",
    "id": "yt-V1Pl8CzNzCw",
    "kind": "video",
@@ -953,6 +953,23 @@
    "dur": 201,
    "views": 2525000000,
    "thumb": "https://i.ytimg.com/vi/V1Pl8CzNzCw/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "8SbUC-UaAxE",
+   "id": "yt-8SbUC-UaAxE",
+   "kind": "video",
+   "title": "November Rain",
+   "rawTitle": "Guns N' Roses - November Rain",
+   "artist": "Guns N' Roses",
+   "album": "Ritmo",
+   "genre": "Rock",
+   "moods": [
+    "Energía"
+   ],
+   "dur": 557,
+   "views": 2514000000,
+   "thumb": "https://i.ytimg.com/vi/8SbUC-UaAxE/hqdefault.jpg",
    "external": true
   },
   {
@@ -1014,7 +1031,7 @@
    "genre": "R&B",
    "moods": [],
    "dur": 235,
-   "views": 2335000000,
+   "views": 2336000000,
    "thumb": "https://i.ytimg.com/vi/yzTuBuRdAyA/hqdefault.jpg",
    "external": true
   },
@@ -1044,7 +1061,7 @@
    "genre": "R&B",
    "moods": [],
    "dur": 249,
-   "views": 2298000000,
+   "views": 2299000000,
    "thumb": "https://i.ytimg.com/vi/XXYlFuWEuKI/hqdefault.jpg",
    "external": true
   },
@@ -1076,7 +1093,7 @@
     "Energía"
    ],
    "dur": 279,
-   "views": 2273000000,
+   "views": 2274000000,
    "thumb": "https://i.ytimg.com/vi/hTWKbfoikeg/hqdefault.jpg",
    "external": true
   },
@@ -1153,8 +1170,25 @@
    "genre": "Pop",
    "moods": [],
    "dur": 261,
-   "views": 2111000000,
+   "views": 2112000000,
    "thumb": "https://i.ytimg.com/vi/1G4isv_Fylg/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "1w7OgIMMRc4",
+   "id": "yt-1w7OgIMMRc4",
+   "kind": "video",
+   "title": "Sweet Child O' Mine",
+   "rawTitle": "Guns N' Roses - Sweet Child O' Mine (Official Music Video)",
+   "artist": "Guns N' Roses",
+   "album": "Ritmo",
+   "genre": "Rock",
+   "moods": [
+    "Energía"
+   ],
+   "dur": 303,
+   "views": 2032000000,
+   "thumb": "https://i.ytimg.com/vi/1w7OgIMMRc4/hqdefault.jpg",
    "external": true
   },
   {
@@ -1206,21 +1240,6 @@
    "external": true
   },
   {
-   "yt": "ebXbLfLACGM",
-   "id": "yt-ebXbLfLACGM",
-   "kind": "video",
-   "title": "Summer",
-   "rawTitle": "Calvin Harris - Summer (Official Video)",
-   "artist": "Calvin Harris",
-   "album": "Ritmo",
-   "genre": "Electrónica",
-   "moods": [],
-   "dur": 234,
-   "views": 1809000000,
-   "thumb": "https://i.ytimg.com/vi/ebXbLfLACGM/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "v2AC41dglnM",
    "id": "yt-v2AC41dglnM",
    "kind": "video",
@@ -1268,21 +1287,18 @@
    "external": true
   },
   {
-   "yt": "OSUxrSe5GbI",
-   "id": "yt-OSUxrSe5GbI",
+   "yt": "xpVfcZ0ZcFM",
+   "id": "yt-xpVfcZ0ZcFM",
    "kind": "video",
-   "title": "MÍA",
-   "rawTitle": "BAD BUNNY x DRAKE - MÍA (Video Oficial)",
-   "artist": "Bad Bunny",
+   "title": "God's Plan",
+   "rawTitle": "Drake - God's Plan",
+   "artist": "Drake",
    "album": "Ritmo",
-   "genre": "Reggaetón",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 211,
-   "views": 1737000000,
-   "thumb": "https://i.ytimg.com/vi/OSUxrSe5GbI/hqdefault.jpg",
+   "genre": "Hip-Hop",
+   "moods": [],
+   "dur": 357,
+   "views": 1732000000,
+   "thumb": "https://i.ytimg.com/vi/xpVfcZ0ZcFM/hqdefault.jpg",
    "external": true
   },
   {
@@ -1298,7 +1314,7 @@
     "Energía"
    ],
    "dur": 386,
-   "views": 1708000000,
+   "views": 1709000000,
    "thumb": "https://i.ytimg.com/vi/tAGnKpE4NCI/hqdefault.jpg",
    "external": true
   },
@@ -1381,7 +1397,7 @@
     "Fiesta"
    ],
    "dur": 217,
-   "views": 1598000000,
+   "views": 1599000000,
    "thumb": "https://i.ytimg.com/vi/jZGpkLElSu8/hqdefault.jpg",
    "external": true
   },
@@ -1416,6 +1432,24 @@
    "external": true
   },
   {
+   "yt": "CUYrEiymUMY",
+   "id": "yt-CUYrEiymUMY",
+   "kind": "video",
+   "title": "Tu No Vive Asi",
+   "rawTitle": "Arcangel x Bad Bunny X Dj Luian X Mambo Kingz - Tu No Vive Asi [Video oficial]",
+   "artist": "Hear This Music",
+   "album": "Ritmo",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 277,
+   "views": 1576000000,
+   "thumb": "https://i.ytimg.com/vi/CUYrEiymUMY/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "ktvTqknDobU",
    "id": "yt-ktvTqknDobU",
    "kind": "video",
@@ -1431,21 +1465,18 @@
    "external": true
   },
   {
-   "yt": "CUYrEiymUMY",
-   "id": "yt-CUYrEiymUMY",
+   "yt": "KEI4qSrkPAs",
+   "id": "yt-KEI4qSrkPAs",
    "kind": "video",
-   "title": "Tu No Vive Asi",
-   "rawTitle": "Arcangel x Bad Bunny X Dj Luian X Mambo Kingz - Tu No Vive Asi [Video oficial]",
-   "artist": "Hear This Music",
+   "title": "Can't Feel My Face",
+   "rawTitle": "The Weeknd - Can't Feel My Face (Official Video)",
+   "artist": "The Weeknd",
    "album": "Ritmo",
-   "genre": "Reggaetón",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 277,
-   "views": 1575000000,
-   "thumb": "https://i.ytimg.com/vi/CUYrEiymUMY/hqdefault.jpg",
+   "genre": "R&B",
+   "moods": [],
+   "dur": 219,
+   "views": 1562000000,
+   "thumb": "https://i.ytimg.com/vi/KEI4qSrkPAs/hqdefault.jpg",
    "external": true
   },
   {
@@ -1462,7 +1493,7 @@
     "Fiesta"
    ],
    "dur": 196,
-   "views": 1551000000,
+   "views": 1552000000,
    "thumb": "https://i.ytimg.com/vi/QCZZwZQ4qNs/hqdefault.jpg",
    "external": true
   },
@@ -1497,23 +1528,6 @@
    "external": true
   },
   {
-   "yt": "lDK9QqIzhwk",
-   "id": "yt-lDK9QqIzhwk",
-   "kind": "video",
-   "title": "Livin' On A Prayer",
-   "rawTitle": "Bon Jovi - Livin' On A Prayer",
-   "artist": "Bon Jovi",
-   "album": "Ritmo",
-   "genre": "Rock",
-   "moods": [
-    "Energía"
-   ],
-   "dur": 249,
-   "views": 1526000000,
-   "thumb": "https://i.ytimg.com/vi/lDK9QqIzhwk/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "GzU8KqOY8YA",
    "id": "yt-GzU8KqOY8YA",
    "kind": "video",
@@ -1539,7 +1553,7 @@
    "genre": "Pop",
    "moods": [],
    "dur": 208,
-   "views": 1504000000,
+   "views": 1505000000,
    "thumb": "https://i.ytimg.com/vi/iS1g8G_njx8/hqdefault.jpg",
    "external": true
   },
@@ -1554,7 +1568,7 @@
    "genre": "R&B",
    "moods": [],
    "dur": 298,
-   "views": 1492000000,
+   "views": 1493000000,
    "thumb": "https://i.ytimg.com/vi/qFLhGq0060w/hqdefault.jpg",
    "external": true
   },
@@ -1595,6 +1609,21 @@
    "external": true
   },
   {
+   "yt": "o3mP3mJDL2k",
+   "id": "yt-o3mP3mJDL2k",
+   "kind": "video",
+   "title": "Can't Remember to Forget You ft. Rihanna",
+   "rawTitle": "Shakira - Can't Remember to Forget You (Official Video) ft. Rihanna",
+   "artist": "Shakira",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 206,
+   "views": 1448000000,
+   "thumb": "https://i.ytimg.com/vi/o3mP3mJDL2k/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "yKNxeF4KMsY",
    "id": "yt-yKNxeF4KMsY",
    "kind": "video",
@@ -1620,7 +1649,7 @@
    "genre": "Pop",
    "moods": [],
    "dur": 241,
-   "views": 1383000000,
+   "views": 1384000000,
    "thumb": "https://i.ytimg.com/vi/fcnDmrtj6Sk/hqdefault.jpg",
    "external": true
   },
@@ -1672,6 +1701,21 @@
    "dur": 252,
    "views": 1375000000,
    "thumb": "https://i.ytimg.com/vi/acEOASYioGY/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "fyaI4-5849w",
+   "id": "yt-fyaI4-5849w",
+   "kind": "video",
+   "title": "Wild Thoughts ft. Rihanna, Bryson Tiller",
+   "rawTitle": "DJ Khaled - Wild Thoughts (Official Video) ft. Rihanna, Bryson Tiller",
+   "artist": "DJ Khaled",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 216,
+   "views": 1365000000,
+   "thumb": "https://i.ytimg.com/vi/fyaI4-5849w/hqdefault.jpg",
    "external": true
   },
   {
@@ -1799,6 +1843,21 @@
    "external": true
   },
   {
+   "yt": "JF8BRvqGCNs",
+   "id": "yt-JF8BRvqGCNs",
+   "kind": "video",
+   "title": "Stay ft. Mikky Ekko",
+   "rawTitle": "Rihanna - Stay ft. Mikky Ekko",
+   "artist": "Rihanna",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 248,
+   "views": 1244000000,
+   "thumb": "https://i.ytimg.com/vi/JF8BRvqGCNs/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "pAgnJDJN4VA",
    "id": "yt-pAgnJDJN4VA",
    "kind": "video",
@@ -1881,6 +1940,36 @@
    "dur": 192,
    "views": 1201000000,
    "thumb": "https://i.ytimg.com/vi/saGYMhApaH8/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "oC-GflRB0y4",
+   "id": "yt-oC-GflRB0y4",
+   "kind": "video",
+   "title": "Bad ft.Vassy",
+   "rawTitle": "David Guetta & Showtek - Bad ft.Vassy (Lyrics Video)",
+   "artist": "David Guetta",
+   "album": "Ritmo",
+   "genre": "Electrónica",
+   "moods": [],
+   "dur": 171,
+   "views": 1200000000,
+   "thumb": "https://i.ytimg.com/vi/oC-GflRB0y4/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "1y6smkh6c-0",
+   "id": "yt-1y6smkh6c-0",
+   "kind": "video",
+   "title": "Don't You Worry Child",
+   "rawTitle": "Swedish House Mafia ft. John Martin - Don't You Worry Child (Official Video)",
+   "artist": "Swedish House Mafia",
+   "album": "Ritmo",
+   "genre": "Electrónica",
+   "moods": [],
+   "dur": 335,
+   "views": 1186000000,
+   "thumb": "https://i.ytimg.com/vi/1y6smkh6c-0/hqdefault.jpg",
    "external": true
   },
   {
@@ -2304,38 +2393,6 @@
    "external": true
   },
   {
-   "yt": "sPTn0QEhxds",
-   "id": "yt-sPTn0QEhxds",
-   "kind": "video",
-   "title": "Me Enamoré",
-   "rawTitle": "Shakira - Me Enamoré (Official Video)",
-   "artist": "Shakira",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [
-    "Romántico"
-   ],
-   "dur": 232,
-   "views": 989000000,
-   "thumb": "https://i.ytimg.com/vi/sPTn0QEhxds/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "K_9tX4eHztY",
-   "id": "yt-K_9tX4eHztY",
-   "kind": "video",
-   "title": "Low Life ft. The Weeknd",
-   "rawTitle": "Future - Low Life (Official Music Video) ft. The Weeknd",
-   "artist": "Future",
-   "album": "Ritmo",
-   "genre": "R&B",
-   "moods": [],
-   "dur": 324,
-   "views": 983000000,
-   "thumb": "https://i.ytimg.com/vi/K_9tX4eHztY/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "-CmadmM5cOk",
    "id": "yt--CmadmM5cOk",
    "kind": "video",
@@ -2346,8 +2403,23 @@
    "genre": "Pop",
    "moods": [],
    "dur": 243,
-   "views": 975000000,
+   "views": 976000000,
    "thumb": "https://i.ytimg.com/vi/-CmadmM5cOk/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "adLGHcj_fmA",
+   "id": "yt-adLGHcj_fmA",
+   "kind": "video",
+   "title": "Bruno Mars, Anderson .Paak, Silk Sonic - Leave the Door Open",
+   "rawTitle": "Bruno Mars, Anderson .Paak, Silk Sonic - Leave the Door Open [Official Video]",
+   "artist": "Bruno Mars",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 249,
+   "views": 975000000,
+   "thumb": "https://i.ytimg.com/vi/adLGHcj_fmA/hqdefault.jpg",
    "external": true
   },
   {
@@ -2381,36 +2453,6 @@
    "external": true
   },
   {
-   "yt": "Ri7-vnrJD3k",
-   "id": "yt-Ri7-vnrJD3k",
-   "kind": "video",
-   "title": "Set Fire To The Rain",
-   "rawTitle": "Adele - Set Fire To The Rain (Live at The Royal Albert Hall)",
-   "artist": "Adele",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 239,
-   "views": 933000000,
-   "thumb": "https://i.ytimg.com/vi/Ri7-vnrJD3k/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "Mgfe5tIwOj0",
-   "id": "yt-Mgfe5tIwOj0",
-   "kind": "video",
-   "title": "IDGAF",
-   "rawTitle": "Dua Lipa - IDGAF (Official Music Video)",
-   "artist": "Dua Lipa",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 231,
-   "views": 915000000,
-   "thumb": "https://i.ytimg.com/vi/Mgfe5tIwOj0/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "gl1aHhXnN1k",
    "id": "yt-gl1aHhXnN1k",
    "kind": "video",
@@ -2433,28 +2475,13 @@
    "rawTitle": "Ariana Grande, The Weeknd - Love Me Harder",
    "artist": "Ariana Grande",
    "album": "Ritmo",
-   "genre": "R&B",
+   "genre": "Pop",
    "moods": [
     "Romántico"
    ],
    "dur": 251,
    "views": 899000000,
    "thumb": "https://i.ytimg.com/vi/g5qU7p7yOY8/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "J3UjJ4wKLkg",
-   "id": "yt-J3UjJ4wKLkg",
-   "kind": "video",
-   "title": "Take A Bow",
-   "rawTitle": "Rihanna - Take A Bow",
-   "artist": "Rihanna",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 230,
-   "views": 895000000,
-   "thumb": "https://i.ytimg.com/vi/J3UjJ4wKLkg/hqdefault.jpg",
    "external": true
   },
   {
@@ -2491,24 +2518,6 @@
    "external": true
   },
   {
-   "yt": "VBcs8DZxBGc",
-   "id": "yt-VBcs8DZxBGc",
-   "kind": "video",
-   "title": "MI EX TENÍA RAZÓN",
-   "rawTitle": "KAROL G - MI EX TENÍA RAZÓN (Official Video)",
-   "artist": "KAROL G",
-   "album": "Ritmo",
-   "genre": "Reggaetón",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 162,
-   "views": 878000000,
-   "thumb": "https://i.ytimg.com/vi/VBcs8DZxBGc/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "p38WgakuYDo",
    "id": "yt-p38WgakuYDo",
    "kind": "video",
@@ -2524,6 +2533,21 @@
    "dur": 253,
    "views": 849000000,
    "thumb": "https://i.ytimg.com/vi/p38WgakuYDo/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "WA4iX5D9Z64",
+   "id": "yt-WA4iX5D9Z64",
+   "kind": "video",
+   "title": "We Are Never Ever Getting Back Together",
+   "rawTitle": "Taylor Swift - We Are Never Ever Getting Back Together",
+   "artist": "Taylor Swift",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 216,
+   "views": 848000000,
+   "thumb": "https://i.ytimg.com/vi/WA4iX5D9Z64/hqdefault.jpg",
    "external": true
   },
   {
@@ -2559,21 +2583,6 @@
    "external": true
   },
   {
-   "yt": "waU75jdUnYw",
-   "id": "yt-waU75jdUnYw",
-   "kind": "video",
-   "title": "Earned It (Fifty Shades Of Grey)",
-   "rawTitle": "The Weeknd - Earned It (Fifty Shades Of Grey)",
-   "artist": "The Weeknd",
-   "album": "Ritmo",
-   "genre": "R&B",
-   "moods": [],
-   "dur": 276,
-   "views": 834000000,
-   "thumb": "https://i.ytimg.com/vi/waU75jdUnYw/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "CD-E-LDc384",
    "id": "yt-CD-E-LDc384",
    "kind": "video",
@@ -2588,6 +2597,24 @@
    "dur": 331,
    "views": 830000000,
    "thumb": "https://i.ytimg.com/vi/CD-E-LDc384/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "Y4DkbHSXqEw",
+   "id": "yt-Y4DkbHSXqEw",
+   "kind": "video",
+   "title": "El Viejo Del Sombrerón ft. La Morocha",
+   "rawTitle": "La Sonora Dinamita - El Viejo Del Sombrerón ft. La Morocha",
+   "artist": "SonoraDinamitaVEVO",
+   "album": "Ritmo",
+   "genre": "Cumbia",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 254,
+   "views": 828000000,
+   "thumb": "https://i.ytimg.com/vi/Y4DkbHSXqEw/hqdefault.jpg",
    "external": true
   },
   {
@@ -2620,21 +2647,6 @@
    "dur": 231,
    "views": 812000000,
    "thumb": "https://i.ytimg.com/vi/e2vBLd5Egnk/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "_ovdm2yX4MA",
-   "id": "yt-_ovdm2yX4MA",
-   "kind": "video",
-   "title": "Levels",
-   "rawTitle": "Avicii - Levels",
-   "artist": "Avicii",
-   "album": "Ritmo",
-   "genre": "Electrónica",
-   "moods": [],
-   "dur": 199,
-   "views": 790000000,
-   "thumb": "https://i.ytimg.com/vi/_ovdm2yX4MA/hqdefault.jpg",
    "external": true
   },
   {
@@ -2728,6 +2740,21 @@
    "external": true
   },
   {
+   "yt": "e82VE8UtW8A",
+   "id": "yt-e82VE8UtW8A",
+   "kind": "video",
+   "title": "Rude Boy",
+   "rawTitle": "Rihanna - Rude Boy",
+   "artist": "Rihanna",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 225,
+   "views": 745000000,
+   "thumb": "https://i.ytimg.com/vi/e82VE8UtW8A/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "DDWKuo3gXMQ",
    "id": "yt-DDWKuo3gXMQ",
    "kind": "video",
@@ -2755,7 +2782,7 @@
     "Energía"
    ],
    "dur": 219,
-   "views": 729000000,
+   "views": 730000000,
    "thumb": "https://i.ytimg.com/vi/rY0WxgSXdEE/hqdefault.jpg",
    "external": true
   },
@@ -2787,6 +2814,23 @@
    "dur": 205,
    "views": 706000000,
    "thumb": "https://i.ytimg.com/vi/-rey3m8SWQI/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "qod03PVTLqk",
+   "id": "yt-qod03PVTLqk",
+   "kind": "video",
+   "title": "Elton John, Dua Lipa - Cold Heart (PNAU Remix)",
+   "rawTitle": "Elton John, Dua Lipa - Cold Heart (PNAU Remix) (Official Video)",
+   "artist": "Elton John",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [
+    "Romántico"
+   ],
+   "dur": 255,
+   "views": 706000000,
+   "thumb": "https://i.ytimg.com/vi/qod03PVTLqk/hqdefault.jpg",
    "external": true
   },
   {
@@ -2886,6 +2930,24 @@
    "external": true
   },
   {
+   "yt": "EB7G3fUUaeA",
+   "id": "yt-EB7G3fUUaeA",
+   "kind": "video",
+   "title": "SI ESTUVIÉSEMOS JUNTOS",
+   "rawTitle": "BAD BUNNY - SI ESTUVIÉSEMOS JUNTOS | X100PRE (Video Oficial)",
+   "artist": "Bad Bunny",
+   "album": "Ritmo",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 174,
+   "views": 687000000,
+   "thumb": "https://i.ytimg.com/vi/EB7G3fUUaeA/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "dsLjyLn859g",
    "id": "yt-dsLjyLn859g",
    "kind": "video",
@@ -2952,6 +3014,24 @@
    "external": true
   },
   {
+   "yt": "SK37InR9j38",
+   "id": "yt-SK37InR9j38",
+   "kind": "video",
+   "title": "Gatúbela",
+   "rawTitle": "KAROL G, Maldy - Gatúbela (Official Video)",
+   "artist": "KAROL G",
+   "album": "Ritmo",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 222,
+   "views": 670000000,
+   "thumb": "https://i.ytimg.com/vi/SK37InR9j38/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "cD5T1Y4b7wA",
    "id": "yt-cD5T1Y4b7wA",
    "kind": "video",
@@ -2967,24 +3047,6 @@
    "dur": 196,
    "views": 670000000,
    "thumb": "https://i.ytimg.com/vi/cD5T1Y4b7wA/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "WHejvUhX6rk",
-   "id": "yt-WHejvUhX6rk",
-   "kind": "video",
-   "title": "Yandel, Feid",
-   "rawTitle": "Yandel, Feid  - Yandel 150 (Video Oficial)",
-   "artist": "Yandel",
-   "album": "Ritmo",
-   "genre": "Reggaetón",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 219,
-   "views": 668000000,
-   "thumb": "https://i.ytimg.com/vi/WHejvUhX6rk/hqdefault.jpg",
    "external": true
   },
   {
@@ -3033,21 +3095,6 @@
    "external": true
   },
   {
-   "yt": "LH4Y1ZUUx2g",
-   "id": "yt-LH4Y1ZUUx2g",
-   "kind": "video",
-   "title": "break up with your girlfriend, i'm bored",
-   "rawTitle": "Ariana Grande - break up with your girlfriend, i'm bored (Official Video)",
-   "artist": "Ariana Grande",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 205,
-   "views": 645000000,
-   "thumb": "https://i.ytimg.com/vi/LH4Y1ZUUx2g/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "87gWaABqGYs",
    "id": "yt-87gWaABqGYs",
    "kind": "video",
@@ -3078,18 +3125,18 @@
    "external": true
   },
   {
-   "yt": "28hYUZMufDg",
-   "id": "yt-28hYUZMufDg",
+   "yt": "tCXGJQYZ9JA",
+   "id": "yt-tCXGJQYZ9JA",
    "kind": "video",
-   "title": "BOP On Broadway (Hip Hop Musical)",
-   "rawTitle": "DaBaby - BOP On Broadway (Hip Hop Musical)",
-   "artist": "DaBaby",
+   "title": "Delicate",
+   "rawTitle": "Taylor Swift - Delicate",
+   "artist": "Taylor Swift",
    "album": "Ritmo",
-   "genre": "Hip-Hop",
+   "genre": "Pop",
    "moods": [],
-   "dur": 184,
-   "views": 606000000,
-   "thumb": "https://i.ytimg.com/vi/28hYUZMufDg/hqdefault.jpg",
+   "dur": 235,
+   "views": 608000000,
+   "thumb": "https://i.ytimg.com/vi/tCXGJQYZ9JA/hqdefault.jpg",
    "external": true
   },
   {
@@ -3108,6 +3155,23 @@
    "external": true
   },
   {
+   "yt": "BciS5krYL80",
+   "id": "yt-BciS5krYL80",
+   "kind": "video",
+   "title": "Hotel California",
+   "rawTitle": "Hotel California (2013 Remaster)",
+   "artist": "Eagles",
+   "album": "Ritmo",
+   "genre": "Rock",
+   "moods": [
+    "Energía"
+   ],
+   "dur": 392,
+   "views": 594000000,
+   "thumb": "https://i.ytimg.com/vi/BciS5krYL80/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "K0ibBPhiaG0",
    "id": "yt-K0ibBPhiaG0",
    "kind": "video",
@@ -3120,21 +3184,6 @@
    "dur": 288,
    "views": 590000000,
    "thumb": "https://i.ytimg.com/vi/K0ibBPhiaG0/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "JPIhUaONiLU",
-   "id": "yt-JPIhUaONiLU",
-   "kind": "video",
-   "title": "Often (NSFW)",
-   "rawTitle": "The Weeknd - Often (NSFW) (Official Video)",
-   "artist": "The Weeknd",
-   "album": "Ritmo",
-   "genre": "R&B",
-   "moods": [],
-   "dur": 250,
-   "views": 584000000,
-   "thumb": "https://i.ytimg.com/vi/JPIhUaONiLU/hqdefault.jpg",
    "external": true
   },
   {
@@ -3171,18 +3220,21 @@
    "external": true
   },
   {
-   "yt": "pfxyk1glEq4",
-   "id": "yt-pfxyk1glEq4",
+   "yt": "CPK_IdHe1Yg",
+   "id": "yt-CPK_IdHe1Yg",
    "kind": "video",
-   "title": "Under The Influence",
-   "rawTitle": "Chris Brown - Under The Influence (Official Video)",
-   "artist": "Chris Brown",
+   "title": "SI VEO A TU MAMÁ",
+   "rawTitle": "BAD BUNNY - SI VEO A TU MAMÁ | YHLQMDLG (Video Oficial)",
+   "artist": "Bad Bunny",
    "album": "Ritmo",
-   "genre": "R&B",
-   "moods": [],
-   "dur": 177,
-   "views": 580000000,
-   "thumb": "https://i.ytimg.com/vi/pfxyk1glEq4/hqdefault.jpg",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 266,
+   "views": 578000000,
+   "thumb": "https://i.ytimg.com/vi/CPK_IdHe1Yg/hqdefault.jpg",
    "external": true
   },
   {
@@ -3219,6 +3271,57 @@
    "external": true
   },
   {
+   "yt": "wAjHQXrIj9o",
+   "id": "yt-wAjHQXrIj9o",
+   "kind": "video",
+   "title": "Ojitos Lindos",
+   "rawTitle": "Bad Bunny ft. Bomba Estéreo - Ojitos Lindos (Video Oficial) | Un Verano Sin Ti",
+   "artist": "Bad Bunny",
+   "album": "Ritmo",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 274,
+   "views": 574000000,
+   "thumb": "https://i.ytimg.com/vi/wAjHQXrIj9o/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "eiDiKwbGfIY",
+   "id": "yt-eiDiKwbGfIY",
+   "kind": "video",
+   "title": "Perfect Symphony [with Andrea Bocelli]",
+   "rawTitle": "Ed Sheeran - Perfect Symphony [with Andrea Bocelli] (Official Music Video)",
+   "artist": "Ed Sheeran y Andrea Bocelli",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 334,
+   "views": 570000000,
+   "thumb": "https://i.ytimg.com/vi/eiDiKwbGfIY/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "9NGgLhEVCUk",
+   "id": "yt-9NGgLhEVCUk",
+   "kind": "video",
+   "title": "TÚ NO METES CABRA",
+   "rawTitle": "BAD BUNNY - TÚ NO METES CABRA (Video Oficial)",
+   "artist": "Bad Bunny",
+   "album": "Ritmo",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 174,
+   "views": 560000000,
+   "thumb": "https://i.ytimg.com/vi/9NGgLhEVCUk/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "oD5f55ohsc4",
    "id": "yt-oD5f55ohsc4",
    "kind": "video",
@@ -3237,21 +3340,6 @@
    "external": true
   },
   {
-   "yt": "taSubkjZUA4",
-   "id": "yt-taSubkjZUA4",
-   "kind": "video",
-   "title": "Don't Be Shy",
-   "rawTitle": "Tiësto & Karol G - Don't Be Shy (Official Music Video)",
-   "artist": "Tiësto",
-   "album": "Ritmo",
-   "genre": "Electrónica",
-   "moods": [],
-   "dur": 188,
-   "views": 558000000,
-   "thumb": "https://i.ytimg.com/vi/taSubkjZUA4/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "ehcVomMexkY",
    "id": "yt-ehcVomMexkY",
    "kind": "video",
@@ -3264,24 +3352,6 @@
    "dur": 197,
    "views": 555000000,
    "thumb": "https://i.ytimg.com/vi/ehcVomMexkY/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "a1Femq4NPxs",
-   "id": "yt-a1Femq4NPxs",
-   "kind": "video",
-   "title": "BAILE INoLVIDABLE",
-   "rawTitle": "BAD BUNNY - BAILE INoLVIDABLE (Video Oficial) | DeBÍ TiRAR MáS FOToS",
-   "artist": "Bad Bunny",
-   "album": "Ritmo",
-   "genre": "Salsa",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 379,
-   "views": 548000000,
-   "thumb": "https://i.ytimg.com/vi/a1Femq4NPxs/hqdefault.jpg",
    "external": true
   },
   {
@@ -3318,18 +3388,21 @@
    "external": true
   },
   {
-   "yt": "RubBzkZzpUA",
-   "id": "yt-RubBzkZzpUA",
+   "yt": "Zdc3shRvumk",
+   "id": "yt-Zdc3shRvumk",
    "kind": "video",
-   "title": "Started From the Bottom",
-   "rawTitle": "Drake - Started From the Bottom",
-   "artist": "Drake",
+   "title": "200 Copas",
+   "rawTitle": "KAROL G - 200 Copas (Official Video)",
+   "artist": "KAROL G",
    "album": "Ritmo",
-   "genre": "Hip-Hop",
-   "moods": [],
-   "dur": 321,
-   "views": 534000000,
-   "thumb": "https://i.ytimg.com/vi/RubBzkZzpUA/hqdefault.jpg",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 203,
+   "views": 535000000,
+   "thumb": "https://i.ytimg.com/vi/Zdc3shRvumk/hqdefault.jpg",
    "external": true
   },
   {
@@ -3367,6 +3440,21 @@
    "external": true
   },
   {
+   "yt": "-FyjEnoIgTM",
+   "id": "yt--FyjEnoIgTM",
+   "kind": "video",
+   "title": "Versace on the Floor",
+   "rawTitle": "Bruno Mars - Versace on the Floor (Official Music Video)",
+   "artist": "Bruno Mars",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 337,
+   "views": 527000000,
+   "thumb": "https://i.ytimg.com/vi/-FyjEnoIgTM/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "9HDEHj2yzew",
    "id": "yt-9HDEHj2yzew",
    "kind": "video",
@@ -3397,36 +3485,18 @@
    "external": true
   },
   {
-   "yt": "x2oUajHp8pg",
-   "id": "yt-x2oUajHp8pg",
+   "yt": "rp4UwPZfRis",
+   "id": "yt-rp4UwPZfRis",
    "kind": "video",
-   "title": "LUNA",
-   "rawTitle": "Feid, ATL Jacob - LUNA (Official Video)",
-   "artist": "Feid",
-   "album": "Ritmo",
-   "genre": "Reggaetón",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 200,
-   "views": 516000000,
-   "thumb": "https://i.ytimg.com/vi/x2oUajHp8pg/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "PWmJhh_qTSY",
-   "id": "yt-PWmJhh_qTSY",
-   "kind": "video",
-   "title": "Acróstico",
-   "rawTitle": "Shakira - Acróstico (Official Video)",
-   "artist": "Shakira",
+   "title": "Unfaithful",
+   "rawTitle": "Rihanna - Unfaithful (Official Music Video)",
+   "artist": "Rihanna",
    "album": "Ritmo",
    "genre": "Pop",
    "moods": [],
-   "dur": 179,
-   "views": 506000000,
-   "thumb": "https://i.ytimg.com/vi/PWmJhh_qTSY/hqdefault.jpg",
+   "dur": 297,
+   "views": 518000000,
+   "thumb": "https://i.ytimg.com/vi/rp4UwPZfRis/hqdefault.jpg",
    "external": true
   },
   {
@@ -3478,6 +3548,38 @@
    "external": true
   },
   {
+   "yt": "_sV0S8qWSy0",
+   "id": "yt-_sV0S8qWSy0",
+   "kind": "video",
+   "title": "The Way ft. Mac Miller",
+   "rawTitle": "Ariana Grande - The Way (Official Video) ft. Mac Miller",
+   "artist": "Ariana Grande",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 232,
+   "views": 495000000,
+   "thumb": "https://i.ytimg.com/vi/_sV0S8qWSy0/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "QMP-o8WXSPM",
+   "id": "yt-QMP-o8WXSPM",
+   "kind": "video",
+   "title": "Love On The Brain",
+   "rawTitle": "Love On The Brain",
+   "artist": "Rihanna",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [
+    "Romántico"
+   ],
+   "dur": 224,
+   "views": 492000000,
+   "thumb": "https://i.ytimg.com/vi/QMP-o8WXSPM/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "Ckom3gf57Yw",
    "id": "yt-Ckom3gf57Yw",
    "kind": "video",
@@ -3510,6 +3612,24 @@
    "external": true
   },
   {
+   "yt": "hlgx4OKsWtE",
+   "id": "yt-hlgx4OKsWtE",
+   "kind": "video",
+   "title": "AMARGURA",
+   "rawTitle": "KAROL G - AMARGURA (En Vivo)",
+   "artist": "KAROL G",
+   "album": "Ritmo",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 241,
+   "views": 482000000,
+   "thumb": "https://i.ytimg.com/vi/hlgx4OKsWtE/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "I_2D8Eo15wE",
    "id": "yt-I_2D8Eo15wE",
    "kind": "video",
@@ -3524,21 +3644,6 @@
    "dur": 145,
    "views": 470000000,
    "thumb": "https://i.ytimg.com/vi/I_2D8Eo15wE/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "FuXNumBwDOM",
-   "id": "yt-FuXNumBwDOM",
-   "kind": "video",
-   "title": "ME! (feat. Brendon Urie of Panic! At The Disco) ft. Brendon Urie",
-   "rawTitle": "Taylor Swift - ME! (feat. Brendon Urie of Panic! At The Disco) ft. Brendon Urie",
-   "artist": "Taylor Swift",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 249,
-   "views": 462000000,
-   "thumb": "https://i.ytimg.com/vi/FuXNumBwDOM/hqdefault.jpg",
    "external": true
   },
   {
@@ -3557,23 +3662,6 @@
    "external": true
   },
   {
-   "yt": "Kw3935PH01E",
-   "id": "yt-Kw3935PH01E",
-   "kind": "video",
-   "title": "Zoo (From \"Zootopia 2\")",
-   "rawTitle": "Shakira - Zoo (From \"Zootopia 2\") Official Music Video",
-   "artist": "DisneyMusicVEVO",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [
-    "Fiesta"
-   ],
-   "dur": 198,
-   "views": 454000000,
-   "thumb": "https://i.ytimg.com/vi/Kw3935PH01E/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "BjhW3vBA1QU",
    "id": "yt-BjhW3vBA1QU",
    "kind": "video",
@@ -3584,7 +3672,7 @@
    "genre": "Pop",
    "moods": [],
    "dur": 250,
-   "views": 448000000,
+   "views": 449000000,
    "thumb": "https://i.ytimg.com/vi/BjhW3vBA1QU/hqdefault.jpg",
    "external": true
   },
@@ -3601,6 +3689,23 @@
    "dur": 216,
    "views": 444000000,
    "thumb": "https://i.ytimg.com/vi/iWZmdoY1aTE/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "ki0Ocze98U8",
+   "id": "yt-ki0Ocze98U8",
+   "kind": "video",
+   "title": "One Dance ft. Wizkid & Kyla",
+   "rawTitle": "Drake - One Dance (Lyrics) ft. Wizkid & Kyla",
+   "artist": "Billion Stars",
+   "album": "Ritmo",
+   "genre": "Hip-Hop",
+   "moods": [
+    "Fiesta"
+   ],
+   "dur": 175,
+   "views": 442000000,
+   "thumb": "https://i.ytimg.com/vi/ki0Ocze98U8/hqdefault.jpg",
    "external": true
   },
   {
@@ -3666,21 +3771,6 @@
    "external": true
   },
   {
-   "yt": "NV-3s2wwC8c",
-   "id": "yt-NV-3s2wwC8c",
-   "kind": "video",
-   "title": "BlocBoy JB & Drake \"Look Alive\" Prod By: Tay Keith Shot By: @YooAli",
-   "rawTitle": "BlocBoy JB & Drake \"Look Alive\" Prod By: Tay Keith (Official Music Video) Shot By: @YooAli",
-   "artist": "BlocBoy JB",
-   "album": "Ritmo",
-   "genre": "Hip-Hop",
-   "moods": [],
-   "dur": 194,
-   "views": 410000000,
-   "thumb": "https://i.ytimg.com/vi/NV-3s2wwC8c/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "l08Zw-RY__Q",
    "id": "yt-l08Zw-RY__Q",
    "kind": "video",
@@ -3693,6 +3783,21 @@
    "dur": 262,
    "views": 406000000,
    "thumb": "https://i.ytimg.com/vi/l08Zw-RY__Q/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "-tn2S3kJlyU",
+   "id": "yt--tn2S3kJlyU",
+   "kind": "video",
+   "title": "idontwannabeyouanymore",
+   "rawTitle": "Billie Eilish - idontwannabeyouanymore (Official Vertical Video)",
+   "artist": "Billie Eilish",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 205,
+   "views": 406000000,
+   "thumb": "https://i.ytimg.com/vi/-tn2S3kJlyU/hqdefault.jpg",
    "external": true
   },
   {
@@ -3728,18 +3833,36 @@
    "external": true
   },
   {
-   "yt": "Mx92lTYxrJQ",
-   "id": "yt-Mx92lTYxrJQ",
+   "yt": "5r5UePOgMQU",
+   "id": "yt-5r5UePOgMQU",
    "kind": "video",
-   "title": "The Weeknd, JENNIE, Lily-Rose Depp - One Of The Girls",
-   "rawTitle": "The Weeknd, JENNIE, Lily-Rose Depp - One Of The Girls (Official Video)",
-   "artist": "The Weeknd",
+   "title": "KAROL G, Feid, DFZM ft. Ovy On The Drums, J Balvin, Maluma, Ryan Castro, Blessd - +57",
+   "rawTitle": "KAROL G, Feid, DFZM ft. Ovy On The Drums, J Balvin, Maluma, Ryan Castro, Blessd - +57",
+   "artist": "KAROL G",
    "album": "Ritmo",
-   "genre": "R&B",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 302,
+   "views": 400000000,
+   "thumb": "https://i.ytimg.com/vi/5r5UePOgMQU/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "MntbN1DdEP0",
+   "id": "yt-MntbN1DdEP0",
+   "kind": "video",
+   "title": "Addicted to You",
+   "rawTitle": "Shakira - Addicted to You",
+   "artist": "Shakira",
+   "album": "Ritmo",
+   "genre": "Pop",
    "moods": [],
-   "dur": 259,
+   "dur": 155,
    "views": 397000000,
-   "thumb": "https://i.ytimg.com/vi/Mx92lTYxrJQ/hqdefault.jpg",
+   "thumb": "https://i.ytimg.com/vi/MntbN1DdEP0/hqdefault.jpg",
    "external": true
   },
   {
@@ -3755,23 +3878,6 @@
    "dur": 228,
    "views": 395000000,
    "thumb": "https://i.ytimg.com/vi/mj0XInqZMHY/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "Dkk9gvTmCXY",
-   "id": "yt-Dkk9gvTmCXY",
-   "kind": "video",
-   "title": "You Need To Calm Down",
-   "rawTitle": "Taylor Swift - You Need To Calm Down",
-   "artist": "Taylor Swift",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [
-    "Relajado"
-   ],
-   "dur": 211,
-   "views": 394000000,
-   "thumb": "https://i.ytimg.com/vi/Dkk9gvTmCXY/hqdefault.jpg",
    "external": true
   },
   {
@@ -3792,6 +3898,21 @@
    "external": true
   },
   {
+   "yt": "wIft-t-MQuE",
+   "id": "yt-wIft-t-MQuE",
+   "kind": "video",
+   "title": "…Ready For It?",
+   "rawTitle": "Taylor Swift - …Ready For It?",
+   "artist": "Taylor Swift",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 211,
+   "views": 392000000,
+   "thumb": "https://i.ytimg.com/vi/wIft-t-MQuE/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "SzimletXB7M",
    "id": "yt-SzimletXB7M",
    "kind": "video",
@@ -3809,21 +3930,18 @@
    "external": true
   },
   {
-   "yt": "zHhza3EgHe8",
-   "id": "yt-zHhza3EgHe8",
+   "yt": "UAWcs5H-qgQ",
+   "id": "yt-UAWcs5H-qgQ",
    "kind": "video",
-   "title": "Frío, Frío (feat. Romeo Santos)",
-   "rawTitle": "Juan Luis Guerra - Frío, Frío (feat. Romeo Santos) [Live]",
-   "artist": "Juan Luis Guerra",
+   "title": "The A Team",
+   "rawTitle": "Ed Sheeran - The A Team [Official Music Video]",
+   "artist": "Ed Sheeran",
    "album": "Ritmo",
-   "genre": "Salsa",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 217,
-   "views": 389000000,
-   "thumb": "https://i.ytimg.com/vi/zHhza3EgHe8/hqdefault.jpg",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 290,
+   "views": 384000000,
+   "thumb": "https://i.ytimg.com/vi/UAWcs5H-qgQ/hqdefault.jpg",
    "external": true
   },
   {
@@ -3849,8 +3967,11 @@
    "rawTitle": "Shakira - Soltera (Official Video)",
    "artist": "Shakira",
    "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
+   "genre": "Latino",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
    "dur": 249,
    "views": 380000000,
    "thumb": "https://i.ytimg.com/vi/oBofuVYDoG4/hqdefault.jpg",
@@ -3939,6 +4060,21 @@
    "external": true
   },
   {
+   "yt": "1aokooixKIo",
+   "id": "yt-1aokooixKIo",
+   "kind": "video",
+   "title": "Sparks",
+   "rawTitle": "Sparks",
+   "artist": "Coldplay",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 228,
+   "views": 366000000,
+   "thumb": "https://i.ytimg.com/vi/1aokooixKIo/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "-BjZmE2gtdo",
    "id": "yt--BjZmE2gtdo",
    "kind": "video",
@@ -3988,21 +4124,6 @@
    "external": true
   },
   {
-   "yt": "pDddlvCfTiw",
-   "id": "yt-pDddlvCfTiw",
-   "kind": "video",
-   "title": "BAND4BAND",
-   "rawTitle": "CENTRAL CEE FT. LIL BABY - BAND4BAND (MUSIC VIDEO)",
-   "artist": "Central Cee",
-   "album": "Ritmo",
-   "genre": "Hip-Hop",
-   "moods": [],
-   "dur": 152,
-   "views": 360000000,
-   "thumb": "https://i.ytimg.com/vi/pDddlvCfTiw/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "w5tWYmIOWGk",
    "id": "yt-w5tWYmIOWGk",
    "kind": "video",
@@ -4035,68 +4156,53 @@
    "external": true
   },
   {
-   "yt": "COz9lDCFHjw",
-   "id": "yt-COz9lDCFHjw",
+   "yt": "xe_iCkFsQKE",
+   "id": "yt-xe_iCkFsQKE",
    "kind": "video",
-   "title": "Passionfruit",
-   "rawTitle": "Passionfruit",
-   "artist": "Drake",
+   "title": "Earned It (from Fifty Shades Of Grey)",
+   "rawTitle": "The Weeknd - Earned It (from Fifty Shades Of Grey) (Official Lyric Video)",
+   "artist": "The Weeknd",
    "album": "Ritmo",
-   "genre": "Hip-Hop",
+   "genre": "R&B",
    "moods": [],
-   "dur": 299,
-   "views": 354000000,
-   "thumb": "https://i.ytimg.com/vi/COz9lDCFHjw/hqdefault.jpg",
+   "dur": 252,
+   "views": 350000000,
+   "thumb": "https://i.ytimg.com/vi/xe_iCkFsQKE/hqdefault.jpg",
    "external": true
   },
   {
-   "yt": "3YqPKLZF_WU",
-   "id": "yt-3YqPKLZF_WU",
+   "yt": "xG9wDttvua8",
+   "id": "yt-xG9wDttvua8",
    "kind": "video",
-   "title": "My Universe",
-   "rawTitle": "Coldplay X BTS - My Universe (Official Video)",
-   "artist": "Coldplay",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 283,
-   "views": 353000000,
-   "thumb": "https://i.ytimg.com/vi/3YqPKLZF_WU/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "37wmW9kYAlQ",
-   "id": "yt-37wmW9kYAlQ",
-   "kind": "video",
-   "title": "Mientras Me Curo Del Cora",
-   "rawTitle": "KAROL G - Mientras Me Curo Del Cora (Official Video)",
-   "artist": "KAROL G",
+   "title": "HACIENDO QUE ME AMAS",
+   "rawTitle": "BAD BUNNY - HACIENDO QUE ME AMAS | EL ÚLTIMO TOUR DEL MUNDO [Visualizer]",
+   "artist": "Bad Bunny",
    "album": "Ritmo",
    "genre": "Reggaetón",
    "moods": [
     "Fiesta latina",
     "Fiesta"
    ],
-   "dur": 181,
-   "views": 340000000,
-   "thumb": "https://i.ytimg.com/vi/37wmW9kYAlQ/hqdefault.jpg",
+   "dur": 218,
+   "views": 346000000,
+   "thumb": "https://i.ytimg.com/vi/xG9wDttvua8/hqdefault.jpg",
    "external": true
   },
   {
-   "yt": "ikFFVfObwss",
-   "id": "yt-ikFFVfObwss",
+   "yt": "5WL672bjJgM",
+   "id": "yt-5WL672bjJgM",
    "kind": "video",
-   "title": "Highway to Hell",
-   "rawTitle": "Highway to Hell",
-   "artist": "AC/DC",
+   "title": "Let Me Love You ft. Lil Wayne",
+   "rawTitle": "Ariana Grande - Let Me Love You ft. Lil Wayne (Official Video)",
+   "artist": "Ariana Grande",
    "album": "Ritmo",
-   "genre": "Rock",
+   "genre": "Pop",
    "moods": [
-    "Energía"
+    "Romántico"
    ],
-   "dur": 209,
-   "views": 339000000,
-   "thumb": "https://i.ytimg.com/vi/ikFFVfObwss/hqdefault.jpg",
+   "dur": 231,
+   "views": 338000000,
+   "thumb": "https://i.ytimg.com/vi/5WL672bjJgM/hqdefault.jpg",
    "external": true
   },
   {
@@ -4196,6 +4302,21 @@
    "external": true
   },
   {
+   "yt": "LELFIuhSPCI",
+   "id": "yt-LELFIuhSPCI",
+   "kind": "video",
+   "title": "Everyday ft. Future",
+   "rawTitle": "Ariana Grande - Everyday (Official Lyric Video) ft. Future",
+   "artist": "Ariana Grande",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 195,
+   "views": 326000000,
+   "thumb": "https://i.ytimg.com/vi/LELFIuhSPCI/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "qIOYw9Yx0N8",
    "id": "yt-qIOYw9Yx0N8",
    "kind": "video",
@@ -4211,6 +4332,24 @@
    "dur": 168,
    "views": 323000000,
    "thumb": "https://i.ytimg.com/vi/qIOYw9Yx0N8/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "fEYUoBgYKzw",
+   "id": "yt-fEYUoBgYKzw",
+   "kind": "video",
+   "title": "LA DIFÍCIL",
+   "rawTitle": "BAD BUNNY - LA DIFÍCIL | YHLQMDLG (Video Oficial)",
+   "artist": "Bad Bunny",
+   "album": "Ritmo",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 193,
+   "views": 318000000,
+   "thumb": "https://i.ytimg.com/vi/fEYUoBgYKzw/hqdefault.jpg",
    "external": true
   },
   {
@@ -4271,23 +4410,23 @@
    "genre": "R&B",
    "moods": [],
    "dur": 362,
-   "views": 307000000,
+   "views": 308000000,
    "thumb": "https://i.ytimg.com/vi/ygTZZpVkmKg/hqdefault.jpg",
    "external": true
   },
   {
-   "yt": "5EpyN_6dqyk",
-   "id": "yt-5EpyN_6dqyk",
+   "yt": "O1OTWCd40bc",
+   "id": "yt-O1OTWCd40bc",
    "kind": "video",
-   "title": "The Weeknd, Playboi Carti - Timeless",
-   "rawTitle": "The Weeknd, Playboi Carti - Timeless",
+   "title": "Wicked Games",
+   "rawTitle": "The Weeknd - Wicked Games (Official Video - Explicit)",
    "artist": "The Weeknd",
    "album": "Ritmo",
    "genre": "R&B",
    "moods": [],
-   "dur": 257,
-   "views": 306000000,
-   "thumb": "https://i.ytimg.com/vi/5EpyN_6dqyk/hqdefault.jpg",
+   "dur": 282,
+   "views": 304000000,
+   "thumb": "https://i.ytimg.com/vi/O1OTWCd40bc/hqdefault.jpg",
    "external": true
   },
   {
@@ -4303,23 +4442,6 @@
    "dur": 242,
    "views": 299000000,
    "thumb": "https://i.ytimg.com/vi/OlStmta0Vh4/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "04854XqcfCY",
-   "id": "yt-04854XqcfCY",
-   "kind": "video",
-   "title": "We Are The Champions",
-   "rawTitle": "Queen - We Are The Champions (Official Video Remastered)",
-   "artist": "Queen Official",
-   "album": "Ritmo",
-   "genre": "Rock",
-   "moods": [
-    "Energía"
-   ],
-   "dur": 185,
-   "views": 299000000,
-   "thumb": "https://i.ytimg.com/vi/04854XqcfCY/hqdefault.jpg",
    "external": true
   },
   {
@@ -4438,6 +4560,38 @@
    "external": true
   },
   {
+   "yt": "uJdu4Lfy8aI",
+   "id": "yt-uJdu4Lfy8aI",
+   "kind": "video",
+   "title": "Set Fire to the Rain",
+   "rawTitle": "Set Fire to the Rain",
+   "artist": "Adele",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 243,
+   "views": 278000000,
+   "thumb": "https://i.ytimg.com/vi/uJdu4Lfy8aI/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "yXvyJDqqQec",
+   "id": "yt-yXvyJDqqQec",
+   "kind": "video",
+   "title": "Rihanna Love On the Brain",
+   "rawTitle": "Rihanna Love On the Brain | Live at Global Citizen Festival 2016",
+   "artist": "Global Citizen",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [
+    "Romántico"
+   ],
+   "dur": 229,
+   "views": 276000000,
+   "thumb": "https://i.ytimg.com/vi/yXvyJDqqQec/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "a01QQZyl-_I",
    "id": "yt-a01QQZyl-_I",
    "kind": "video",
@@ -4500,23 +4654,6 @@
    "external": true
   },
   {
-   "yt": "Xwy-3aI435o",
-   "id": "yt-Xwy-3aI435o",
-   "kind": "video",
-   "title": "Have You Ever Seen The Rain",
-   "rawTitle": "Have You Ever Seen The Rain",
-   "artist": "Creedence Clearwater Revival",
-   "album": "Ritmo",
-   "genre": "Rock",
-   "moods": [
-    "Energía"
-   ],
-   "dur": 161,
-   "views": 267000000,
-   "thumb": "https://i.ytimg.com/vi/Xwy-3aI435o/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "cW8VLC9nnTo",
    "id": "yt-cW8VLC9nnTo",
    "kind": "video",
@@ -4575,8 +4712,26 @@
     "Fiesta"
    ],
    "dur": 229,
-   "views": 261000000,
+   "views": 262000000,
    "thumb": "https://i.ytimg.com/vi/ROgcM9-N9jM/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "B-mmOSi3K_k",
+   "id": "yt-B-mmOSi3K_k",
+   "kind": "video",
+   "title": "S91",
+   "rawTitle": "KAROL G - S91 (Official Video)",
+   "artist": "KAROL G",
+   "album": "Ritmo",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 186,
+   "views": 256000000,
+   "thumb": "https://i.ytimg.com/vi/B-mmOSi3K_k/hqdefault.jpg",
    "external": true
   },
   {
@@ -4607,21 +4762,6 @@
    "dur": 222,
    "views": 253000000,
    "thumb": "https://i.ytimg.com/vi/-PZsSWwc9xA/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "fXw0jcYbqdo",
-   "id": "yt-fXw0jcYbqdo",
-   "kind": "video",
-   "title": "Talking To The Moon",
-   "rawTitle": "Bruno Mars - Talking To The Moon (Official Lyric Video)",
-   "artist": "Bruno Mars",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 215,
-   "views": 252000000,
-   "thumb": "https://i.ytimg.com/vi/fXw0jcYbqdo/hqdefault.jpg",
    "external": true
   },
   {
@@ -4670,21 +4810,6 @@
    "dur": 310,
    "views": 248000000,
    "thumb": "https://i.ytimg.com/vi/b1kbLwvqugk/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "JDb3ZZD4bA0",
-   "id": "yt-JDb3ZZD4bA0",
-   "kind": "video",
-   "title": "Marvins Room",
-   "rawTitle": "Marvins Room",
-   "artist": "Drake",
-   "album": "Ritmo",
-   "genre": "Hip-Hop",
-   "moods": [],
-   "dur": 348,
-   "views": 248000000,
-   "thumb": "https://i.ytimg.com/vi/JDb3ZZD4bA0/hqdefault.jpg",
    "external": true
   },
   {
@@ -4768,6 +4893,21 @@
    "external": true
   },
   {
+   "yt": "46p-IxAVJ74",
+   "id": "yt-46p-IxAVJ74",
+   "kind": "video",
+   "title": "Residuals",
+   "rawTitle": "Chris Brown - Residuals (Official Video)",
+   "artist": "Chris Brown",
+   "album": "Ritmo",
+   "genre": "R&B",
+   "moods": [],
+   "dur": 230,
+   "views": 239000000,
+   "thumb": "https://i.ytimg.com/vi/46p-IxAVJ74/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "OiC1rgCPmUQ",
    "id": "yt-OiC1rgCPmUQ",
    "kind": "video",
@@ -4804,18 +4944,18 @@
    "external": true
   },
   {
-   "yt": "K-a8s8OLBSE",
-   "id": "yt-K-a8s8OLBSE",
+   "yt": "8OO1pOqRJkA",
+   "id": "yt-8OO1pOqRJkA",
    "kind": "video",
-   "title": "cardigan",
-   "rawTitle": "Taylor Swift - cardigan",
-   "artist": "Taylor Swift",
+   "title": "Rabiosa (Spanish Version) ft. El Cata",
+   "rawTitle": "Shakira - Rabiosa (Spanish Version) ft. El Cata",
+   "artist": "Shakira",
    "album": "Ritmo",
    "genre": "Pop",
    "moods": [],
-   "dur": 275,
-   "views": 232000000,
-   "thumb": "https://i.ytimg.com/vi/K-a8s8OLBSE/hqdefault.jpg",
+   "dur": 171,
+   "views": 234000000,
+   "thumb": "https://i.ytimg.com/vi/8OO1pOqRJkA/hqdefault.jpg",
    "external": true
   },
   {
@@ -4899,21 +5039,6 @@
    "external": true
   },
   {
-   "yt": "kPhpHvnnn0Q",
-   "id": "yt-kPhpHvnnn0Q",
-   "kind": "video",
-   "title": "Perfect",
-   "rawTitle": "Ed Sheeran - Perfect (Lyrics)",
-   "artist": "7clouds",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 264,
-   "views": 224000000,
-   "thumb": "https://i.ytimg.com/vi/kPhpHvnnn0Q/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "B_HSa1dEL9s",
    "id": "yt-B_HSa1dEL9s",
    "kind": "video",
@@ -4928,6 +5053,36 @@
    "dur": 310,
    "views": 222000000,
    "thumb": "https://i.ytimg.com/vi/B_HSa1dEL9s/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "4ht80uzIhNs",
+   "id": "yt-4ht80uzIhNs",
+   "kind": "video",
+   "title": "I Bet My Life",
+   "rawTitle": "Imagine Dragons - I Bet My Life",
+   "artist": "ImagineDragons",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 214,
+   "views": 220000000,
+   "thumb": "https://i.ytimg.com/vi/4ht80uzIhNs/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "Y2QpQP8wPG8",
+   "id": "yt-Y2QpQP8wPG8",
+   "kind": "video",
+   "title": "WAIT FOR U ft. Drake, Tems",
+   "rawTitle": "Future - WAIT FOR U (Official Audio) ft. Drake, Tems",
+   "artist": "Future",
+   "album": "Ritmo",
+   "genre": "Hip-Hop",
+   "moods": [],
+   "dur": 192,
+   "views": 216000000,
+   "thumb": "https://i.ytimg.com/vi/Y2QpQP8wPG8/hqdefault.jpg",
    "external": true
   },
   {
@@ -4958,6 +5113,21 @@
    "dur": 214,
    "views": 215000000,
    "thumb": "https://i.ytimg.com/vi/3DcoC8p9az8/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "_gyultVTesk",
+   "id": "yt-_gyultVTesk",
+   "kind": "video",
+   "title": "BTS (방탄소년단) '2.0' Official MV",
+   "rawTitle": "BTS (방탄소년단) '2.0' Official MV",
+   "artist": "HYBE LABELS",
+   "album": "Ritmo",
+   "genre": "K-Pop",
+   "moods": [],
+   "dur": 235,
+   "views": 214000000,
+   "thumb": "https://i.ytimg.com/vi/_gyultVTesk/hqdefault.jpg",
    "external": true
   },
   {
@@ -4994,35 +5164,36 @@
    "external": true
   },
   {
-   "yt": "oHmBf4ExtZk",
-   "id": "yt-oHmBf4ExtZk",
+   "yt": "P8_qEf14bGg",
+   "id": "yt-P8_qEf14bGg",
    "kind": "video",
-   "title": "Everyday ft. Future",
-   "rawTitle": "Ariana Grande - Everyday (Official Video) ft. Future",
-   "artist": "Ariana Grande",
+   "title": "Prohibidox",
+   "rawTitle": "Feid - Prohibidox (Official Video)",
+   "artist": "Feid",
    "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 198,
-   "views": 207000000,
-   "thumb": "https://i.ytimg.com/vi/oHmBf4ExtZk/hqdefault.jpg",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 173,
+   "views": 203000000,
+   "thumb": "https://i.ytimg.com/vi/P8_qEf14bGg/hqdefault.jpg",
    "external": true
   },
   {
-   "yt": "0put0_a--Ng",
-   "id": "yt-0put0_a--Ng",
+   "yt": "Mx_OexsUI2M",
+   "id": "yt-Mx_OexsUI2M",
    "kind": "video",
-   "title": "Make You Feel My Love",
-   "rawTitle": "Adele - Make You Feel My Love (Official Video)",
-   "artist": "XL Recordings",
+   "title": "Lift Me Up (From Black Panther: Wakanda Forever)",
+   "rawTitle": "Rihanna - Lift Me Up (From Black Panther: Wakanda Forever)",
+   "artist": "Rihanna",
    "album": "Ritmo",
    "genre": "Pop",
-   "moods": [
-    "Romántico"
-   ],
-   "dur": 247,
-   "views": 205000000,
-   "thumb": "https://i.ytimg.com/vi/0put0_a--Ng/hqdefault.jpg",
+   "moods": [],
+   "dur": 213,
+   "views": 202000000,
+   "thumb": "https://i.ytimg.com/vi/Mx_OexsUI2M/hqdefault.jpg",
    "external": true
   },
   {
@@ -5075,23 +5246,6 @@
    "external": true
   },
   {
-   "yt": "NgEJ9gMxP90",
-   "id": "yt-NgEJ9gMxP90",
-   "kind": "video",
-   "title": "Tren Al Sur",
-   "rawTitle": "Tren Al Sur",
-   "artist": "Los Prisioneros",
-   "album": "Ritmo",
-   "genre": "Rock",
-   "moods": [
-    "Energía"
-   ],
-   "dur": 337,
-   "views": 186000000,
-   "thumb": "https://i.ytimg.com/vi/NgEJ9gMxP90/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "q3zqJs7JUCQ",
    "id": "yt-q3zqJs7JUCQ",
    "kind": "video",
@@ -5116,10 +5270,10 @@
    "rawTitle": "Bruno Mars - I Just Might [Official Music Video]",
    "artist": "Bruno Mars",
    "album": "Ritmo",
-   "genre": "Hip-Hop",
+   "genre": "Pop",
    "moods": [],
    "dur": 213,
-   "views": 182000000,
+   "views": 183000000,
    "thumb": "https://i.ytimg.com/vi/mrV8kK5t0V8/hqdefault.jpg",
    "external": true
   },
@@ -5139,18 +5293,18 @@
    "external": true
   },
   {
-   "yt": "BboMpayJomw",
-   "id": "yt-BboMpayJomw",
+   "yt": "hD5MRBzY1uM",
+   "id": "yt-hD5MRBzY1uM",
    "kind": "video",
-   "title": "No Time To Die",
-   "rawTitle": "Billie Eilish - No Time To Die",
-   "artist": "Billie Eilish",
+   "title": "If It's Lovin' That You Want",
+   "rawTitle": "Rihanna - If It's Lovin' That You Want (Official Music Video)",
+   "artist": "Rihanna",
    "album": "Ritmo",
    "genre": "Pop",
    "moods": [],
-   "dur": 240,
-   "views": 180000000,
-   "thumb": "https://i.ytimg.com/vi/BboMpayJomw/hqdefault.jpg",
+   "dur": 217,
+   "views": 179000000,
+   "thumb": "https://i.ytimg.com/vi/hD5MRBzY1uM/hqdefault.jpg",
    "external": true
   },
   {
@@ -5161,29 +5315,11 @@
    "rawTitle": "Bruno Mars - Risk It All [Official Music Video]",
    "artist": "Bruno Mars",
    "album": "Ritmo",
-   "genre": "R&B",
+   "genre": "Pop",
    "moods": [],
    "dur": 211,
    "views": 178000000,
    "thumb": "https://i.ytimg.com/vi/lY5V4hSLWY8/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "g08y_x83d5E",
-   "id": "yt-g08y_x83d5E",
-   "kind": "video",
-   "title": "Rauw Alejandro, Bad Bunny - Qué Pasaría...",
-   "rawTitle": "Rauw Alejandro, Bad Bunny - Qué Pasaría... (Official Lyric Video)",
-   "artist": "Rauw Alejandro",
-   "album": "Ritmo",
-   "genre": "Reggaetón",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 191,
-   "views": 178000000,
-   "thumb": "https://i.ytimg.com/vi/g08y_x83d5E/hqdefault.jpg",
    "external": true
   },
   {
@@ -5285,36 +5421,53 @@
    "external": true
   },
   {
-   "yt": "G6FuWd4wNd8",
-   "id": "yt-G6FuWd4wNd8",
+   "yt": "nkqVm5aiC28",
+   "id": "yt-nkqVm5aiC28",
    "kind": "video",
-   "title": "Bad Bunny's Apple Music Super Bowl Halftime Show",
-   "rawTitle": "Bad Bunny's Apple Music Super Bowl Halftime Show",
-   "artist": "NFL y 2 más",
+   "title": "All Of The Stars",
+   "rawTitle": "Ed Sheeran - All Of The Stars [Official Music Video]",
+   "artist": "Ed Sheeran",
    "album": "Ritmo",
-   "genre": "Reggaetón",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 822,
-   "views": 162000000,
-   "thumb": "https://i.ytimg.com/vi/G6FuWd4wNd8/hqdefault.jpg",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 255,
+   "views": 167000000,
+   "thumb": "https://i.ytimg.com/vi/nkqVm5aiC28/hqdefault.jpg",
    "external": true
   },
   {
-   "yt": "m1a_GqJf02M",
-   "id": "yt-m1a_GqJf02M",
+   "yt": "oytOOA9sOiE",
+   "id": "yt-oytOOA9sOiE",
    "kind": "video",
-   "title": "God's Plan",
-   "rawTitle": "God's Plan",
-   "artist": "Drake",
+   "title": "Love In The Dark",
+   "rawTitle": "Love In The Dark",
+   "artist": "Adele",
    "album": "Ritmo",
-   "genre": "Hip-Hop",
-   "moods": [],
-   "dur": 199,
-   "views": 157000000,
-   "thumb": "https://i.ytimg.com/vi/m1a_GqJf02M/hqdefault.jpg",
+   "genre": "Pop",
+   "moods": [
+    "Romántico",
+    "Noche"
+   ],
+   "dur": 286,
+   "views": 165000000,
+   "thumb": "https://i.ytimg.com/vi/oytOOA9sOiE/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "P5ZJui3aPoQ",
+   "id": "yt-P5ZJui3aPoQ",
+   "kind": "video",
+   "title": "Carry on Wayward Son",
+   "rawTitle": "Kansas - Carry on Wayward Son (Official Video)",
+   "artist": "KANSAS",
+   "album": "Ritmo",
+   "genre": "Rock",
+   "moods": [
+    "Energía"
+   ],
+   "dur": 324,
+   "views": 164000000,
+   "thumb": "https://i.ytimg.com/vi/P5ZJui3aPoQ/hqdefault.jpg",
    "external": true
   },
   {
@@ -5332,6 +5485,21 @@
    "dur": 285,
    "views": 156000000,
    "thumb": "https://i.ytimg.com/vi/boanuwUMNNQ/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "N31b8DrmzVM",
+   "id": "yt-N31b8DrmzVM",
+   "kind": "video",
+   "title": "Lo Hecho Está Hecho",
+   "rawTitle": "Shakira - Lo Hecho Está Hecho (Official HD Video)",
+   "artist": "Shakira",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 212,
+   "views": 156000000,
+   "thumb": "https://i.ytimg.com/vi/N31b8DrmzVM/hqdefault.jpg",
    "external": true
   },
   {
@@ -5364,6 +5532,21 @@
    "dur": 958,
    "views": 151000000,
    "thumb": "https://i.ytimg.com/vi/F4neLJQC1_E/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "THVbtGqEO1o",
+   "id": "yt-THVbtGqEO1o",
+   "kind": "video",
+   "title": "Fair Trade ft. Travis Scott",
+   "rawTitle": "Drake - Fair Trade (Audio) ft. Travis Scott",
+   "artist": "Drake",
+   "album": "Ritmo",
+   "genre": "Hip-Hop",
+   "moods": [],
+   "dur": 292,
+   "views": 150000000,
+   "thumb": "https://i.ytimg.com/vi/THVbtGqEO1o/hqdefault.jpg",
    "external": true
   },
   {
@@ -5448,7 +5631,7 @@
     "Fiesta"
    ],
    "dur": 228,
-   "views": 139000000,
+   "views": 140000000,
    "thumb": "https://i.ytimg.com/vi/ww7UQTDsPEc/hqdefault.jpg",
    "external": true
   },
@@ -5504,21 +5687,21 @@
    "external": true
   },
   {
-   "yt": "xCkf2L7gFnI",
-   "id": "yt-xCkf2L7gFnI",
+   "yt": "p9Ygppti7YI",
+   "id": "yt-p9Ygppti7YI",
    "kind": "video",
-   "title": "Jay Wheeler, Omar Courtz - De Lejitos (Remix)",
-   "rawTitle": "Jay Wheeler, Omar Courtz - De Lejitos (Remix) (Video Oficial)",
-   "artist": "Jay Wheeler",
+   "title": "Don’t Stop The Music / Only Girl (In The World) / We Found Love / Where Have You Been (...",
+   "rawTitle": "Don’t Stop The Music / Only Girl (In The World) / We Found Love / Where Have You Been (...",
+   "artist": "Rihanna",
    "album": "Ritmo",
-   "genre": "Reggaetón",
+   "genre": "Pop",
    "moods": [
-    "Fiesta latina",
-    "Fiesta"
+    "Fiesta",
+    "Romántico"
    ],
-   "dur": 279,
-   "views": 134000000,
-   "thumb": "https://i.ytimg.com/vi/xCkf2L7gFnI/hqdefault.jpg",
+   "dur": 233,
+   "views": 135000000,
+   "thumb": "https://i.ytimg.com/vi/p9Ygppti7YI/hqdefault.jpg",
    "external": true
   },
   {
@@ -5554,18 +5737,35 @@
    "external": true
   },
   {
-   "yt": "niG3YMU6jFk",
-   "id": "yt-niG3YMU6jFk",
+   "yt": "VMnjF1O4eH0",
+   "id": "yt-VMnjF1O4eH0",
    "kind": "video",
-   "title": "Oh My God",
-   "rawTitle": "Adele - Oh My God (Official Video)",
-   "artist": "Adele",
+   "title": "Fat Bottomed Girls",
+   "rawTitle": "Queen - Fat Bottomed Girls (Official Video)",
+   "artist": "Queen Official",
+   "album": "Ritmo",
+   "genre": "Rock",
+   "moods": [
+    "Energía"
+   ],
+   "dur": 231,
+   "views": 133000000,
+   "thumb": "https://i.ytimg.com/vi/VMnjF1O4eH0/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "_NGQfFCFUn4",
+   "id": "yt-_NGQfFCFUn4",
+   "kind": "video",
+   "title": "Afterglow",
+   "rawTitle": "Ed Sheeran - Afterglow [Official Performance Video]",
+   "artist": "Ed Sheeran",
    "album": "Ritmo",
    "genre": "Pop",
    "moods": [],
-   "dur": 233,
-   "views": 131000000,
-   "thumb": "https://i.ytimg.com/vi/niG3YMU6jFk/hqdefault.jpg",
+   "dur": 199,
+   "views": 133000000,
+   "thumb": "https://i.ytimg.com/vi/_NGQfFCFUn4/hqdefault.jpg",
    "external": true
   },
   {
@@ -5581,6 +5781,21 @@
    "dur": 271,
    "views": 127000000,
    "thumb": "https://i.ytimg.com/vi/ZX_mvoY_Hg0/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "BZ4UzthYTss",
+   "id": "yt-BZ4UzthYTss",
+   "kind": "video",
+   "title": "Stray Kids \"This & That\" M/V",
+   "rawTitle": "Stray Kids \"This & That\" M/V",
+   "artist": "JYP Entertainment y Stray Kids",
+   "album": "Ritmo",
+   "genre": "K-Pop",
+   "moods": [],
+   "dur": 194,
+   "views": 126000000,
+   "thumb": "https://i.ytimg.com/vi/BZ4UzthYTss/hqdefault.jpg",
    "external": true
   },
   {
@@ -5634,21 +5849,6 @@
    "external": true
   },
   {
-   "yt": "i4ZuseKFBF0",
-   "id": "yt-i4ZuseKFBF0",
-   "kind": "video",
-   "title": "Is There Someone Else?",
-   "rawTitle": "The Weeknd - Is There Someone Else? (Audio)",
-   "artist": "The Weeknd",
-   "album": "Ritmo",
-   "genre": "R&B",
-   "moods": [],
-   "dur": 200,
-   "views": 122000000,
-   "thumb": "https://i.ytimg.com/vi/i4ZuseKFBF0/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "41ZY18JqI2A",
    "id": "yt-41ZY18JqI2A",
    "kind": "video",
@@ -5664,18 +5864,21 @@
    "external": true
   },
   {
-   "yt": "HTcL9WkB_wg",
-   "id": "yt-HTcL9WkB_wg",
+   "yt": "0xz5wdKFjM4",
+   "id": "yt-0xz5wdKFjM4",
    "kind": "video",
-   "title": "Anniversary Edition)",
-   "rawTitle": "Passenger - Let Her Go (Feat. Ed Sheeran - Anniversary Edition) [Official Video]",
-   "artist": "Passenger",
+   "title": "Si Te La Encuentras Por Ahí",
+   "rawTitle": "Feid - Si Te La Encuentras Por Ahí (Official Video)",
+   "artist": "Feid",
    "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 286,
-   "views": 121000000,
-   "thumb": "https://i.ytimg.com/vi/HTcL9WkB_wg/hqdefault.jpg",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 192,
+   "views": 118000000,
+   "thumb": "https://i.ytimg.com/vi/0xz5wdKFjM4/hqdefault.jpg",
    "external": true
   },
   {
@@ -5686,7 +5889,7 @@
    "rawTitle": "KAROL G - LATINA FOREVA (Official Video)",
    "artist": "KAROL G",
    "album": "Ritmo",
-   "genre": "Reggaetón",
+   "genre": "Latino",
    "moods": [
     "Fiesta latina",
     "Fiesta"
@@ -5715,21 +5918,6 @@
    "external": true
   },
   {
-   "yt": "yoWJfsk0gvk",
-   "id": "yt-yoWJfsk0gvk",
-   "kind": "video",
-   "title": "Bruno Mars, Anderson .Paak, Silk Sonic - Leave The Door Open",
-   "rawTitle": "Bruno Mars, Anderson .Paak, Silk Sonic - Leave The Door Open (Live from the BET Awards)",
-   "artist": "Bruno Mars",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 251,
-   "views": 116000000,
-   "thumb": "https://i.ytimg.com/vi/yoWJfsk0gvk/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "0p_1QSUsbsM",
    "id": "yt-0p_1QSUsbsM",
    "kind": "video",
@@ -5747,21 +5935,6 @@
    "external": true
   },
   {
-   "yt": "Q_yuO8UNGmY",
-   "id": "yt-Q_yuO8UNGmY",
-   "kind": "video",
-   "title": "Merry Christmas",
-   "rawTitle": "Ed Sheeran & Elton John - Merry Christmas [Official Video]",
-   "artist": "Ed Sheeran",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 210,
-   "views": 114000000,
-   "thumb": "https://i.ytimg.com/vi/Q_yuO8UNGmY/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "82-jTNka3uc",
    "id": "yt-82-jTNka3uc",
    "kind": "video",
@@ -5776,21 +5949,6 @@
    "dur": 301,
    "views": 114000000,
    "thumb": "https://i.ytimg.com/vi/82-jTNka3uc/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "qQrgto184Tk",
-   "id": "yt-qQrgto184Tk",
-   "kind": "video",
-   "title": "Shots",
-   "rawTitle": "Imagine Dragons - Shots",
-   "artist": "ImagineDragons",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 241,
-   "views": 108000000,
-   "thumb": "https://i.ytimg.com/vi/qQrgto184Tk/hqdefault.jpg",
    "external": true
   },
   {
@@ -5839,20 +5997,18 @@
    "external": true
   },
   {
-   "yt": "6yP1tcy9a10",
-   "id": "yt-6yP1tcy9a10",
+   "yt": "2GJfWMYCWY0",
+   "id": "yt-2GJfWMYCWY0",
    "kind": "video",
-   "title": "Rock You Like A Hurricane",
-   "rawTitle": "Scorpions - Rock You Like A Hurricane (Official Music Video)",
-   "artist": "Scorpions",
+   "title": "‘GO’ M/V",
+   "rawTitle": "BLACKPINK - ‘GO’ M/V",
+   "artist": "BLACKPINK",
    "album": "Ritmo",
-   "genre": "Rock",
-   "moods": [
-    "Energía"
-   ],
-   "dur": 253,
-   "views": 102000000,
-   "thumb": "https://i.ytimg.com/vi/6yP1tcy9a10/hqdefault.jpg",
+   "genre": "K-Pop",
+   "moods": [],
+   "dur": 202,
+   "views": 101000000,
+   "thumb": "https://i.ytimg.com/vi/2GJfWMYCWY0/hqdefault.jpg",
    "external": true
   },
   {
@@ -5871,6 +6027,23 @@
    "external": true
   },
   {
+   "yt": "9HZ_tx8aWuA",
+   "id": "yt-9HZ_tx8aWuA",
+   "kind": "video",
+   "title": "Fade To Black",
+   "rawTitle": "Fade To Black (Remastered)",
+   "artist": "Metallica",
+   "album": "Ritmo",
+   "genre": "Rock",
+   "moods": [
+    "Energía"
+   ],
+   "dur": 418,
+   "views": 100000000,
+   "thumb": "https://i.ytimg.com/vi/9HZ_tx8aWuA/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "OORBa32WFcM",
    "id": "yt-OORBa32WFcM",
    "kind": "video",
@@ -5883,24 +6056,6 @@
    "dur": 217,
    "views": 100000000,
    "thumb": "https://i.ytimg.com/vi/OORBa32WFcM/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "p72neCuUTFs",
-   "id": "yt-p72neCuUTFs",
-   "kind": "video",
-   "title": "Ivonny Bonita",
-   "rawTitle": "KAROL G - Ivonny Bonita (Visualizer)",
-   "artist": "KAROL G",
-   "album": "Ritmo",
-   "genre": "Reggaetón",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 223,
-   "views": 97000000,
-   "thumb": "https://i.ytimg.com/vi/p72neCuUTFs/hqdefault.jpg",
    "external": true
   },
   {
@@ -5953,6 +6108,54 @@
    "external": true
   },
   {
+   "yt": "GL-OwC7ETNw",
+   "id": "yt-GL-OwC7ETNw",
+   "kind": "video",
+   "title": "idontwannabeyouanymore",
+   "rawTitle": "✧Billie Eilish - idontwannabeyouanymore || Subtitulado.⇇",
+   "artist": "iCupid",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 203,
+   "views": 94000000,
+   "thumb": "https://i.ytimg.com/vi/GL-OwC7ETNw/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "AL_Ogy2TTXs",
+   "id": "yt-AL_Ogy2TTXs",
+   "kind": "video",
+   "title": "El Chaval De La Bachata - Dile A El @829MusicMundialLLC",
+   "rawTitle": "El Chaval De La Bachata - Dile A El ( Video Oficial ) @829MusicMundialLLC",
+   "artist": "El Chaval de la Bachata y 829Music Mundial LLC",
+   "album": "Ritmo",
+   "genre": "Bachata",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 237,
+   "views": 92000000,
+   "thumb": "https://i.ytimg.com/vi/AL_Ogy2TTXs/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "sjtyqmA-pH4",
+   "id": "yt-sjtyqmA-pH4",
+   "kind": "video",
+   "title": "Catch Catch",
+   "rawTitle": "Catch Catch",
+   "artist": "YENA(최예나)",
+   "album": "Ritmo",
+   "genre": "K-Pop",
+   "moods": [],
+   "dur": 180,
+   "views": 91000000,
+   "thumb": "https://i.ytimg.com/vi/sjtyqmA-pH4/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "HpphFd_mzXE",
    "id": "yt-HpphFd_mzXE",
    "kind": "video",
@@ -5980,24 +6183,6 @@
    "dur": 237,
    "views": 91000000,
    "thumb": "https://i.ytimg.com/vi/SD4yRDY9mek/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "sUJkCXE4sAA",
-   "id": "yt-sUJkCXE4sAA",
-   "kind": "video",
-   "title": "Love Of My Life",
-   "rawTitle": "Queen - Love Of My Life (Official Video)",
-   "artist": "Queen Official",
-   "album": "Ritmo",
-   "genre": "Rock",
-   "moods": [
-    "Romántico",
-    "Energía"
-   ],
-   "dur": 222,
-   "views": 89000000,
-   "thumb": "https://i.ytimg.com/vi/sUJkCXE4sAA/hqdefault.jpg",
    "external": true
   },
   {
@@ -6053,24 +6238,6 @@
    "external": true
   },
   {
-   "yt": "6KibGmX6vYY",
-   "id": "yt-6KibGmX6vYY",
-   "kind": "video",
-   "title": "CORAZÓN CULPABLE – BACHATA – COJELO AHÍ",
-   "rawTitle": "3.. ANTHONY SANTOS – CORAZÓN CULPABLE – BACHATA – COJELO AHÍ",
-   "artist": "Anthony Santos",
-   "album": "Ritmo",
-   "genre": "Bachata",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 363,
-   "views": 86000000,
-   "thumb": "https://i.ytimg.com/vi/6KibGmX6vYY/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "3lfnR7OhZY8",
    "id": "yt-3lfnR7OhZY8",
    "kind": "video",
@@ -6121,6 +6288,21 @@
    "external": true
   },
   {
+   "yt": "h8DLofLM7No",
+   "id": "yt-h8DLofLM7No",
+   "kind": "video",
+   "title": "Lavender Haze",
+   "rawTitle": "Taylor Swift - Lavender Haze (Official Music Video)",
+   "artist": "Taylor Swift",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 211,
+   "views": 84000000,
+   "thumb": "https://i.ytimg.com/vi/h8DLofLM7No/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "jDvYDzFOK9A",
    "id": "yt-jDvYDzFOK9A",
    "kind": "video",
@@ -6136,6 +6318,51 @@
    "external": true
   },
   {
+   "yt": "F7o0upORtCw",
+   "id": "yt-F7o0upORtCw",
+   "kind": "video",
+   "title": "Rich Baby Daddy ft. Sexyy Red, SZA",
+   "rawTitle": "Drake - Rich Baby Daddy (Audio) ft. Sexyy Red, SZA",
+   "artist": "Drake",
+   "album": "Ritmo",
+   "genre": "Hip-Hop",
+   "moods": [],
+   "dur": 320,
+   "views": 81000000,
+   "thumb": "https://i.ytimg.com/vi/F7o0upORtCw/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "5TAko3RH0bk",
+   "id": "yt-5TAko3RH0bk",
+   "kind": "video",
+   "title": "The Morning",
+   "rawTitle": "The Weeknd - The Morning",
+   "artist": "The Weeknd",
+   "album": "Ritmo",
+   "genre": "R&B",
+   "moods": [],
+   "dur": 320,
+   "views": 80000000,
+   "thumb": "https://i.ytimg.com/vi/5TAko3RH0bk/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "8ex38L8xtNI",
+   "id": "yt-8ex38L8xtNI",
+   "kind": "video",
+   "title": "House Of Balloons / Glass Table Girls",
+   "rawTitle": "The Weeknd - House Of Balloons / Glass Table Girls",
+   "artist": "The Weeknd",
+   "album": "Ritmo",
+   "genre": "R&B",
+   "moods": [],
+   "dur": 413,
+   "views": 79000000,
+   "thumb": "https://i.ytimg.com/vi/8ex38L8xtNI/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "-e7wiyNO2us",
    "id": "yt--e7wiyNO2us",
    "kind": "video",
@@ -6148,21 +6375,6 @@
    "dur": 157,
    "views": 76000000,
    "thumb": "https://i.ytimg.com/vi/-e7wiyNO2us/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "5UMCrq-bBCg",
-   "id": "yt-5UMCrq-bBCg",
-   "kind": "video",
-   "title": "I Bet You Think About Me (Taylor's Version)",
-   "rawTitle": "Taylor Swift ft. Chris Stapleton - I Bet You Think About Me (Taylor's Version) (Official Video)",
-   "artist": "Taylor Swift",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 376,
-   "views": 74000000,
-   "thumb": "https://i.ytimg.com/vi/5UMCrq-bBCg/hqdefault.jpg",
    "external": true
   },
   {
@@ -6226,48 +6438,38 @@
    "external": true
   },
   {
-   "yt": "fXSovfzyx28",
-   "id": "yt-fXSovfzyx28",
+   "yt": "9rlW2rUzyn0",
+   "id": "yt-9rlW2rUzyn0",
    "kind": "video",
-   "title": "Life In Technicolor ii",
-   "rawTitle": "Coldplay - Life In Technicolor ii (Official Video)",
-   "artist": "Coldplay",
+   "title": "Yebba’s Heartbreak",
+   "rawTitle": "Drake - Yebba’s Heartbreak (Audio)",
+   "artist": "Drake",
    "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 267,
-   "views": 71000000,
-   "thumb": "https://i.ytimg.com/vi/fXSovfzyx28/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "bn8gP5N8hqM",
-   "id": "yt-bn8gP5N8hqM",
-   "kind": "video",
-   "title": "Cry For Me",
-   "rawTitle": "The Weeknd - Cry For Me (Official Music Video)",
-   "artist": "The Weeknd",
-   "album": "Ritmo",
-   "genre": "R&B",
-   "moods": [],
-   "dur": 246,
+   "genre": "Hip-Hop",
+   "moods": [
+    "Triste",
+    "Romántico"
+   ],
+   "dur": 135,
    "views": 70000000,
-   "thumb": "https://i.ytimg.com/vi/bn8gP5N8hqM/hqdefault.jpg",
+   "thumb": "https://i.ytimg.com/vi/9rlW2rUzyn0/hqdefault.jpg",
    "external": true
   },
   {
-   "yt": "o9_LOwDeMBA",
-   "id": "yt-o9_LOwDeMBA",
+   "yt": "QrJosGJj7w0",
+   "id": "yt-QrJosGJj7w0",
    "kind": "video",
-   "title": "Two Different Worlds",
-   "rawTitle": "Sesame Street: Ed Sheeran- Two Different Worlds",
-   "artist": "Sesame Street",
+   "title": "We Found Love ft. Calvin Harris",
+   "rawTitle": "Rihanna - We Found Love (Lyrics) ft. Calvin Harris",
+   "artist": "Taj Tracks",
    "album": "Ritmo",
    "genre": "Pop",
-   "moods": [],
-   "dur": 169,
-   "views": 69000000,
-   "thumb": "https://i.ytimg.com/vi/o9_LOwDeMBA/hqdefault.jpg",
+   "moods": [
+    "Romántico"
+   ],
+   "dur": 215,
+   "views": 68000000,
+   "thumb": "https://i.ytimg.com/vi/QrJosGJj7w0/hqdefault.jpg",
    "external": true
   },
   {
@@ -6286,6 +6488,74 @@
    "dur": 143,
    "views": 68000000,
    "thumb": "https://i.ytimg.com/vi/9TxHD4Pyocs/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "qpQSjf-0Lc8",
+   "id": "yt-qpQSjf-0Lc8",
+   "kind": "video",
+   "title": "bitches broken hearts",
+   "rawTitle": "Billie Eilish - bitches broken hearts (Official Audio)",
+   "artist": "Billie Eilish",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [
+    "Romántico"
+   ],
+   "dur": 178,
+   "views": 67000000,
+   "thumb": "https://i.ytimg.com/vi/qpQSjf-0Lc8/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "htToA3wcFl4",
+   "id": "yt-htToA3wcFl4",
+   "kind": "video",
+   "title": "SOMEBODY LOVES ME",
+   "rawTitle": "PARTYNEXTDOOR, Drake - SOMEBODY LOVES ME",
+   "artist": "PARTYNEXTDOOR",
+   "album": "Ritmo",
+   "genre": "Hip-Hop",
+   "moods": [
+    "Fiesta",
+    "Romántico"
+   ],
+   "dur": 183,
+   "views": 65000000,
+   "thumb": "https://i.ytimg.com/vi/htToA3wcFl4/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "3AMxQTDPhow",
+   "id": "yt-3AMxQTDPhow",
+   "kind": "video",
+   "title": "clasicos de la musica electronica",
+   "rawTitle": "clasicos de la musica electronica",
+   "artist": "armando toriz",
+   "album": "Ritmo",
+   "genre": "Electrónica",
+   "moods": [],
+   "dur": 1683,
+   "views": 63000000,
+   "thumb": "https://i.ytimg.com/vi/3AMxQTDPhow/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "6VYUx8HO5mI",
+   "id": "yt-6VYUx8HO5mI",
+   "kind": "video",
+   "title": "Tú con Él",
+   "rawTitle": "Rauw Alejandro - Tú con Él (Live from New York City)",
+   "artist": "Rauw Alejandro",
+   "album": "Ritmo",
+   "genre": "Salsa",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 307,
+   "views": 63000000,
+   "thumb": "https://i.ytimg.com/vi/6VYUx8HO5mI/hqdefault.jpg",
    "external": true
   },
   {
@@ -6323,18 +6593,35 @@
    "external": true
   },
   {
-   "yt": "23g5HBOg3Ic",
-   "id": "yt-23g5HBOg3Ic",
+   "yt": "HNybmS3xNAQ",
+   "id": "yt-HNybmS3xNAQ",
    "kind": "video",
-   "title": "Celestial",
-   "rawTitle": "Ed Sheeran, Pokémon - Celestial [Official Video]",
-   "artist": "Ed Sheeran",
+   "title": "For Whom the Bell Tolls [Orgullo, Pasión, y Gloria]",
+   "rawTitle": "Metallica - For Whom the Bell Tolls (Live in Mexico City) [Orgullo, Pasión, y Gloria]",
+   "artist": "Metallica",
    "album": "Ritmo",
-   "genre": "Pop",
+   "genre": "Rock",
+   "moods": [
+    "Energía"
+   ],
+   "dur": 331,
+   "views": 62000000,
+   "thumb": "https://i.ytimg.com/vi/HNybmS3xNAQ/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "8ekJMC8OtGU",
+   "id": "yt-8ekJMC8OtGU",
+   "kind": "video",
+   "title": "NOKIA",
+   "rawTitle": "Drake - NOKIA (Official Music Video)",
+   "artist": "Drake",
+   "album": "Ritmo",
+   "genre": "Hip-Hop",
    "moods": [],
-   "dur": 263,
-   "views": 61000000,
-   "thumb": "https://i.ytimg.com/vi/23g5HBOg3Ic/hqdefault.jpg",
+   "dur": 266,
+   "views": 62000000,
+   "thumb": "https://i.ytimg.com/vi/8ekJMC8OtGU/hqdefault.jpg",
    "external": true
   },
   {
@@ -6353,21 +6640,48 @@
    "external": true
   },
   {
-   "yt": "BrnDlRmW5hs",
-   "id": "yt-BrnDlRmW5hs",
+   "yt": "SyuRxUKDJjI",
+   "id": "yt-SyuRxUKDJjI",
    "kind": "video",
-   "title": "old songs but it's lofi remix",
-   "rawTitle": "old songs but it's lofi remix",
-   "artist": "Lo-fi Music",
+   "title": "Someone Like You",
+   "rawTitle": "Adele - Someone Like You (Español + Lyrics) | video musical",
+   "artist": "iPerol",
    "album": "Ritmo",
-   "genre": "Lo-Fi",
-   "moods": [
-    "Relajado",
-    "Concentración"
-   ],
-   "dur": 1441,
+   "genre": "Pop",
+   "moods": [],
+   "dur": 286,
    "views": 58000000,
-   "thumb": "https://i.ytimg.com/vi/BrnDlRmW5hs/hqdefault.jpg",
+   "thumb": "https://i.ytimg.com/vi/SyuRxUKDJjI/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "WVg1mbxTkFo",
+   "id": "yt-WVg1mbxTkFo",
+   "kind": "video",
+   "title": "Coming Down",
+   "rawTitle": "The Weeknd - Coming Down",
+   "artist": "The Weeknd",
+   "album": "Ritmo",
+   "genre": "R&B",
+   "moods": [],
+   "dur": 301,
+   "views": 57000000,
+   "thumb": "https://i.ytimg.com/vi/WVg1mbxTkFo/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "igcsNG4aruA",
+   "id": "yt-igcsNG4aruA",
+   "kind": "video",
+   "title": "Did it Again",
+   "rawTitle": "Shakira - Did it Again (Official HD Video)",
+   "artist": "Shakira",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 210,
+   "views": 57000000,
+   "thumb": "https://i.ytimg.com/vi/igcsNG4aruA/hqdefault.jpg",
    "external": true
   },
   {
@@ -6383,21 +6697,6 @@
    "dur": 175,
    "views": 57000000,
    "thumb": "https://i.ytimg.com/vi/MA0aCUxItYA/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "Lufa9QAFFeY",
-   "id": "yt-Lufa9QAFFeY",
-   "kind": "video",
-   "title": "new trick",
-   "rawTitle": "ROSÉ - new trick (OFFICIAL MUSIC VIDEO)",
-   "artist": "ROSÉ",
-   "album": "Ritmo",
-   "genre": "K-Pop",
-   "moods": [],
-   "dur": 182,
-   "views": 56000000,
-   "thumb": "https://i.ytimg.com/vi/Lufa9QAFFeY/hqdefault.jpg",
    "external": true
   },
   {
@@ -6418,21 +6717,20 @@
    "external": true
   },
   {
-   "yt": "K9TWrAqo3OM",
-   "id": "yt-K9TWrAqo3OM",
+   "yt": "CEjU9KVABao",
+   "id": "yt-CEjU9KVABao",
    "kind": "video",
-   "title": "Doblexxó",
-   "rawTitle": "J Balvin, Feid - Doblexxó (Official Video)",
-   "artist": "J Balvin",
+   "title": "Breakthru",
+   "rawTitle": "Queen - Breakthru (Official Video Remastered)",
+   "artist": "Queen Official",
    "album": "Ritmo",
-   "genre": "Reggaetón",
+   "genre": "Rock",
    "moods": [
-    "Fiesta latina",
-    "Fiesta"
+    "Energía"
    ],
-   "dur": 177,
+   "dur": 266,
    "views": 53000000,
-   "thumb": "https://i.ytimg.com/vi/K9TWrAqo3OM/hqdefault.jpg",
+   "thumb": "https://i.ytimg.com/vi/CEjU9KVABao/hqdefault.jpg",
    "external": true
   },
   {
@@ -6453,35 +6751,36 @@
    "external": true
   },
   {
-   "yt": "am5FI9DkO80",
-   "id": "yt-am5FI9DkO80",
+   "yt": "Sy3f35o_TlQ",
+   "id": "yt-Sy3f35o_TlQ",
    "kind": "video",
-   "title": "L’AMOUR DE MA VIE",
-   "rawTitle": "Billie Eilish - L’AMOUR DE MA VIE (Official Lyric Video)",
-   "artist": "Billie Eilish",
+   "title": "Coleccionando Heridas Dany Deglein, dennis fernando",
+   "rawTitle": "KAROL G ft. Marco Antonio Solis - Coleccionando Heridas (Music Video) Dany Deglein, dennis fernando",
+   "artist": "UNIONN LATINA",
    "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 335,
-   "views": 49000000,
-   "thumb": "https://i.ytimg.com/vi/am5FI9DkO80/hqdefault.jpg",
+   "genre": "Latino",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 1003,
+   "views": 48000000,
+   "thumb": "https://i.ytimg.com/vi/Sy3f35o_TlQ/hqdefault.jpg",
    "external": true
   },
   {
-   "yt": "V3IVdLo-2NM",
-   "id": "yt-V3IVdLo-2NM",
+   "yt": "D968qfUZMUE",
+   "id": "yt-D968qfUZMUE",
    "kind": "video",
-   "title": "feelslikeimfallinginlove",
-   "rawTitle": "Coldplay - feelslikeimfallinginlove (Official Video)",
-   "artist": "Coldplay",
+   "title": "A2O LITE 'NEON'",
+   "rawTitle": "A2O LITE 'NEON' Official Video",
+   "artist": "A2O WORLD y A2O LITE",
    "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [
-    "Romántico"
-   ],
-   "dur": 261,
-   "views": 48000000,
-   "thumb": "https://i.ytimg.com/vi/V3IVdLo-2NM/hqdefault.jpg",
+   "genre": "K-Pop",
+   "moods": [],
+   "dur": 223,
+   "views": 45000000,
+   "thumb": "https://i.ytimg.com/vi/D968qfUZMUE/hqdefault.jpg",
    "external": true
   },
   {
@@ -6503,6 +6802,51 @@
    "external": true
   },
   {
+   "yt": "46h0LvDHgIs",
+   "id": "yt-46h0LvDHgIs",
+   "kind": "video",
+   "title": "TUIDE (튜이드) ‘SUN KISS’ Official MV",
+   "rawTitle": "TUIDE (튜이드) ‘SUN KISS’ Official MV",
+   "artist": "HYBE LABELS y TUIDE",
+   "album": "Ritmo",
+   "genre": "K-Pop",
+   "moods": [],
+   "dur": 200,
+   "views": 42000000,
+   "thumb": "https://i.ytimg.com/vi/46h0LvDHgIs/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "Ar48yzjn1PE",
+   "id": "yt-Ar48yzjn1PE",
+   "kind": "video",
+   "title": "Sparks",
+   "rawTitle": "Coldplay - Sparks",
+   "artist": "Somber Sounds",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 228,
+   "views": 42000000,
+   "thumb": "https://i.ytimg.com/vi/Ar48yzjn1PE/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "WAGbq3A9HfA",
+   "id": "yt-WAGbq3A9HfA",
+   "kind": "video",
+   "title": "The Hardest Part",
+   "rawTitle": "Coldplay - The Hardest Part (Official Video)",
+   "artist": "Coldplay",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 291,
+   "views": 42000000,
+   "thumb": "https://i.ytimg.com/vi/WAGbq3A9HfA/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "weU76DGHKU0",
    "id": "yt-weU76DGHKU0",
    "kind": "video",
@@ -6518,6 +6862,21 @@
    "external": true
   },
   {
+   "yt": "mcg4z1gGbEw",
+   "id": "yt-mcg4z1gGbEw",
+   "kind": "video",
+   "title": "LET 'EM KNOW",
+   "rawTitle": "T.I. - LET 'EM KNOW (Official Video)",
+   "artist": "T.I.",
+   "album": "Ritmo",
+   "genre": "Hip-Hop",
+   "moods": [],
+   "dur": 177,
+   "views": 41000000,
+   "thumb": "https://i.ytimg.com/vi/mcg4z1gGbEw/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "UKunvvN2iCk",
    "id": "yt-UKunvvN2iCk",
    "kind": "video",
@@ -6530,25 +6889,6 @@
    "dur": 212,
    "views": 41000000,
    "thumb": "https://i.ytimg.com/vi/UKunvvN2iCk/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "PI3LAgGBxqU",
-   "id": "yt-PI3LAgGBxqU",
-   "kind": "video",
-   "title": "Good Old Fashioned Lover Boy (Top Of The Pops, 1977)",
-   "rawTitle": "Queen - Good Old Fashioned Lover Boy (Top Of The Pops, 1977)",
-   "artist": "Queen Official",
-   "album": "Ritmo",
-   "genre": "Rock",
-   "moods": [
-    "Fiesta",
-    "Romántico",
-    "Energía"
-   ],
-   "dur": 187,
-   "views": 41000000,
-   "thumb": "https://i.ytimg.com/vi/PI3LAgGBxqU/hqdefault.jpg",
    "external": true
   },
   {
@@ -6731,36 +7071,18 @@
    "external": true
   },
   {
-   "yt": "Vw_lols-BZA",
-   "id": "yt-Vw_lols-BZA",
+   "yt": "VfKWWBZwtSU",
+   "id": "yt-VfKWWBZwtSU",
    "kind": "video",
-   "title": "BAILE INoLVIDABLE 💃🏽",
-   "rawTitle": "Bad Bunny - BAILE INoLVIDABLE (Letra) 💃🏽",
-   "artist": "Darwin",
+   "title": "Set Electronica Vieja “Parte 1” (2010 Version)",
+   "rawTitle": "Set Electronica Vieja “Parte 1” (2010 Version) | #StereoLove | By Matheo",
+   "artist": "MATHEO",
    "album": "Ritmo",
-   "genre": "Reggaetón",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 481,
-   "views": 33000000,
-   "thumb": "https://i.ytimg.com/vi/Vw_lols-BZA/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "BJpCypyvYtc",
-   "id": "yt-BJpCypyvYtc",
-   "kind": "video",
-   "title": "Última",
-   "rawTitle": "Shakira - Última (Official Video)",
-   "artist": "Shakira",
-   "album": "Ritmo",
-   "genre": "Pop",
+   "genre": "Electrónica",
    "moods": [],
-   "dur": 180,
-   "views": 33000000,
-   "thumb": "https://i.ytimg.com/vi/BJpCypyvYtc/hqdefault.jpg",
+   "dur": 1228,
+   "views": 31000000,
+   "thumb": "https://i.ytimg.com/vi/VfKWWBZwtSU/hqdefault.jpg",
    "external": true
   },
   {
@@ -6779,23 +7101,6 @@
    "dur": 1236,
    "views": 31000000,
    "thumb": "https://i.ytimg.com/vi/7orDtEb2y7g/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "Z-cEyiM9adE",
-   "id": "yt-Z-cEyiM9adE",
-   "kind": "video",
-   "title": "Wherever I May Roam",
-   "rawTitle": "Wherever I May Roam (Remastered)",
-   "artist": "Metallica",
-   "album": "Ritmo",
-   "genre": "Rock",
-   "moods": [
-    "Energía"
-   ],
-   "dur": 405,
-   "views": 31000000,
-   "thumb": "https://i.ytimg.com/vi/Z-cEyiM9adE/hqdefault.jpg",
    "external": true
   },
   {
@@ -6862,21 +7167,6 @@
    "external": true
   },
   {
-   "yt": "aQXq3ndLkHs",
-   "id": "yt-aQXq3ndLkHs",
-   "kind": "video",
-   "title": "KAROL G, Bruno Mars - Still",
-   "rawTitle": "KAROL G, Bruno Mars - Still (Official Video)",
-   "artist": "KAROL G y Bruno Mars",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 227,
-   "views": 29000000,
-   "thumb": "https://i.ytimg.com/vi/aQXq3ndLkHs/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "2T6YMokSM68",
    "id": "yt-2T6YMokSM68",
    "kind": "video",
@@ -6895,35 +7185,21 @@
    "external": true
   },
   {
-   "yt": "cwPg8gJq_Kw",
-   "id": "yt-cwPg8gJq_Kw",
+   "yt": "Jzo2B4ftzOM",
+   "id": "yt-Jzo2B4ftzOM",
    "kind": "video",
-   "title": "Wherever I May Roam",
-   "rawTitle": "Metallica - Wherever I May Roam (Official Music Video)",
-   "artist": "Warner Records Vault",
+   "title": "LO MEJOR DE LOS TOROS BAND Y EL TORITO. BACHATA MIX 2024",
+   "rawTitle": "LO MEJOR DE LOS TOROS BAND Y EL TORITO. BACHATA MIX 2024",
+   "artist": "MUSICA. J 🎧",
    "album": "Ritmo",
-   "genre": "Rock",
+   "genre": "Bachata",
    "moods": [
-    "Energía"
+    "Fiesta latina",
+    "Fiesta"
    ],
-   "dur": 369,
-   "views": 28000000,
-   "thumb": "https://i.ytimg.com/vi/cwPg8gJq_Kw/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "Pksr9T8m_aA",
-   "id": "yt-Pksr9T8m_aA",
-   "kind": "video",
-   "title": "ADDICTED",
-   "rawTitle": "JISOO - ADDICTED (Official MV)",
-   "artist": "JISOO",
-   "album": "Ritmo",
-   "genre": "K-Pop",
-   "moods": [],
-   "dur": 180,
+   "dur": 1205,
    "views": 27000000,
-   "thumb": "https://i.ytimg.com/vi/Pksr9T8m_aA/hqdefault.jpg",
+   "thumb": "https://i.ytimg.com/vi/Jzo2B4ftzOM/hqdefault.jpg",
    "external": true
   },
   {
@@ -6942,66 +7218,18 @@
    "external": true
   },
   {
-   "yt": "PXxbEfhtDiM",
-   "id": "yt-PXxbEfhtDiM",
+   "yt": "L0YmZF8jxik",
+   "id": "yt-L0YmZF8jxik",
    "kind": "video",
-   "title": "Dead Fresh",
-   "rawTitle": "Lil Baby - Dead Fresh (Official Video)",
-   "artist": "Lil Baby Official",
+   "title": "Earned It",
+   "rawTitle": "The Weeknd - Earned It (Lyrics)",
+   "artist": "Taj Tracks",
    "album": "Ritmo",
-   "genre": "Hip-Hop",
+   "genre": "R&B",
    "moods": [],
-   "dur": 170,
-   "views": 26000000,
-   "thumb": "https://i.ytimg.com/vi/PXxbEfhtDiM/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "rsNhWkC4neE",
-   "id": "yt-rsNhWkC4neE",
-   "kind": "video",
-   "title": "IVE 아이브 'Looks Can Kill' MV",
-   "rawTitle": "IVE 아이브 'Looks Can Kill' MV",
-   "artist": "STARSHIP y IVE",
-   "album": "Ritmo",
-   "genre": "K-Pop",
-   "moods": [],
-   "dur": 243,
-   "views": 26000000,
-   "thumb": "https://i.ytimg.com/vi/rsNhWkC4neE/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "8L5afVdhk5E",
-   "id": "yt-8L5afVdhk5E",
-   "kind": "video",
-   "title": "Cumbia Pa´ Gozar",
-   "rawTitle": "Los Ángeles Azules - Cumbia Pa´ Gozar (Live)",
-   "artist": "Los Ángeles Azules",
-   "album": "Ritmo",
-   "genre": "Cumbia",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 216,
-   "views": 26000000,
-   "thumb": "https://i.ytimg.com/vi/8L5afVdhk5E/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "ipOSrQNrp1U",
-   "id": "yt-ipOSrQNrp1U",
-   "kind": "video",
-   "title": "Drake, Future, Molly Santana - Ran To Atlanta",
-   "rawTitle": "Drake, Future, Molly Santana - Ran To Atlanta",
-   "artist": "Drake",
-   "album": "Ritmo",
-   "genre": "Hip-Hop",
-   "moods": [],
-   "dur": 248,
-   "views": 26000000,
-   "thumb": "https://i.ytimg.com/vi/ipOSrQNrp1U/hqdefault.jpg",
+   "dur": 278,
+   "views": 25000000,
+   "thumb": "https://i.ytimg.com/vi/L0YmZF8jxik/hqdefault.jpg",
    "external": true
   },
   {
@@ -7037,18 +7265,37 @@
    "external": true
   },
   {
-   "yt": "qhIVgSoJVRc",
-   "id": "yt-qhIVgSoJVRc",
+   "yt": "0XPBvDgfKHY",
+   "id": "yt-0XPBvDgfKHY",
    "kind": "video",
-   "title": "God Put A Smile Upon Your Face",
-   "rawTitle": "Coldplay - God Put A Smile Upon Your Face (Official Video)",
-   "artist": "Coldplay",
+   "title": "Training Season",
+   "rawTitle": "Dua Lipa - Training Season",
+   "artist": "LatinHype",
    "album": "Ritmo",
    "genre": "Pop",
-   "moods": [],
-   "dur": 300,
+   "moods": [
+    "Fiesta latina"
+   ],
+   "dur": 210,
    "views": 24000000,
-   "thumb": "https://i.ytimg.com/vi/qhIVgSoJVRc/hqdefault.jpg",
+   "thumb": "https://i.ytimg.com/vi/0XPBvDgfKHY/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "M0lUdywLMQs",
+   "id": "yt-M0lUdywLMQs",
+   "kind": "video",
+   "title": "lovely ft. Khalid",
+   "rawTitle": "Billie Eilish  - lovely  (Lyrics) ft. Khalid",
+   "artist": "Soular Wave",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [
+    "Romántico"
+   ],
+   "dur": 203,
+   "views": 23000000,
+   "thumb": "https://i.ytimg.com/vi/M0lUdywLMQs/hqdefault.jpg",
    "external": true
   },
   {
@@ -7070,6 +7317,24 @@
    "external": true
   },
   {
+   "yt": "g5D8KA00Ubw",
+   "id": "yt-g5D8KA00Ubw",
+   "kind": "video",
+   "title": "Love In The Dark • (Traducida al Español)",
+   "rawTitle": "Adele - Love In The Dark • (Traducida al Español)",
+   "artist": "Josho Vlogs",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [
+    "Romántico",
+    "Noche"
+   ],
+   "dur": 307,
+   "views": 22000000,
+   "thumb": "https://i.ytimg.com/vi/g5D8KA00Ubw/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "1l7wbZmdtys",
    "id": "yt-1l7wbZmdtys",
    "kind": "video",
@@ -7084,21 +7349,6 @@
    "dur": 220,
    "views": 22000000,
    "thumb": "https://i.ytimg.com/vi/1l7wbZmdtys/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "A__GXZsG3hk",
-   "id": "yt-A__GXZsG3hk",
-   "kind": "video",
-   "title": "What You Need",
-   "rawTitle": "Tems - What You Need (Official Video)",
-   "artist": "Tems",
-   "album": "Ritmo",
-   "genre": "R&B",
-   "moods": [],
-   "dur": 240,
-   "views": 21000000,
-   "thumb": "https://i.ytimg.com/vi/A__GXZsG3hk/hqdefault.jpg",
    "external": true
   },
   {
@@ -7138,53 +7388,18 @@
    "external": true
   },
   {
-   "yt": "q392mSz4VeY",
-   "id": "yt-q392mSz4VeY",
+   "yt": "at-_5h2r3Vc",
+   "id": "yt-at-_5h2r3Vc",
    "kind": "video",
-   "title": "Wake Up",
-   "rawTitle": "Imagine Dragons - Wake Up (Official Music Video)",
-   "artist": "ImagineDragons",
+   "title": "Don't You Remember",
+   "rawTitle": "Don't You Remember",
+   "artist": "Adele",
    "album": "Ritmo",
    "genre": "Pop",
    "moods": [],
-   "dur": 182,
-   "views": 20000000,
-   "thumb": "https://i.ytimg.com/vi/q392mSz4VeY/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "Y1Lah0BM0KQ",
-   "id": "yt-Y1Lah0BM0KQ",
-   "kind": "video",
-   "title": "LE SSERAFIM (르세라핌) 'Made My Night' OFFICIAL MV with OVERWATCH",
-   "rawTitle": "LE SSERAFIM (르세라핌) 'Made My Night' OFFICIAL MV with OVERWATCH",
-   "artist": "HYBE LABELS y 2 más",
-   "album": "Ritmo",
-   "genre": "K-Pop",
-   "moods": [
-    "Noche"
-   ],
-   "dur": 167,
-   "views": 18000000,
-   "thumb": "https://i.ytimg.com/vi/Y1Lah0BM0KQ/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "IUaSbdsi3pE",
-   "id": "yt-IUaSbdsi3pE",
-   "kind": "video",
-   "title": "ROCK CLÁSICO EN INGLES",
-   "rawTitle": "ROCK CLÁSICO EN INGLES | #1 | CANCIONES INMORTALES BY DJ ARDUX",
-   "artist": "Dj Ardux",
-   "album": "Ritmo",
-   "genre": "Rock",
-   "moods": [
-    "Energía",
-    "Clásico"
-   ],
-   "dur": 1507,
-   "views": 17000000,
-   "thumb": "https://i.ytimg.com/vi/IUaSbdsi3pE/hqdefault.jpg",
+   "dur": 244,
+   "views": 19000000,
+   "thumb": "https://i.ytimg.com/vi/at-_5h2r3Vc/hqdefault.jpg",
    "external": true
   },
   {
@@ -7205,21 +7420,21 @@
    "external": true
   },
   {
-   "yt": "pq7iByc9CYs",
-   "id": "yt-pq7iByc9CYs",
+   "yt": "GedLli_YXEI",
+   "id": "yt-GedLli_YXEI",
    "kind": "video",
-   "title": "Ahí",
-   "rawTitle": "KAROL G, Drake - Ahí (Visualizer)",
-   "artist": "KAROL G",
+   "title": "If The Weeknd made lofi hip hop radio",
+   "rawTitle": "If The Weeknd made lofi hip hop radio",
+   "artist": "Ivy Station Records",
    "album": "Ritmo",
-   "genre": "Reggaetón",
+   "genre": "Lo-Fi",
    "moods": [
-    "Fiesta latina",
-    "Fiesta"
+    "Relajado",
+    "Concentración"
    ],
-   "dur": 177,
+   "dur": 925,
    "views": 17000000,
-   "thumb": "https://i.ytimg.com/vi/pq7iByc9CYs/hqdefault.jpg",
+   "thumb": "https://i.ytimg.com/vi/GedLli_YXEI/hqdefault.jpg",
    "external": true
   },
   {
@@ -7322,6 +7537,36 @@
    "external": true
   },
   {
+   "yt": "y56D2WIeKxg",
+   "id": "yt-y56D2WIeKxg",
+   "kind": "video",
+   "title": "QUEBEC",
+   "rawTitle": "DRAKE - QUEBEC",
+   "artist": "Drake",
+   "album": "Ritmo",
+   "genre": "Hip-Hop",
+   "moods": [],
+   "dur": 132,
+   "views": 15000000,
+   "thumb": "https://i.ytimg.com/vi/y56D2WIeKxg/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "-CepAYN0WyM",
+   "id": "yt--CepAYN0WyM",
+   "kind": "video",
+   "title": "Fallin' con Leon Thomas",
+   "rawTitle": "Chris Brown - Fallin' (Video oficial) con Leon Thomas",
+   "artist": "Chris Brown",
+   "album": "Ritmo",
+   "genre": "R&B",
+   "moods": [],
+   "dur": 508,
+   "views": 14000000,
+   "thumb": "https://i.ytimg.com/vi/-CepAYN0WyM/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "BpR280fXISA",
    "id": "yt-BpR280fXISA",
    "kind": "video",
@@ -7370,21 +7615,6 @@
    "external": true
   },
   {
-   "yt": "y56D2WIeKxg",
-   "id": "yt-y56D2WIeKxg",
-   "kind": "video",
-   "title": "QUEBEC",
-   "rawTitle": "DRAKE - QUEBEC",
-   "artist": "Drake",
-   "album": "Ritmo",
-   "genre": "Hip-Hop",
-   "moods": [],
-   "dur": 132,
-   "views": 14000000,
-   "thumb": "https://i.ytimg.com/vi/y56D2WIeKxg/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "_klBsWm9Uq4",
    "id": "yt-_klBsWm9Uq4",
    "kind": "video",
@@ -7400,24 +7630,6 @@
    "dur": 162,
    "views": 14000000,
    "thumb": "https://i.ytimg.com/vi/_klBsWm9Uq4/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "ucZ6J-fXQeI",
-   "id": "yt-ucZ6J-fXQeI",
-   "kind": "video",
-   "title": "Bailando Bachata",
-   "rawTitle": "Chayanne - Bailando Bachata (Letra/Lyrics)",
-   "artist": "7clouds",
-   "album": "Ritmo",
-   "genre": "Bachata",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 170,
-   "views": 13000000,
-   "thumb": "https://i.ytimg.com/vi/ucZ6J-fXQeI/hqdefault.jpg",
    "external": true
   },
   {
@@ -7450,6 +7662,21 @@
    "dur": 230,
    "views": 13000000,
    "thumb": "https://i.ytimg.com/vi/fK3EwBLzqGc/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "xno6lesVMJc",
+   "id": "yt-xno6lesVMJc",
+   "kind": "video",
+   "title": "Sparks",
+   "rawTitle": "@coldplay  - Sparks (Lyrics)",
+   "artist": "Dan Music",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 226,
+   "views": 13000000,
+   "thumb": "https://i.ytimg.com/vi/xno6lesVMJc/hqdefault.jpg",
    "external": true
   },
   {
@@ -7488,21 +7715,72 @@
    "external": true
   },
   {
-   "yt": "yIt0ZbbdWdY",
-   "id": "yt-yIt0ZbbdWdY",
+   "yt": "YNwmYliuUfE",
+   "id": "yt-YNwmYliuUfE",
    "kind": "video",
-   "title": "Karol G 🎤 Ultimate Latin Music Mix",
-   "rawTitle": "Karol G 🎤 Ultimate Latin Music Mix | Tusa, Bichota, Provenza and More",
-   "artist": "Pop Galaxy",
+   "title": "I See Why",
+   "rawTitle": "Moneybagg Yo - I See Why (Official Video)",
+   "artist": "MoneyBagg Yo",
+   "album": "Ritmo",
+   "genre": "Hip-Hop",
+   "moods": [],
+   "dur": 185,
+   "views": 12000000,
+   "thumb": "https://i.ytimg.com/vi/YNwmYliuUfE/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "7rC6T0ruxZ8",
+   "id": "yt-7rC6T0ruxZ8",
+   "kind": "video",
+   "title": "The Making of 'Bichota'",
+   "rawTitle": "Karol G - The Making of 'Bichota' | Vevo Footnotes",
+   "artist": "KAROL G",
    "album": "Ritmo",
    "genre": "Reggaetón",
    "moods": [
     "Fiesta latina",
     "Fiesta"
    ],
-   "dur": 1587,
+   "dur": 180,
    "views": 12000000,
-   "thumb": "https://i.ytimg.com/vi/yIt0ZbbdWdY/hqdefault.jpg",
+   "thumb": "https://i.ytimg.com/vi/7rC6T0ruxZ8/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "aiRayi2XpfE",
+   "id": "yt-aiRayi2XpfE",
+   "kind": "video",
+   "title": "KAROL G, Judeline, rusowsky - BbY WOW",
+   "rawTitle": "KAROL G, Judeline, rusowsky - BbY WOW (Letra/Lyrics)",
+   "artist": "jostland.",
+   "album": "Ritmo",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 226,
+   "views": 11000000,
+   "thumb": "https://i.ytimg.com/vi/aiRayi2XpfE/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "La4g9CSXvus",
+   "id": "yt-La4g9CSXvus",
+   "kind": "video",
+   "title": "Feid, El Americano 4KT, Pirlo - PARADIXE",
+   "rawTitle": "Feid, El Americano 4KT, Pirlo - PARADIXE",
+   "artist": "Feid",
+   "album": "Ritmo",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 346,
+   "views": 11000000,
+   "thumb": "https://i.ytimg.com/vi/La4g9CSXvus/hqdefault.jpg",
    "external": true
   },
   {
@@ -7533,39 +7811,6 @@
    "dur": 237,
    "views": 10000000,
    "thumb": "https://i.ytimg.com/vi/8gCI14JTEW0/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "La4g9CSXvus",
-   "id": "yt-La4g9CSXvus",
-   "kind": "video",
-   "title": "Feid, El Americano 4KT, Pirlo - PARADIXE",
-   "rawTitle": "Feid, El Americano 4KT, Pirlo - PARADIXE",
-   "artist": "Feid",
-   "album": "Ritmo",
-   "genre": "Reggaetón",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 346,
-   "views": 10000000,
-   "thumb": "https://i.ytimg.com/vi/La4g9CSXvus/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "uWmbR8W-Kzw",
-   "id": "yt-uWmbR8W-Kzw",
-   "kind": "video",
-   "title": "Hip-Hop ft. Jay Jones",
-   "rawTitle": "Lil Wayne, BigXthaPlug - Hip-Hop (Visualizer) ft. Jay Jones",
-   "artist": "Lil Wayne",
-   "album": "Ritmo",
-   "genre": "Hip-Hop",
-   "moods": [],
-   "dur": 242,
-   "views": 9400000,
-   "thumb": "https://i.ytimg.com/vi/uWmbR8W-Kzw/hqdefault.jpg",
    "external": true
   },
   {
@@ -7604,23 +7849,6 @@
    "external": true
   },
   {
-   "yt": "sDhEN3xpKA0",
-   "id": "yt-sDhEN3xpKA0",
-   "kind": "video",
-   "title": "CLASICS - THE BEST SONGS - 80s - Bon Jovi - Kiss - Michael Jackson - Tears For Fears - Sandra",
-   "rawTitle": "ROCK - CLASICS - THE BEST SONGS - 80s - Bon Jovi - Kiss - Michael Jackson - Tears For Fears - Sandra",
-   "artist": "Palomita TV",
-   "album": "Ritmo",
-   "genre": "Rock",
-   "moods": [
-    "Energía"
-   ],
-   "dur": 1593,
-   "views": 8100000,
-   "thumb": "https://i.ytimg.com/vi/sDhEN3xpKA0/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "vBk30V8AukM",
    "id": "yt-vBk30V8AukM",
    "kind": "video",
@@ -7631,26 +7859,23 @@
    "genre": "Hip-Hop",
    "moods": [],
    "dur": 245,
-   "views": 7900000,
+   "views": 8000000,
    "thumb": "https://i.ytimg.com/vi/vBk30V8AukM/hqdefault.jpg",
    "external": true
   },
   {
-   "yt": "72op_iUVWxM",
-   "id": "yt-72op_iUVWxM",
+   "yt": "fphj_3GYAjg",
+   "id": "yt-fphj_3GYAjg",
    "kind": "video",
-   "title": "BAILE INoLVIDABLE",
-   "rawTitle": "BAD BUNNY - BAILE INoLVIDABLE (Video Oficial) | DeBÍ TiRAR MáS FOToS",
-   "artist": "Anthony Honor",
+   "title": "MUSICA MÁS ESCUCHADA 2019 ✅ La Mejor Música Electrónica 2019 ✅ Lo Mas Nuevo Music Mix 2019",
+   "rawTitle": "MUSICA MÁS ESCUCHADA 2019 ✅ La Mejor Música Electrónica 2019 ✅ Lo Mas Nuevo Music Mix 2019",
+   "artist": "Music Is The Best",
    "album": "Ritmo",
-   "genre": "Reggaetón",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 581,
-   "views": 7800000,
-   "thumb": "https://i.ytimg.com/vi/72op_iUVWxM/hqdefault.jpg",
+   "genre": "Electrónica",
+   "moods": [],
+   "dur": 1423,
+   "views": 7900000,
+   "thumb": "https://i.ytimg.com/vi/fphj_3GYAjg/hqdefault.jpg",
    "external": true
   },
   {
@@ -7672,6 +7897,21 @@
    "external": true
   },
   {
+   "yt": "lh7yT1PF2Y4",
+   "id": "yt-lh7yT1PF2Y4",
+   "kind": "video",
+   "title": "\"DESPERADO\" MV",
+   "rawTitle": "T.O.P - \"DESPERADO\" MV",
+   "artist": "T.O.P",
+   "album": "Ritmo",
+   "genre": "K-Pop",
+   "moods": [],
+   "dur": 218,
+   "views": 7100000,
+   "thumb": "https://i.ytimg.com/vi/lh7yT1PF2Y4/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "XHOCFULrBVw",
    "id": "yt-XHOCFULrBVw",
    "kind": "video",
@@ -7690,51 +7930,6 @@
    "external": true
   },
   {
-   "yt": "AHuKFYTSrZU",
-   "id": "yt-AHuKFYTSrZU",
-   "kind": "video",
-   "title": "Radio",
-   "rawTitle": "Future - Radio (Official Music Video)",
-   "artist": "Future",
-   "album": "Ritmo",
-   "genre": "Hip-Hop",
-   "moods": [],
-   "dur": 163,
-   "views": 6600000,
-   "thumb": "https://i.ytimg.com/vi/AHuKFYTSrZU/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "sDqEXirnuy4",
-   "id": "yt-sDqEXirnuy4",
-   "kind": "video",
-   "title": "Trauma Bond",
-   "rawTitle": "T.I. - Trauma Bond (Video oficial)",
-   "artist": "T.I.",
-   "album": "Ritmo",
-   "genre": "Hip-Hop",
-   "moods": [],
-   "dur": 221,
-   "views": 6600000,
-   "thumb": "https://i.ytimg.com/vi/sDqEXirnuy4/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "th-K171K3iA",
-   "id": "yt-th-K171K3iA",
-   "kind": "video",
-   "title": "Skyfall 2021",
-   "rawTitle": "Adele - Skyfall (Live - One Night Only) 2021",
-   "artist": "CARLOS CARRASCO",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 266,
-   "views": 6600000,
-   "thumb": "https://i.ytimg.com/vi/th-K171K3iA/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "jfVVXYTZykw",
    "id": "yt-jfVVXYTZykw",
    "kind": "video",
@@ -7747,25 +7942,6 @@
    "dur": 210,
    "views": 6400000,
    "thumb": "https://i.ytimg.com/vi/jfVVXYTZykw/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "Fx6JvUkihLE",
-   "id": "yt-Fx6JvUkihLE",
-   "kind": "video",
-   "title": "10 Cumbias Clásicas Video Megamix",
-   "rawTitle": "DJ GOOFY - 10 Cumbias Clásicas Video Megamix",
-   "artist": "Sonido Goofy",
-   "album": "Ritmo",
-   "genre": "Cumbia",
-   "moods": [
-    "Clásico",
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 985,
-   "views": 6200000,
-   "thumb": "https://i.ytimg.com/vi/Fx6JvUkihLE/hqdefault.jpg",
    "external": true
   },
   {
@@ -7787,18 +7963,18 @@
    "external": true
   },
   {
-   "yt": "f6ZDmAhaH_Q",
-   "id": "yt-f6ZDmAhaH_Q",
+   "yt": "h1kZA_DXExI",
+   "id": "yt-h1kZA_DXExI",
    "kind": "video",
-   "title": "Konnichiwa",
-   "rawTitle": "Future - Konnichiwa (Official Music Video)",
-   "artist": "Future",
+   "title": "Conversations with Myself",
+   "rawTitle": "Roddy Ricch - Conversations with Myself ( 2026 Official Music Video)",
+   "artist": "Worldwide Music",
    "album": "Ritmo",
    "genre": "Hip-Hop",
    "moods": [],
-   "dur": 157,
-   "views": 5900000,
-   "thumb": "https://i.ytimg.com/vi/f6ZDmAhaH_Q/hqdefault.jpg",
+   "dur": 392,
+   "views": 5600000,
+   "thumb": "https://i.ytimg.com/vi/h1kZA_DXExI/hqdefault.jpg",
    "external": true
   },
   {
@@ -7834,21 +8010,6 @@
    "external": true
   },
   {
-   "yt": "7gKpREE5Z3w",
-   "id": "yt-7gKpREE5Z3w",
-   "kind": "video",
-   "title": "DJ Khaled, Future, Lil Baby - One of Them",
-   "rawTitle": "DJ Khaled, Future, Lil Baby - One of Them (Official Music Video)",
-   "artist": "DJ Khaled",
-   "album": "Ritmo",
-   "genre": "Hip-Hop",
-   "moods": [],
-   "dur": 237,
-   "views": 5000000,
-   "thumb": "https://i.ytimg.com/vi/7gKpREE5Z3w/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "g84yzqMNhN0",
    "id": "yt-g84yzqMNhN0",
    "kind": "video",
@@ -7881,35 +8042,36 @@
    "external": true
   },
   {
-   "yt": "Euy5eQ809Vk",
-   "id": "yt-Euy5eQ809Vk",
+   "yt": "dBHcsOUClOU",
+   "id": "yt-dBHcsOUClOU",
    "kind": "video",
-   "title": "Dua Lipa Greatest Hits 2023",
-   "rawTitle": "Dua Lipa Greatest Hits 2023 | Best Pop Songs Playlist",
-   "artist": "Marshinobi",
+   "title": "C r e e d e n c e C l e a r w a t e r R e v i v a l Greatest Hits 🍂 70s 80s 90s Golden Music 🍂...",
+   "rawTitle": "C r e e d e n c e C l e a r w a t e r R e v i v a l Greatest Hits 🍂 70s 80s 90s Golden Music 🍂...",
+   "artist": "Music Room",
    "album": "Ritmo",
-   "genre": "Pop",
+   "genre": "Rock",
    "moods": [
-    "Fiesta"
+    "Fiesta",
+    "Energía"
    ],
-   "dur": 1777,
-   "views": 4700000,
-   "thumb": "https://i.ytimg.com/vi/Euy5eQ809Vk/hqdefault.jpg",
+   "dur": 1622,
+   "views": 4500000,
+   "thumb": "https://i.ytimg.com/vi/dBHcsOUClOU/hqdefault.jpg",
    "external": true
   },
   {
-   "yt": "uE0gtJBmW80",
-   "id": "yt-uE0gtJBmW80",
+   "yt": "fCPMcSg_XDw",
+   "id": "yt-fCPMcSg_XDw",
    "kind": "video",
-   "title": "The Making of 'Soltera'",
-   "rawTitle": "Shakira - The Making of 'Soltera' | Vevo Footnotes",
-   "artist": "Shakira",
+   "title": "I'm Back (2026)",
+   "rawTitle": "50 Cent - I'm Back (2026)",
+   "artist": "D2T US",
    "album": "Ritmo",
-   "genre": "Pop",
+   "genre": "Hip-Hop",
    "moods": [],
-   "dur": 249,
+   "dur": 258,
    "views": 4300000,
-   "thumb": "https://i.ytimg.com/vi/uE0gtJBmW80/hqdefault.jpg",
+   "thumb": "https://i.ytimg.com/vi/fCPMcSg_XDw/hqdefault.jpg",
    "external": true
   },
   {
@@ -7961,21 +8123,6 @@
    "external": true
   },
   {
-   "yt": "xFMdDMELQIY",
-   "id": "yt-xFMdDMELQIY",
-   "kind": "video",
-   "title": "PRINCESS",
-   "rawTitle": "DRAKE - PRINCESS",
-   "artist": "Drake",
-   "album": "Ritmo",
-   "genre": "Hip-Hop",
-   "moods": [],
-   "dur": 152,
-   "views": 3600000,
-   "thumb": "https://i.ytimg.com/vi/xFMdDMELQIY/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "MjCBfWMJgA8",
    "id": "yt-MjCBfWMJgA8",
    "kind": "video",
@@ -7994,6 +8141,54 @@
    "external": true
   },
   {
+   "yt": "BCvAnH-5qVs",
+   "id": "yt-BCvAnH-5qVs",
+   "kind": "video",
+   "title": "Training Season",
+   "rawTitle": "Dua Lipa - Training Season | video oficial + sub español",
+   "artist": "blue knees",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 209,
+   "views": 3500000,
+   "thumb": "https://i.ytimg.com/vi/BCvAnH-5qVs/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "nHgCw1h6NmA",
+   "id": "yt-nHgCw1h6NmA",
+   "kind": "video",
+   "title": "DEJARTE IR",
+   "rawTitle": "Kapo, Manuel Turizo - DEJARTE IR (Video Oficial Concept) | Estreno 2026",
+   "artist": "Nova Music",
+   "album": "Ritmo",
+   "genre": "Latino",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 190,
+   "views": 3300000,
+   "thumb": "https://i.ytimg.com/vi/nHgCw1h6NmA/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "vPXNifgQBns",
+   "id": "yt-vPXNifgQBns",
+   "kind": "video",
+   "title": "Shakira",
+   "rawTitle": "Shakira",
+   "artist": "Tsuki",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [],
+   "dur": 1506,
+   "views": 3300000,
+   "thumb": "https://i.ytimg.com/vi/vPXNifgQBns/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "uQMMckzKOXc",
    "id": "yt-uQMMckzKOXc",
    "kind": "video",
@@ -8009,18 +8204,21 @@
    "external": true
   },
   {
-   "yt": "my5XNjVXAxk",
-   "id": "yt-my5XNjVXAxk",
+   "yt": "JZabqlzh_GQ",
+   "id": "yt-JZabqlzh_GQ",
    "kind": "video",
-   "title": "\"Girl Like Me\" & \"Loca\" (Performance Ao Vivo)",
-   "rawTitle": "Shakira - \"Girl Like Me\" & \"Loca\" (Performance Ao Vivo) | Domingão com Huck",
-   "artist": "Vittar World",
+   "title": "Mi Realidad",
+   "rawTitle": "Mi Realidad - JACONGA | Reggaetón Romántico 2026 | 💖🎶",
+   "artist": "jaconga",
    "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 250,
-   "views": 3100000,
-   "thumb": "https://i.ytimg.com/vi/my5XNjVXAxk/hqdefault.jpg",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 247,
+   "views": 3000000,
+   "thumb": "https://i.ytimg.com/vi/JZabqlzh_GQ/hqdefault.jpg",
    "external": true
   },
   {
@@ -8039,75 +8237,6 @@
    "external": true
   },
   {
-   "yt": "rgFkgtcgO4s",
-   "id": "yt-rgFkgtcgO4s",
-   "kind": "video",
-   "title": "KAROL G, Judeline, rusowsky - BbY WOW",
-   "rawTitle": "KAROL G, Judeline, rusowsky - BbY WOW (Visualizer)",
-   "artist": "Alex Carlisle",
-   "album": "Ritmo",
-   "genre": "Reggaetón",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 226,
-   "views": 2900000,
-   "thumb": "https://i.ytimg.com/vi/rgFkgtcgO4s/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "iGdd97VpH5A",
-   "id": "yt-iGdd97VpH5A",
-   "kind": "video",
-   "title": "Last Goodbye 💔",
-   "rawTitle": "Last Goodbye 💔 | Rihanna x 2Pac | Emotional Tribute Song 🕊️",
-   "artist": "2Pac (Tribute)",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 263,
-   "views": 2800000,
-   "thumb": "https://i.ytimg.com/vi/iGdd97VpH5A/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "OZPus6qekpk",
-   "id": "yt-OZPus6qekpk",
-   "kind": "video",
-   "title": "A Xon De Que",
-   "rawTitle": "Feid - A Xon De Que (Official Audio)",
-   "artist": "Feid",
-   "album": "Ritmo",
-   "genre": "Reggaetón",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 142,
-   "views": 2700000,
-   "thumb": "https://i.ytimg.com/vi/OZPus6qekpk/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "roP-94zw5kw",
-   "id": "yt-roP-94zw5kw",
-   "kind": "video",
-   "title": "KAROL G, Judeline, rusowsky - BbY WOW",
-   "rawTitle": "KAROL G, Judeline, rusowsky - BbY WOW (Letra)",
-   "artist": "MexSun",
-   "album": "Ritmo",
-   "genre": "Reggaetón",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 227,
-   "views": 2600000,
-   "thumb": "https://i.ytimg.com/vi/roP-94zw5kw/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "YTLwrnH3304",
    "id": "yt-YTLwrnH3304",
    "kind": "video",
@@ -8121,23 +8250,41 @@
     "Fiesta"
    ],
    "dur": 226,
-   "views": 2600000,
+   "views": 2700000,
    "thumb": "https://i.ytimg.com/vi/YTLwrnH3304/hqdefault.jpg",
    "external": true
   },
   {
-   "yt": "QD32pPNQISA",
-   "id": "yt-QD32pPNQISA",
+   "yt": "Csu4Xub1jlc",
+   "id": "yt-Csu4Xub1jlc",
    "kind": "video",
-   "title": "Training Season",
-   "rawTitle": "Dua Lipa - Training Season (Lyrics)",
-   "artist": "Rap Samurai",
+   "title": "Might Just",
+   "rawTitle": "Ella Mai - Might Just (Video Musical Oficial)",
+   "artist": "Ella Mai",
    "album": "Ritmo",
-   "genre": "Pop",
+   "genre": "R&B",
    "moods": [],
-   "dur": 215,
-   "views": 2500000,
-   "thumb": "https://i.ytimg.com/vi/QD32pPNQISA/hqdefault.jpg",
+   "dur": 196,
+   "views": 2600000,
+   "thumb": "https://i.ytimg.com/vi/Csu4Xub1jlc/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "g0e51ZjaeQc",
+   "id": "yt-g0e51ZjaeQc",
+   "kind": "video",
+   "title": "Cumbia de los Estados",
+   "rawTitle": "Cumbia de los Estados",
+   "artist": "Súper Grupo Colombia - Topic",
+   "album": "Ritmo",
+   "genre": "Cumbia",
+   "moods": [
+    "Fiesta",
+    "Fiesta latina"
+   ],
+   "dur": 243,
+   "views": 2600000,
+   "thumb": "https://i.ytimg.com/vi/g0e51ZjaeQc/hqdefault.jpg",
    "external": true
   },
   {
@@ -8159,6 +8306,23 @@
    "external": true
   },
   {
+   "yt": "nRcmlOhsvts",
+   "id": "yt-nRcmlOhsvts",
+   "kind": "video",
+   "title": "Best Playlist Rap Hiphop 2026",
+   "rawTitle": "Best of Eminem - Best Playlist Rap Hiphop 2026",
+   "artist": "Lofi Snow",
+   "album": "Ritmo",
+   "genre": "Hip-Hop",
+   "moods": [
+    "Relajado"
+   ],
+   "dur": 1749,
+   "views": 2300000,
+   "thumb": "https://i.ytimg.com/vi/nRcmlOhsvts/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "P8UXfpqcazY",
    "id": "yt-P8UXfpqcazY",
    "kind": "video",
@@ -8174,6 +8338,38 @@
    "dur": 1681,
    "views": 2300000,
    "thumb": "https://i.ytimg.com/vi/P8UXfpqcazY/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "Sh4pJYJOT7M",
+   "id": "yt-Sh4pJYJOT7M",
+   "kind": "video",
+   "title": "Ya Hit",
+   "rawTitle": "Future ft. Drake, Travis Scott & Loe Shimmy - Ya Hit (Official Music Video)",
+   "artist": "Future y 2 más",
+   "album": "Ritmo",
+   "genre": "Hip-Hop",
+   "moods": [
+    "Fiesta"
+   ],
+   "dur": 222,
+   "views": 2300000,
+   "thumb": "https://i.ytimg.com/vi/Sh4pJYJOT7M/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "XBhLMhwWTZM",
+   "id": "yt-XBhLMhwWTZM",
+   "kind": "video",
+   "title": "The King of Real 🔥(2026 Remix)",
+   "rawTitle": "2Pac - The King of Real 🔥(2026 Remix) | New Deep Hip Hop Tribute",
+   "artist": "Gangsta Beatz$",
+   "album": "Ritmo",
+   "genre": "Hip-Hop",
+   "moods": [],
+   "dur": 371,
+   "views": 2200000,
+   "thumb": "https://i.ytimg.com/vi/XBhLMhwWTZM/hqdefault.jpg",
    "external": true
   },
   {
@@ -8195,24 +8391,6 @@
    "external": true
   },
   {
-   "yt": "5nwhusys9p4",
-   "id": "yt-5nwhusys9p4",
-   "kind": "video",
-   "title": "Beéle, Nicky Jam, Maluma - Solo Contigo",
-   "rawTitle": "Beéle, Nicky Jam, Maluma - Solo Contigo (Video Oficial) | Lyric",
-   "artist": "Central Music y Revo Music",
-   "album": "Ritmo",
-   "genre": "Latino",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 248,
-   "views": 2100000,
-   "thumb": "https://i.ytimg.com/vi/5nwhusys9p4/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "Syav-siaM8w",
    "id": "yt-Syav-siaM8w",
    "kind": "video",
@@ -8225,40 +8403,6 @@
    "dur": 382,
    "views": 2100000,
    "thumb": "https://i.ytimg.com/vi/Syav-siaM8w/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "Ty__RLk7WYI",
-   "id": "yt-Ty__RLk7WYI",
-   "kind": "video",
-   "title": "💎 Every Billie Eilish song 🎶 blends emotion 🔥 and artistry, making music unforgettable 🌹",
-   "rawTitle": "💎 Every Billie Eilish song 🎶 blends emotion 🔥 and artistry, making music unforgettable 🌹",
-   "artist": "Top Song Hist",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [
-    "Fiesta"
-   ],
-   "dur": 1510,
-   "views": 2100000,
-   "thumb": "https://i.ytimg.com/vi/Ty__RLk7WYI/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "Sh4pJYJOT7M",
-   "id": "yt-Sh4pJYJOT7M",
-   "kind": "video",
-   "title": "Ya Hit",
-   "rawTitle": "Future ft. Drake, Travis Scott & Loe Shimmy - Ya Hit (Official Music Video)",
-   "artist": "Future y 2 más",
-   "album": "Ritmo",
-   "genre": "Hip-Hop",
-   "moods": [
-    "Fiesta"
-   ],
-   "dur": 222,
-   "views": 2100000,
-   "thumb": "https://i.ytimg.com/vi/Sh4pJYJOT7M/hqdefault.jpg",
    "external": true
   },
   {
@@ -8280,21 +8424,6 @@
    "external": true
   },
   {
-   "yt": "BEcCTlN8c6U",
-   "id": "yt-BEcCTlN8c6U",
-   "kind": "video",
-   "title": "Ocean Eyes",
-   "rawTitle": "Billie Eilish - Ocean Eyes (Lyrics)",
-   "artist": "Lost Panda",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 202,
-   "views": 2000000,
-   "thumb": "https://i.ytimg.com/vi/BEcCTlN8c6U/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "2tAvNgj42nU",
    "id": "yt-2tAvNgj42nU",
    "kind": "video",
@@ -8312,52 +8441,51 @@
    "external": true
   },
   {
-   "yt": "4F_eadMOgmU",
-   "id": "yt-4F_eadMOgmU",
+   "yt": "d0mvOmWsPGU",
+   "id": "yt-d0mvOmWsPGU",
    "kind": "video",
-   "title": "Umbrella",
-   "rawTitle": "Rihanna - Umbrella  (Lyric Video)",
-   "artist": "SnowChill",
+   "title": "Queen's Greatest Hits",
+   "rawTitle": "Queen's Greatest Hits",
+   "artist": "UJusNevrKno",
    "album": "Ritmo",
-   "genre": "Pop",
+   "genre": "Rock",
    "moods": [
-    "Relajado"
+    "Fiesta",
+    "Energía"
    ],
-   "dur": 338,
+   "dur": 1647,
    "views": 1900000,
-   "thumb": "https://i.ytimg.com/vi/4F_eadMOgmU/hqdefault.jpg",
+   "thumb": "https://i.ytimg.com/vi/d0mvOmWsPGU/hqdefault.jpg",
    "external": true
   },
   {
-   "yt": "gJ0zvMYB_ow",
-   "id": "yt-gJ0zvMYB_ow",
+   "yt": "u6ywFSm1ggQ",
+   "id": "yt-u6ywFSm1ggQ",
    "kind": "video",
-   "title": "Send My Love (To Your New Lover) (Tradução/Legendado)",
-   "rawTitle": "Adele - Send My Love (To Your New Lover) (Tradução/Legendado) (Live An Audience With Adele)",
-   "artist": "M.T.V Traduções",
+   "title": "2025 TRAP HIP HOP LIT MIX",
+   "rawTitle": "BEST OF FUTURE MIX - 2025 TRAP HIP HOP LIT MIX",
+   "artist": "ImCords",
    "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [
-    "Romántico"
-   ],
-   "dur": 245,
-   "views": 1800000,
-   "thumb": "https://i.ytimg.com/vi/gJ0zvMYB_ow/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "RqmnYLFwBmU",
-   "id": "yt-RqmnYLFwBmU",
-   "kind": "video",
-   "title": "#WorldHoldOn | Recopilacion Mejores Canciones De Electronica Vieja (Parte 1, 2, 3)",
-   "rawTitle": "#WorldHoldOn | Recopilacion Mejores Canciones De Electronica Vieja (Parte 1, 2, 3) | By Matheo",
-   "artist": "MATHEO",
-   "album": "Ritmo",
-   "genre": "Electrónica",
+   "genre": "Hip-Hop",
    "moods": [],
-   "dur": 1641,
+   "dur": 1354,
+   "views": 1800000,
+   "thumb": "https://i.ytimg.com/vi/u6ywFSm1ggQ/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "cJE8_DcQw7s",
+   "id": "yt-cJE8_DcQw7s",
+   "kind": "video",
+   "title": "The Life",
+   "rawTitle": "The Game - The Life (Official Music Video)",
+   "artist": "The Game",
+   "album": "Ritmo",
+   "genre": "Hip-Hop",
+   "moods": [],
+   "dur": 174,
    "views": 1700000,
-   "thumb": "https://i.ytimg.com/vi/RqmnYLFwBmU/hqdefault.jpg",
+   "thumb": "https://i.ytimg.com/vi/cJE8_DcQw7s/hqdefault.jpg",
    "external": true
   },
   {
@@ -8379,51 +8507,18 @@
    "external": true
   },
   {
-   "yt": "XksbFiEb9Wk",
-   "id": "yt-XksbFiEb9Wk",
+   "yt": "hX9S94XsySk",
+   "id": "yt-hX9S94XsySk",
    "kind": "video",
-   "title": "PARADIXE (REMIX)",
-   "rawTitle": "PARADIXE (REMIX)",
-   "artist": "Feid",
-   "album": "Ritmo",
-   "genre": "Reggaetón",
-   "moods": [
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 261,
-   "views": 1700000,
-   "thumb": "https://i.ytimg.com/vi/XksbFiEb9Wk/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "Jv55Yj6C43s",
-   "id": "yt-Jv55Yj6C43s",
-   "kind": "video",
-   "title": "I SWEAR | All-4-One (Soulful R&B cover) #REINEMUSIC",
-   "rawTitle": "I SWEAR | All-4-One (Soulful R&B cover) #REINEMUSIC",
-   "artist": "REINE MUSIC Official",
+   "title": "Hong Kong (feat. 王菲季候風)",
+   "rawTitle": "The Weeknd - Hong Kong (feat. 王菲季候風) (Official Music Video)",
+   "artist": "The Weeknd",
    "album": "Ritmo",
    "genre": "R&B",
    "moods": [],
-   "dur": 275,
+   "dur": 223,
    "views": 1600000,
-   "thumb": "https://i.ytimg.com/vi/Jv55Yj6C43s/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "NsNiU_d-L7U",
-   "id": "yt-NsNiU_d-L7U",
-   "kind": "video",
-   "title": "Diamonds",
-   "rawTitle": "Rihanna - Diamonds (Lyrics)",
-   "artist": "Hi Wave",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 226,
-   "views": 1600000,
-   "thumb": "https://i.ytimg.com/vi/NsNiU_d-L7U/hqdefault.jpg",
+   "thumb": "https://i.ytimg.com/vi/hX9S94XsySk/hqdefault.jpg",
    "external": true
   },
   {
@@ -8479,20 +8574,38 @@
    "external": true
   },
   {
-   "yt": "XfHbPIx42uo",
-   "id": "yt-XfHbPIx42uo",
+   "yt": "8V1_ioUZbDA",
+   "id": "yt-8V1_ioUZbDA",
    "kind": "video",
-   "title": "Ariana Grande Best Hits Playlist | Full Album Mix Pop/R&B (Eternal Sunshine & All Major Singles)",
-   "rawTitle": "Ariana Grande Best Hits Playlist | Full Album Mix Pop/R&B (Eternal Sunshine & All Major Singles)",
-   "artist": "WELDER STUDIO",
+   "title": "MIRRORED KPOP RANDOM PLAY DANCE 2026",
+   "rawTitle": "MIRRORED KPOP RANDOM PLAY DANCE 2026 |EVERYONE KNOWS|",
+   "artist": "kpop stufff",
    "album": "Ritmo",
-   "genre": "Pop",
+   "genre": "K-Pop",
    "moods": [
     "Fiesta"
    ],
-   "dur": 1790,
+   "dur": 1755,
    "views": 1400000,
-   "thumb": "https://i.ytimg.com/vi/XfHbPIx42uo/hqdefault.jpg",
+   "thumb": "https://i.ytimg.com/vi/8V1_ioUZbDA/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "e2dRcsc98m4",
+   "id": "yt-e2dRcsc98m4",
+   "kind": "video",
+   "title": "A Xon De Que",
+   "rawTitle": "Feid - A Xon De Que (Official Video)",
+   "artist": "Feid",
+   "album": "Ritmo",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 210,
+   "views": 1400000,
+   "thumb": "https://i.ytimg.com/vi/e2dRcsc98m4/hqdefault.jpg",
    "external": true
   },
   {
@@ -8511,21 +8624,6 @@
    "external": true
   },
   {
-   "yt": "3pcCLUcBT_U",
-   "id": "yt-3pcCLUcBT_U",
-   "kind": "video",
-   "title": "Boss Mode",
-   "rawTitle": "Rick Ross ft DJ Khaled - Boss Mode (Official Music Video 2026)",
-   "artist": "Vibe Nation",
-   "album": "Ritmo",
-   "genre": "Hip-Hop",
-   "moods": [],
-   "dur": 389,
-   "views": 1300000,
-   "thumb": "https://i.ytimg.com/vi/3pcCLUcBT_U/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "YercPQ6h1cg",
    "id": "yt-YercPQ6h1cg",
    "kind": "video",
@@ -8538,6 +8636,58 @@
    "dur": 209,
    "views": 1200000,
    "thumb": "https://i.ytimg.com/vi/YercPQ6h1cg/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "yz72JORpMDU",
+   "id": "yt-yz72JORpMDU",
+   "kind": "video",
+   "title": "Bruno Mars interpreta \"Dance With Me\"",
+   "rawTitle": "Bruno Mars interpreta \"Dance With Me\" | VMAs 2026",
+   "artist": "MTV y CBS",
+   "album": "Ritmo",
+   "genre": "Pop",
+   "moods": [
+    "Fiesta"
+   ],
+   "dur": 328,
+   "views": 1200000,
+   "thumb": "https://i.ytimg.com/vi/yz72JORpMDU/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "WymK3CMNl_k",
+   "id": "yt-WymK3CMNl_k",
+   "kind": "video",
+   "title": "KAROL G, Judeline, rusowsky - BbY WOW",
+   "rawTitle": "KAROL G, Judeline, rusowsky - BbY WOW (Letra)",
+   "artist": "LatinFest",
+   "album": "Ritmo",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 226,
+   "views": 1100000,
+   "thumb": "https://i.ytimg.com/vi/WymK3CMNl_k/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "m35RTHOfn4Q",
+   "id": "yt-m35RTHOfn4Q",
+   "kind": "video",
+   "title": "Las 100 mejores canciones de Rock de todos los tiempos",
+   "rawTitle": "Las 100 mejores canciones de Rock de todos los tiempos",
+   "artist": "Diego Piña",
+   "album": "Ritmo",
+   "genre": "Rock",
+   "moods": [
+    "Energía"
+   ],
+   "dur": 416,
+   "views": 1000000,
+   "thumb": "https://i.ytimg.com/vi/m35RTHOfn4Q/hqdefault.jpg",
    "external": true
   },
   {
@@ -8556,18 +8706,35 @@
    "external": true
   },
   {
-   "yt": "DjAjRQ7TQus",
-   "id": "yt-DjAjRQ7TQus",
+   "yt": "TDqLJ0G_Slg",
+   "id": "yt-TDqLJ0G_Slg",
    "kind": "video",
-   "title": "Hop DJ mix | Snoop Dogg, 50 Cent, Eminem, Flo Rida, Macklemore, Usher, DR DRE, Eve |",
-   "rawTitle": "Hip-Hop DJ mix | Snoop Dogg, 50 Cent, Eminem, Flo Rida, Macklemore, Usher, DR DRE, Eve | ",
-   "artist": "STO-FUN",
+   "title": "Under Pressure. Rehearsals, April 1992 (60 FPS)",
+   "rawTitle": "Queen, David Bowie & Annie Lennox - Under Pressure. Rehearsals, April 1992 (60 FPS)",
+   "artist": "EE",
    "album": "Ritmo",
-   "genre": "Hip-Hop",
+   "genre": "Rock",
+   "moods": [
+    "Energía"
+   ],
+   "dur": 239,
+   "views": 973000,
+   "thumb": "https://i.ytimg.com/vi/TDqLJ0G_Slg/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "rf2lWKoZ_SM",
+   "id": "yt-rf2lWKoZ_SM",
+   "kind": "video",
+   "title": "WORK (feat. Drake) [YoDJDixon ReVision]",
+   "rawTitle": "Rihanna - WORK (feat. Drake) [YoDJDixon ReVision]",
+   "artist": "YoDJDixon",
+   "album": "Ritmo",
+   "genre": "Pop",
    "moods": [],
-   "dur": 1005,
-   "views": 900000,
-   "thumb": "https://i.ytimg.com/vi/DjAjRQ7TQus/hqdefault.jpg",
+   "dur": 221,
+   "views": 859000,
+   "thumb": "https://i.ytimg.com/vi/rf2lWKoZ_SM/hqdefault.jpg",
    "external": true
   },
   {
@@ -8584,74 +8751,74 @@
     "Fiesta"
    ],
    "dur": 1642,
-   "views": 806000,
+   "views": 807000,
    "thumb": "https://i.ytimg.com/vi/5o9RVkQSYC4/hqdefault.jpg",
    "external": true
   },
   {
-   "yt": "18K_jtS5cn0",
-   "id": "yt-18K_jtS5cn0",
+   "yt": "_gP24Xjg9R4",
+   "id": "yt-_gP24Xjg9R4",
    "kind": "video",
-   "title": "TOP MÚSICAS MOTIVACIONAIS 2026 💪 TRAP E HIP HOP AGRESSIVO PARA TREINO DE ACADEMIA 🔥 TREINAR PESADO",
-   "rawTitle": "TOP MÚSICAS MOTIVACIONAIS 2026 💪 TRAP E HIP HOP AGRESSIVO PARA TREINO DE ACADEMIA 🔥 TREINAR PESADO",
-   "artist": "Treino Poderoso",
+   "title": "Chris Brown ft. Usher",
+   "rawTitle": "She Lied – Chris Brown ft. Usher (Official Lyrics Video) | Emotional R&B 2026",
+   "artist": "Melodic Vibes",
    "album": "Ritmo",
-   "genre": "Hip-Hop",
-   "moods": [
-    "Fiesta",
-    "Energía",
-    "Triste"
-   ],
-   "dur": 1780,
-   "views": 736000,
-   "thumb": "https://i.ytimg.com/vi/18K_jtS5cn0/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "7VPtCzzFya4",
-   "id": "yt-7VPtCzzFya4",
-   "kind": "video",
-   "title": "Mezcla de cardio hip hop (GloRilla, Pluto, Latto, Key Glock, YKNIECE)",
-   "rawTitle": "DJ BSkillz: Mezcla de cardio hip hop (GloRilla, Pluto, Latto, Key Glock, YKNIECE)",
-   "artist": "DJBSkillz",
-   "album": "Ritmo",
-   "genre": "Hip-Hop",
+   "genre": "R&B",
    "moods": [],
-   "dur": 1637,
-   "views": 694000,
-   "thumb": "https://i.ytimg.com/vi/7VPtCzzFya4/hqdefault.jpg",
+   "dur": 587,
+   "views": 795000,
+   "thumb": "https://i.ytimg.com/vi/_gP24Xjg9R4/hqdefault.jpg",
    "external": true
   },
   {
-   "yt": "bNvzAhK-jRc",
-   "id": "yt-bNvzAhK-jRc",
+   "yt": "MpQ4OaVeUyQ",
+   "id": "yt-MpQ4OaVeUyQ",
    "kind": "video",
-   "title": "SID MSC // MAS HIP HOP // VIDEO OFICIAL",
-   "rawTitle": "SID MSC // MAS HIP HOP // VIDEO OFICIAL",
-   "artist": "SID M.S.C.",
+   "title": "Cuando Es Contigo",
+   "rawTitle": "Cuando Es Contigo - JACONGA || Reggaetón Romántico 2026 | Video Lyrics Oficial💖🎶",
+   "artist": "jaconga",
    "album": "Ritmo",
-   "genre": "Hip-Hop",
-   "moods": [],
-   "dur": 179,
-   "views": 679000,
-   "thumb": "https://i.ytimg.com/vi/bNvzAhK-jRc/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "tHcAnpyXsI8",
-   "id": "yt-tHcAnpyXsI8",
-   "kind": "video",
-   "title": "KPOP RANDOM DANCE 2026 [NEW & TRENDS]",
-   "rawTitle": "KPOP RANDOM DANCE 2026 [NEW & TRENDS]",
-   "artist": "𝘔𝘪𝘤𝘩𝘢𝘦𝘳",
-   "album": "Ritmo",
-   "genre": "K-Pop",
+   "genre": "Reggaetón",
    "moods": [
+    "Fiesta latina",
     "Fiesta"
    ],
-   "dur": 479,
-   "views": 657000,
-   "thumb": "https://i.ytimg.com/vi/tHcAnpyXsI8/hqdefault.jpg",
+   "dur": 232,
+   "views": 791000,
+   "thumb": "https://i.ytimg.com/vi/MpQ4OaVeUyQ/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "hYzp7CGGOEw",
+   "id": "yt-hYzp7CGGOEw",
+   "kind": "video",
+   "title": "100 Canciones De ELECTRÓNICA Que Has Escuchado Y No Sabes El Nombre (Música Electrónica) #2021",
+   "rawTitle": "100 Canciones De ELECTRÓNICA Que Has Escuchado Y No Sabes El Nombre (Música Electrónica) #2021",
+   "artist": "Caballero Z.",
+   "album": "Ritmo",
+   "genre": "Electrónica",
+   "moods": [],
+   "dur": 656,
+   "views": 735000,
+   "thumb": "https://i.ytimg.com/vi/hYzp7CGGOEw/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "zluMdLGRpqo",
+   "id": "yt-zluMdLGRpqo",
+   "kind": "video",
+   "title": "Especial Super Bowl 🔥 - Dj Nino G - Reggaeton Nuevo 2026",
+   "rawTitle": "Bad Bunny Mix 2026 - Especial Super Bowl  🔥 - Dj Nino G - Reggaeton Nuevo 2026 ",
+   "artist": "DJ NINO G",
+   "album": "Ritmo",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 1350,
+   "views": 676000,
+   "thumb": "https://i.ytimg.com/vi/zluMdLGRpqo/hqdefault.jpg",
    "external": true
   },
   {
@@ -8667,27 +8834,8 @@
     "Fiesta"
    ],
    "dur": 1428,
-   "views": 653000,
+   "views": 659000,
    "thumb": "https://i.ytimg.com/vi/-CqozLdQTFg/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "H5Yav3sdEUM",
-   "id": "yt-H5Yav3sdEUM",
-   "kind": "video",
-   "title": "KAROL G, Judeline, Rusowsky - BbY WOW",
-   "rawTitle": "KAROL G, Judeline, Rusowsky - BbY WOW (Letra)",
-   "artist": "Urban Heartbeat",
-   "album": "Ritmo",
-   "genre": "Reggaetón",
-   "moods": [
-    "Romántico",
-    "Fiesta latina",
-    "Fiesta"
-   ],
-   "dur": 227,
-   "views": 653000,
-   "thumb": "https://i.ytimg.com/vi/H5Yav3sdEUM/hqdefault.jpg",
    "external": true
   },
   {
@@ -8703,7 +8851,7 @@
     "Fiesta"
    ],
    "dur": 1772,
-   "views": 651000,
+   "views": 653000,
    "thumb": "https://i.ytimg.com/vi/Z3Vn80aoBd0/hqdefault.jpg",
    "external": true
   },
@@ -8726,48 +8874,101 @@
    "external": true
   },
   {
-   "yt": "O_SzyYRUNX0",
-   "id": "yt-O_SzyYRUNX0",
+   "yt": "KPNrYCbcRRU",
+   "id": "yt-KPNrYCbcRRU",
    "kind": "video",
-   "title": "'Blind Scents' with Rihanna and Francis Kurkdjian",
-   "rawTitle": "'Blind Scents' with Rihanna and Francis Kurkdjian",
-   "artist": "Christian Dior",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 268,
-   "views": 576000,
-   "thumb": "https://i.ytimg.com/vi/O_SzyYRUNX0/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "hX9S94XsySk",
-   "id": "yt-hX9S94XsySk",
-   "kind": "video",
-   "title": "Hong Kong (feat. 王菲季候風)",
-   "rawTitle": "The Weeknd - Hong Kong (feat. 王菲季候風) (Official Music Video)",
-   "artist": "The Weeknd",
+   "title": "SZA Playlist 2026 💔 Best Songs & Chill R&B Vibes",
+   "rawTitle": "SZA Playlist 2026 💔 Best Songs & Chill R&B Vibes | Nobody Gets Me, Kill Bill, Snooze",
+   "artist": "Soul-cial Club",
    "album": "Ritmo",
    "genre": "R&B",
-   "moods": [],
-   "dur": 223,
-   "views": 573000,
-   "thumb": "https://i.ytimg.com/vi/hX9S94XsySk/hqdefault.jpg",
+   "moods": [
+    "Fiesta",
+    "Relajado"
+   ],
+   "dur": 1652,
+   "views": 603000,
+   "thumb": "https://i.ytimg.com/vi/KPNrYCbcRRU/hqdefault.jpg",
    "external": true
   },
   {
-   "yt": "dWgL_212ojk",
-   "id": "yt-dWgL_212ojk",
+   "yt": "furFmPEHAJg",
+   "id": "yt-furFmPEHAJg",
    "kind": "video",
-   "title": "60 CANCIONES ELECTRÓNICAS ANTIGUAS QUE HAS ESCUCHADO PERO NO SABES EL NOMBRE",
-   "rawTitle": "60 CANCIONES ELECTRÓNICAS ANTIGUAS QUE HAS ESCUCHADO PERO NO SABES EL NOMBRE",
-   "artist": "Lo Nuevo Y Lo Viejo",
+   "title": "What Does “Indie Music” Even Mean?",
+   "rawTitle": "What Does “Indie Music” Even Mean?",
+   "artist": "blustre",
+   "album": "Ritmo",
+   "genre": "Indie",
+   "moods": [],
+   "dur": 626,
+   "views": 545000,
+   "thumb": "https://i.ytimg.com/vi/furFmPEHAJg/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "xfT7Jh-Ag5E",
+   "id": "yt-xfT7Jh-Ag5E",
+   "kind": "video",
+   "title": "las 5 mejores canciones electrónica",
+   "rawTitle": "las 5  mejores canciones  electrónica",
+   "artist": "roxana ortega",
    "album": "Ritmo",
    "genre": "Electrónica",
    "moods": [],
-   "dur": 264,
-   "views": 497000,
-   "thumb": "https://i.ytimg.com/vi/dWgL_212ojk/hqdefault.jpg",
+   "dur": 940,
+   "views": 537000,
+   "thumb": "https://i.ytimg.com/vi/xfT7Jh-Ag5E/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "UG1R63-JaaQ",
+   "id": "yt-UG1R63-JaaQ",
+   "kind": "video",
+   "title": "HIP HOP",
+   "rawTitle": "Lapiz Conciente - HIP HOP (Video Oficial)",
+   "artist": "LAPIZ CONCIENTE",
+   "album": "Ritmo",
+   "genre": "Hip-Hop",
+   "moods": [],
+   "dur": 231,
+   "views": 529000,
+   "thumb": "https://i.ytimg.com/vi/UG1R63-JaaQ/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "dgcIBuH-KZI",
+   "id": "yt-dgcIBuH-KZI",
+   "kind": "video",
+   "title": "KPOP RANDOM PLAY DANCE [2024-2026]",
+   "rawTitle": "KPOP RANDOM PLAY DANCE [2024-2026]",
+   "artist": "kpop stufff",
+   "album": "Ritmo",
+   "genre": "K-Pop",
+   "moods": [
+    "Fiesta"
+   ],
+   "dur": 1212,
+   "views": 499000,
+   "thumb": "https://i.ytimg.com/vi/dgcIBuH-KZI/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "1N7-pgKFpVc",
+   "id": "yt-1N7-pgKFpVc",
+   "kind": "video",
+   "title": "10 CANCIONES OLVIDADAS de los 80 que ERAN BRUTALES!",
+   "rawTitle": "10 CANCIONES OLVIDADAS de los 80 que ERAN BRUTALES!",
+   "artist": "Rock Total TOP",
+   "album": "Ritmo",
+   "genre": "Rock",
+   "moods": [
+    "Fiesta",
+    "Energía"
+   ],
+   "dur": 972,
+   "views": 489000,
+   "thumb": "https://i.ytimg.com/vi/1N7-pgKFpVc/hqdefault.jpg",
    "external": true
   },
   {
@@ -8783,23 +8984,23 @@
     "Fiesta"
    ],
    "dur": 600,
-   "views": 472000,
+   "views": 473000,
    "thumb": "https://i.ytimg.com/vi/Fkt7Z0T25As/hqdefault.jpg",
    "external": true
   },
   {
-   "yt": "jT3DuoFZ894",
-   "id": "yt-jT3DuoFZ894",
+   "yt": "FEPNEPlhG1A",
+   "id": "yt-FEPNEPlhG1A",
    "kind": "video",
-   "title": "Adivina 100 CANCIONES DE KPOP en 3 segundos ⏰ 2da, 3ra, 4ta y 5ta generación",
-   "rawTitle": "Adivina 100 CANCIONES DE KPOP en 3 segundos ⏰ 2da, 3ra, 4ta y 5ta generación",
-   "artist": "lachimolalaquiz",
+   "title": "I’M STILL HERE",
+   "rawTitle": "imagine dragon - I’M STILL HERE ( Lyrics Video)",
+   "artist": "PopWave",
    "album": "Ritmo",
-   "genre": "K-Pop",
+   "genre": "Pop",
    "moods": [],
-   "dur": 1066,
-   "views": 325000,
-   "thumb": "https://i.ytimg.com/vi/jT3DuoFZ894/hqdefault.jpg",
+   "dur": 1136,
+   "views": 472000,
+   "thumb": "https://i.ytimg.com/vi/FEPNEPlhG1A/hqdefault.jpg",
    "external": true
   },
   {
@@ -8818,18 +9019,71 @@
    "external": true
   },
   {
-   "yt": "tPIK26_TtMo",
-   "id": "yt-tPIK26_TtMo",
+   "yt": "amFsavNgYCo",
+   "id": "yt-amFsavNgYCo",
    "kind": "video",
-   "title": "LAS 20 MEJORES CANCIONES ELECTRÓNICA 2010-2011",
-   "rawTitle": "LAS 20 MEJORES CANCIONES ELECTRÓNICA 2010-2011",
-   "artist": "Most Viewed",
+   "title": "Top Collection 2025 HIP HOP MIX RAP - PLAYLIST TRAP - Greatest Hits Full Album",
+   "rawTitle": "Pop Smoke - Top Collection 2025 HIP HOP MIX RAP - PLAYLIST TRAP - Greatest Hits Full Album",
+   "artist": "Always Hits",
+   "album": "Ritmo",
+   "genre": "Hip-Hop",
+   "moods": [
+    "Fiesta"
+   ],
+   "dur": 1767,
+   "views": 254000,
+   "thumb": "https://i.ytimg.com/vi/amFsavNgYCo/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "vhnzY1p8lec",
+   "id": "yt-vhnzY1p8lec",
+   "kind": "video",
+   "title": "Ozuna canta 'Una Aventura' y 'Zizi'",
+   "rawTitle": "Ozuna canta 'Una Aventura' y 'Zizi' | Premios De La Música Latina 2026",
+   "artist": "Telemundo Entretenimiento y Telemundo",
+   "album": "Ritmo",
+   "genre": "Latino",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 215,
+   "views": 240000,
+   "thumb": "https://i.ytimg.com/vi/vhnzY1p8lec/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "rYYvAAgEqAk",
+   "id": "yt-rYYvAAgEqAk",
+   "kind": "video",
+   "title": "Una Velita x Ti",
+   "rawTitle": "FEID - Una Velita x Ti (Video Oficial)",
+   "artist": "KovvaMusic",
+   "album": "Ritmo",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 162,
+   "views": 221000,
+   "thumb": "https://i.ytimg.com/vi/rYYvAAgEqAk/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "OnwvV3Rk88I",
+   "id": "yt-OnwvV3Rk88I",
+   "kind": "video",
+   "title": "Las Mejores Canciones Electrónicas Cantadas por mujeres - Música Electrónica",
+   "rawTitle": "Las Mejores Canciones Electrónicas Cantadas por mujeres - Música Electrónica",
+   "artist": "Dj Rick'tronick",
    "album": "Ritmo",
    "genre": "Electrónica",
    "moods": [],
-   "dur": 289,
-   "views": 233000,
-   "thumb": "https://i.ytimg.com/vi/tPIK26_TtMo/hqdefault.jpg",
+   "dur": 1250,
+   "views": 204000,
+   "thumb": "https://i.ytimg.com/vi/OnwvV3Rk88I/hqdefault.jpg",
    "external": true
   },
   {
@@ -8882,6 +9136,23 @@
    "external": true
   },
   {
+   "yt": "AGzusXtkPCg",
+   "id": "yt-AGzusXtkPCg",
+   "kind": "video",
+   "title": "DECEMBER AVENUE SONGS ❤️ R&B VERSION",
+   "rawTitle": "DECEMBER AVENUE SONGS ❤️ R&B VERSION | OPM LOVE SONGS NONSTOP 2026",
+   "artist": "R&B Nights",
+   "album": "Ritmo",
+   "genre": "R&B",
+   "moods": [
+    "Noche"
+   ],
+   "dur": 1176,
+   "views": 178000,
+   "thumb": "https://i.ytimg.com/vi/AGzusXtkPCg/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "7iYUNOtC-tQ",
    "id": "yt-7iYUNOtC-tQ",
    "kind": "video",
@@ -8894,7 +9165,7 @@
     "Energía"
    ],
    "dur": 1357,
-   "views": 175000,
+   "views": 177000,
    "thumb": "https://i.ytimg.com/vi/7iYUNOtC-tQ/hqdefault.jpg",
    "external": true
   },
@@ -8914,103 +9185,21 @@
    "external": true
   },
   {
-   "yt": "A5tVvl3wb84",
-   "id": "yt-A5tVvl3wb84",
+   "yt": "-NmfV5bcfq4",
+   "id": "yt--NmfV5bcfq4",
    "kind": "video",
-   "title": "Diamonds",
-   "rawTitle": "Rihanna -Diamonds (lyrics)",
-   "artist": "Carmina Aestas",
+   "title": "OPM R&B LOVE SONGS ❤️",
+   "rawTitle": "OPM R&B LOVE SONGS ❤️ | The Best Filipino Love Songs 2026",
+   "artist": "R&B Nights",
    "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 226,
-   "views": 146000,
-   "thumb": "https://i.ytimg.com/vi/A5tVvl3wb84/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "HdiILZVAk5A",
-   "id": "yt-HdiILZVAk5A",
-   "kind": "video",
-   "title": "Don't Stop Me Now - Queen Remastered 2023",
-   "rawTitle": "Don't Stop Me Now - Queen (Official Video) Remastered 2023",
-   "artist": "{TheNew}",
-   "album": "Ritmo",
-   "genre": "Rock",
+   "genre": "R&B",
    "moods": [
-    "Fiesta",
-    "Energía"
+    "Romántico",
+    "Noche"
    ],
-   "dur": 219,
-   "views": 134000,
-   "thumb": "https://i.ytimg.com/vi/HdiILZVAk5A/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "-CCnhE1YmiA",
-   "id": "yt--CCnhE1YmiA",
-   "kind": "video",
-   "title": "We Found Love",
-   "rawTitle": "Rihanna - We Found Love (Lyrics)",
-   "artist": "Cloudiness",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [
-    "Romántico"
-   ],
-   "dur": 277,
-   "views": 134000,
-   "thumb": "https://i.ytimg.com/vi/-CCnhE1YmiA/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "DBHJYDel7QQ",
-   "id": "yt-DBHJYDel7QQ",
-   "kind": "video",
-   "title": "My Peace Is Not For Sale",
-   "rawTitle": "Imagine dragon - My Peace Is Not For Sale ( lyrics video )",
-   "artist": "Pixel Force Studio",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 597,
-   "views": 124000,
-   "thumb": "https://i.ytimg.com/vi/DBHJYDel7QQ/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "kHDlNaJe4WU",
-   "id": "yt-kHDlNaJe4WU",
-   "kind": "video",
-   "title": "¡Top 20 MEJORES Canciones ROCK en Español de Todos los Tiempos!",
-   "rawTitle": "¡Top 20 MEJORES Canciones ROCK en Español de Todos los Tiempos!",
-   "artist": "WatchMojo Español",
-   "album": "Ritmo",
-   "genre": "Rock",
-   "moods": [
-    "Fiesta",
-    "Energía"
-   ],
-   "dur": 1653,
-   "views": 88000,
-   "thumb": "https://i.ytimg.com/vi/kHDlNaJe4WU/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "R7AViM1x7YA",
-   "id": "yt-R7AViM1x7YA",
-   "kind": "video",
-   "title": "kpop HITS and FLOPS of 2026 (so far)",
-   "rawTitle": "kpop HITS and FLOPS of 2026 (so far)",
-   "artist": "bbprincess",
-   "album": "Ritmo",
-   "genre": "K-Pop",
-   "moods": [
-    "Fiesta"
-   ],
-   "dur": 1597,
-   "views": 74000,
-   "thumb": "https://i.ytimg.com/vi/R7AViM1x7YA/hqdefault.jpg",
+   "dur": 763,
+   "views": 94000,
+   "thumb": "https://i.ytimg.com/vi/-NmfV5bcfq4/hqdefault.jpg",
    "external": true
   },
   {
@@ -9079,6 +9268,23 @@
    "external": true
   },
   {
+   "yt": "aBUmk-itVjo",
+   "id": "yt-aBUmk-itVjo",
+   "kind": "video",
+   "title": "I Want To Break Free - Part 1",
+   "rawTitle": "Queen - I Want To Break Free (Official Video) [4K Remaster] - Part 1",
+   "artist": "I'so Late",
+   "album": "Ritmo",
+   "genre": "Rock",
+   "moods": [
+    "Energía"
+   ],
+   "dur": 134,
+   "views": 54000,
+   "thumb": "https://i.ytimg.com/vi/aBUmk-itVjo/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "iy3fFDcW9_Y",
    "id": "yt-iy3fFDcW9_Y",
    "kind": "video",
@@ -9093,21 +9299,6 @@
    "dur": 1763,
    "views": 51000,
    "thumb": "https://i.ytimg.com/vi/iy3fFDcW9_Y/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "N1Ib01M2ysM",
-   "id": "yt-N1Ib01M2ysM",
-   "kind": "video",
-   "title": "If It's Lovin' That You Want",
-   "rawTitle": "Rihanna - If It's Lovin' That You Want (Lyrics)",
-   "artist": "Cakes & Eclairs",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 209,
-   "views": 51000,
-   "thumb": "https://i.ytimg.com/vi/N1Ib01M2ysM/hqdefault.jpg",
    "external": true
   },
   {
@@ -9176,18 +9367,38 @@
    "external": true
   },
   {
-   "yt": "0C0pPtn6s7E",
-   "id": "yt-0C0pPtn6s7E",
+   "yt": "ZWIVMWQmu7E",
+   "id": "yt-ZWIVMWQmu7E",
    "kind": "video",
-   "title": "Rihanna Shows Her Loving Side While Shopping for Her kids! ❤🛒🛍️👏🏻",
-   "rawTitle": "Rihanna Shows Her Loving Side While Shopping for Her  kids! ❤🛒🛍️👏🏻",
-   "artist": "Twintwin17 TV",
+   "title": "our top 50 kpop songs of 2026 (so far)",
+   "rawTitle": "our top 50 kpop songs of 2026 (so far)",
+   "artist": "moonlightseulgi",
    "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [],
-   "dur": 90,
-   "views": 18000,
-   "thumb": "https://i.ytimg.com/vi/0C0pPtn6s7E/hqdefault.jpg",
+   "genre": "K-Pop",
+   "moods": [
+    "Fiesta"
+   ],
+   "dur": 499,
+   "views": 21000,
+   "thumb": "https://i.ytimg.com/vi/ZWIVMWQmu7E/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "MBi8Z4NFfkk",
+   "id": "yt-MBi8Z4NFfkk",
+   "kind": "video",
+   "title": "Karol G gana MEJOR ÁLBUM DE MÚSICA URBANA",
+   "rawTitle": "Karol G gana MEJOR ÁLBUM DE MÚSICA URBANA | Latin GRAMMY 2026",
+   "artist": "Latin GRAMMYs",
+   "album": "Ritmo",
+   "genre": "Reggaetón",
+   "moods": [
+    "Fiesta latina",
+    "Fiesta"
+   ],
+   "dur": 140,
+   "views": 20000,
+   "thumb": "https://i.ytimg.com/vi/MBi8Z4NFfkk/hqdefault.jpg",
    "external": true
   },
   {
@@ -9206,11 +9417,11 @@
    "external": true
   },
   {
-   "yt": "U7MYSihkNK8",
-   "id": "yt-U7MYSihkNK8",
+   "yt": "9WbW37z-CHc",
+   "id": "yt-9WbW37z-CHc",
    "kind": "video",
-   "title": "Top 50 Latino Octubre 2026 (Semana 42)",
-   "rawTitle": "Top 50 Latino Octubre 2026 (Semana 42)",
+   "title": "Top 50 Latino Septiembre 2026 (Semana 38)",
+   "rawTitle": "Top 50 Latino Septiembre 2026 (Semana 38)",
    "artist": "TopLauMusic",
    "album": "Ritmo",
    "genre": "Latino",
@@ -9218,114 +9429,110 @@
     "Fiesta",
     "Fiesta latina"
    ],
-   "dur": 521,
-   "views": 11000,
-   "thumb": "https://i.ytimg.com/vi/U7MYSihkNK8/hqdefault.jpg",
+   "dur": 520,
+   "views": 15000,
+   "thumb": "https://i.ytimg.com/vi/9WbW37z-CHc/hqdefault.jpg",
    "external": true
   },
   {
-   "yt": "90xRxv3wbPs",
-   "id": "yt-90xRxv3wbPs",
+   "yt": "rGufvkfEtqY",
+   "id": "yt-rGufvkfEtqY",
    "kind": "video",
-   "title": "Top 50 Latino Octubre 2026 (Semana 43)",
-   "rawTitle": "Top 50 Latino Octubre 2026 (Semana 43)",
-   "artist": "TopLauMusic",
+   "title": "¡LAS MEJORES CANCIONES DE RAP DE 2026 HASTA AHORA! 🔥",
+   "rawTitle": "¡LAS MEJORES CANCIONES DE RAP DE 2026 HASTA AHORA! 🔥",
+   "artist": "inteNsifyCharts",
    "album": "Ritmo",
-   "genre": "Latino",
-   "moods": [
-    "Fiesta",
-    "Fiesta latina"
-   ],
-   "dur": 498,
-   "views": 10000,
-   "thumb": "https://i.ytimg.com/vi/90xRxv3wbPs/hqdefault.jpg",
+   "genre": "Hip-Hop",
+   "moods": [],
+   "dur": 434,
+   "views": 13000,
+   "thumb": "https://i.ytimg.com/vi/rGufvkfEtqY/hqdefault.jpg",
    "external": true
   },
   {
-   "yt": "ANLjz_qrfJk",
-   "id": "yt-ANLjz_qrfJk",
+   "yt": "mi0MEl7evHU",
+   "id": "yt-mi0MEl7evHU",
    "kind": "video",
-   "title": "Mejores 5 canciones de Electrónica Clásica 2003 Leer la descripción",
-   "rawTitle": "Mejores 5 canciones de Electrónica Clásica 2003 Leer la descripción",
-   "artist": "EuroDance",
-   "album": "Ritmo",
-   "genre": "Electrónica",
-   "moods": [
-    "Fiesta",
-    "Clásico"
-   ],
-   "dur": 1170,
-   "views": 10000,
-   "thumb": "https://i.ytimg.com/vi/ANLjz_qrfJk/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "XP42FgSgh2s",
-   "id": "yt-XP42FgSgh2s",
-   "kind": "video",
-   "title": "Top 50 Latino Junio 2026 (Semana 24)",
-   "rawTitle": "Top 50 Latino Junio 2026 (Semana 24)",
-   "artist": "TopLauMusic",
-   "album": "Ritmo",
-   "genre": "Latino",
-   "moods": [
-    "Fiesta",
-    "Fiesta latina"
-   ],
-   "dur": 458,
-   "views": 9400,
-   "thumb": "https://i.ytimg.com/vi/XP42FgSgh2s/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "ydK6daMPQWk",
-   "id": "yt-ydK6daMPQWk",
-   "kind": "video",
-   "title": "Top 50 Latino Julio 2026 (Semana 30)",
-   "rawTitle": "Top 50 Latino Julio 2026 (Semana 30)",
-   "artist": "TopLauMusic",
-   "album": "Ritmo",
-   "genre": "Latino",
-   "moods": [
-    "Fiesta",
-    "Fiesta latina"
-   ],
-   "dur": 418,
-   "views": 9200,
-   "thumb": "https://i.ytimg.com/vi/ydK6daMPQWk/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "9Qbhzr_n3po",
-   "id": "yt-9Qbhzr_n3po",
-   "kind": "video",
-   "title": "Top 50 Latino Julio 2026 (Semana 31)",
-   "rawTitle": "Top 50 Latino Julio 2026 (Semana 31)",
-   "artist": "TopLauMusic",
-   "album": "Ritmo",
-   "genre": "Latino",
-   "moods": [
-    "Fiesta",
-    "Fiesta latina"
-   ],
-   "dur": 552,
-   "views": 8400,
-   "thumb": "https://i.ytimg.com/vi/9Qbhzr_n3po/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "BNOcRCp2-UA",
-   "id": "yt-BNOcRCp2-UA",
-   "kind": "video",
-   "title": "REVELAN LA LISTA DE LOS MEJORES ALBUMES DEL KPOP DE 2026 + EXCLUYEN A ILLIT, LE SSERAFIM Y + ¿NUGUS?",
-   "rawTitle": "REVELAN LA LISTA DE LOS MEJORES ALBUMES DEL KPOP DE 2026 + EXCLUYEN A ILLIT, LE SSERAFIM Y + ¿NUGUS?",
-   "artist": "Kpop Quiz",
+   "title": "BEST kpop songs of 2026 (so far)",
+   "rawTitle": "BEST kpop songs of 2026 (so far)",
+   "artist": "Kfactor",
    "album": "Ritmo",
    "genre": "K-Pop",
    "moods": [],
-   "dur": 167,
-   "views": 8300,
-   "thumb": "https://i.ytimg.com/vi/BNOcRCp2-UA/hqdefault.jpg",
+   "dur": 985,
+   "views": 12000,
+   "thumb": "https://i.ytimg.com/vi/mi0MEl7evHU/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "dWSKIFFKw8c",
+   "id": "yt-dWSKIFFKw8c",
+   "kind": "video",
+   "title": "Top 50 Latino Agosto 2026 (Semana 34)",
+   "rawTitle": "Top 50 Latino Agosto 2026 (Semana 34)",
+   "artist": "TopLauMusic",
+   "album": "Ritmo",
+   "genre": "Latino",
+   "moods": [
+    "Fiesta",
+    "Fiesta latina"
+   ],
+   "dur": 529,
+   "views": 9900,
+   "thumb": "https://i.ytimg.com/vi/dWSKIFFKw8c/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "3x0nxZk8ngA",
+   "id": "yt-3x0nxZk8ngA",
+   "kind": "video",
+   "title": "Top 50 Latino Agosto 2026 (Semana 35)",
+   "rawTitle": "Top 50 Latino Agosto 2026 (Semana 35)",
+   "artist": "TopLauMusic",
+   "album": "Ritmo",
+   "genre": "Latino",
+   "moods": [
+    "Fiesta",
+    "Fiesta latina"
+   ],
+   "dur": 459,
+   "views": 9200,
+   "thumb": "https://i.ytimg.com/vi/3x0nxZk8ngA/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "hAtk1wV9HjU",
+   "id": "yt-hAtk1wV9HjU",
+   "kind": "video",
+   "title": "Top 50 Música Electrónica Julio 2026 (Semana 28)",
+   "rawTitle": "Top 50 Música Electrónica Julio 2026 (Semana 28)",
+   "artist": "TopLauMusic",
+   "album": "Ritmo",
+   "genre": "Electrónica",
+   "moods": [
+    "Fiesta"
+   ],
+   "dur": 585,
+   "views": 8800,
+   "thumb": "https://i.ytimg.com/vi/hAtk1wV9HjU/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "gQU9FPPdkRo",
+   "id": "yt-gQU9FPPdkRo",
+   "kind": "video",
+   "title": "Top 50 Latino Mayo 2026 (Semana 19)",
+   "rawTitle": "Top 50 Latino Mayo 2026 (Semana 19)",
+   "artist": "TopLauMusic",
+   "album": "Ritmo",
+   "genre": "Latino",
+   "moods": [
+    "Fiesta",
+    "Fiesta latina"
+   ],
+   "dur": 545,
+   "views": 8700,
+   "thumb": "https://i.ytimg.com/vi/gQU9FPPdkRo/hqdefault.jpg",
    "external": true
   },
   {
@@ -9347,6 +9554,24 @@
    "external": true
   },
   {
+   "yt": "snHSdXHQA2o",
+   "id": "yt-snHSdXHQA2o",
+   "kind": "video",
+   "title": "Top 50 Latino Mayo 2026 (Semana 20)",
+   "rawTitle": "Top 50 Latino Mayo 2026 (Semana 20)",
+   "artist": "TopLauMusic",
+   "album": "Ritmo",
+   "genre": "Latino",
+   "moods": [
+    "Fiesta",
+    "Fiesta latina"
+   ],
+   "dur": 484,
+   "views": 8000,
+   "thumb": "https://i.ytimg.com/vi/snHSdXHQA2o/hqdefault.jpg",
+   "external": true
+  },
+  {
    "yt": "ioPLcjVAQhY",
    "id": "yt-ioPLcjVAQhY",
    "kind": "video",
@@ -9365,11 +9590,11 @@
    "external": true
   },
   {
-   "yt": "fSO1ZR8xyi4",
-   "id": "yt-fSO1ZR8xyi4",
+   "yt": "YYytCOzGxfc",
+   "id": "yt-YYytCOzGxfc",
    "kind": "video",
-   "title": "Top 50 Latino Octubre 2026 (Semana 44)",
-   "rawTitle": "Top 50 Latino Octubre 2026 (Semana 44)",
+   "title": "Top 50 Latino Junio 2026 (Semana 23)",
+   "rawTitle": "Top 50 Latino Junio 2026 (Semana 23)",
    "artist": "TopLauMusic",
    "album": "Ritmo",
    "genre": "Latino",
@@ -9377,27 +9602,9 @@
     "Fiesta",
     "Fiesta latina"
    ],
-   "dur": 537,
-   "views": 7900,
-   "thumb": "https://i.ytimg.com/vi/fSO1ZR8xyi4/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "6bXN5pPiiVY",
-   "id": "yt-6bXN5pPiiVY",
-   "kind": "video",
-   "title": "Top 50 Latino Junio 2026 (Semana 26)",
-   "rawTitle": "Top 50 Latino Junio 2026 (Semana 26)",
-   "artist": "TopLauMusic",
-   "album": "Ritmo",
-   "genre": "Latino",
-   "moods": [
-    "Fiesta",
-    "Fiesta latina"
-   ],
-   "dur": 459,
-   "views": 7800,
-   "thumb": "https://i.ytimg.com/vi/6bXN5pPiiVY/hqdefault.jpg",
+   "dur": 468,
+   "views": 7600,
+   "thumb": "https://i.ytimg.com/vi/YYytCOzGxfc/hqdefault.jpg",
    "external": true
   },
   {
@@ -9418,21 +9625,20 @@
    "external": true
   },
   {
-   "yt": "YClyCb075Rg",
-   "id": "yt-YClyCb075Rg",
+   "yt": "0mLsC5Xtx3U",
+   "id": "yt-0mLsC5Xtx3U",
    "kind": "video",
-   "title": "Top 50 Latino Julio 2026 (Semana 29)",
-   "rawTitle": "Top 50 Latino Julio 2026 (Semana 29)",
-   "artist": "TopLauMusic",
+   "title": "Hate Sleeping Alone",
+   "rawTitle": "Hate Sleeping Alone",
+   "artist": "Drake",
    "album": "Ritmo",
-   "genre": "Latino",
+   "genre": "Hip-Hop",
    "moods": [
-    "Fiesta",
-    "Fiesta latina"
+    "Relajado"
    ],
-   "dur": 452,
-   "views": 7000,
-   "thumb": "https://i.ytimg.com/vi/YClyCb075Rg/hqdefault.jpg",
+   "dur": 214,
+   "views": 6100,
+   "thumb": "https://i.ytimg.com/vi/0mLsC5Xtx3U/hqdefault.jpg",
    "external": true
   },
   {
@@ -9485,42 +9691,8 @@
     "Fiesta latina"
    ],
    "dur": 562,
-   "views": 3800,
+   "views": 4100,
    "thumb": "https://i.ytimg.com/vi/ze0NtAs5Iwg/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "7wrh98ufp84",
-   "id": "yt-7wrh98ufp84",
-   "kind": "video",
-   "title": "POP 💕 Canciones Más Vistas en YouTube (Actualizado Mayo 2026) 🔥",
-   "rawTitle": "TOP 200 K-POP 💕 Canciones Más Vistas en YouTube (Actualizado Mayo 2026) 🔥",
-   "artist": "TopOneMusic",
-   "album": "Ritmo",
-   "genre": "K-Pop",
-   "moods": [
-    "Fiesta"
-   ],
-   "dur": 1200,
-   "views": 3700,
-   "thumb": "https://i.ytimg.com/vi/7wrh98ufp84/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "X4SAH6jyuY8",
-   "id": "yt-X4SAH6jyuY8",
-   "kind": "video",
-   "title": "Rihanna Was Spotted in Santa Monica Last Night, And We Need to Talk!",
-   "rawTitle": "Rihanna Was Spotted in Santa Monica Last Night, And We Need to Talk!",
-   "artist": "Oseni yemi tv",
-   "album": "Ritmo",
-   "genre": "Pop",
-   "moods": [
-    "Noche"
-   ],
-   "dur": 93,
-   "views": 3600,
-   "thumb": "https://i.ytimg.com/vi/X4SAH6jyuY8/hqdefault.jpg",
    "external": true
   },
   {
@@ -9577,21 +9749,6 @@
    "external": true
   },
   {
-   "yt": "_kMuCwYzHJA",
-   "id": "yt-_kMuCwYzHJA",
-   "kind": "video",
-   "title": "Las mejores canciones de K-pop de 2026 (hasta ahora)",
-   "rawTitle": "Las mejores canciones de K-pop de 2026 (hasta ahora)",
-   "artist": "MS HYESEUNGYEON",
-   "album": "Ritmo",
-   "genre": "K-Pop",
-   "moods": [],
-   "dur": 430,
-   "views": 2200,
-   "thumb": "https://i.ytimg.com/vi/_kMuCwYzHJA/hqdefault.jpg",
-   "external": true
-  },
-  {
    "yt": "qKmey70HX7I",
    "id": "yt-qKmey70HX7I",
    "kind": "video",
@@ -9627,50 +9784,40 @@
    "external": true
   },
   {
-   "yt": "OK8ssz8372M",
-   "id": "yt-OK8ssz8372M",
+   "yt": "EySRjtwr1tM",
+   "id": "yt-EySRjtwr1tM",
    "kind": "video",
-   "title": "Mis bandas indie favoritas de 2026",
-   "rawTitle": "Mis bandas indie favoritas de 2026",
-   "artist": "Merle Becker",
+   "title": "Lil Supa y akapellah nominados Mejor Canción de Rap/Hip Hop Latin Grammy 2026",
+   "rawTitle": "Lil Supa y akapellah nominados  Mejor Canción de Rap/Hip Hop Latin Grammy 2026",
+   "artist": "HernanElhongo",
+   "album": "Ritmo",
+   "genre": "Hip-Hop",
+   "moods": [
+    "Fiesta latina"
+   ],
+   "dur": 675,
+   "views": 217,
+   "thumb": "https://i.ytimg.com/vi/EySRjtwr1tM/hqdefault.jpg",
+   "external": true
+  },
+  {
+   "yt": "78p4bNM_B94",
+   "id": "yt-78p4bNM_B94",
+   "kind": "video",
+   "title": "English Songs. 🌙 💔 Top 5 Indie Rock Songs 2026 💔",
+   "rawTitle": "English Songs. 🌙 💔 Top 5 Indie Rock Songs 2026 💔",
+   "artist": "AMOR Y DESAMOR",
    "album": "Ritmo",
    "genre": "Indie",
-   "moods": [],
-   "dur": 448,
-   "views": 590,
-   "thumb": "https://i.ytimg.com/vi/OK8ssz8372M/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "X0dAQwrmwyI",
-   "id": "yt-X0dAQwrmwyI",
-   "kind": "video",
-   "title": "Rihanna & A$AP Rocky Share Sweet Family Moments on the Beach in Barbados ❤️🇧🇧",
-   "rawTitle": "Rihanna & A$AP Rocky Share Sweet Family Moments on the Beach in Barbados ❤️🇧🇧",
-   "artist": "Twintwin17 TV",
-   "album": "Ritmo",
-   "genre": "Pop",
    "moods": [
-    "Energía"
+    "Fiesta",
+    "Energía",
+    "Triste",
+    "Romántico"
    ],
-   "dur": 169,
-   "views": 82,
-   "thumb": "https://i.ytimg.com/vi/X0dAQwrmwyI/hqdefault.jpg",
-   "external": true
-  },
-  {
-   "yt": "DAW1bjoVOBA",
-   "id": "yt-DAW1bjoVOBA",
-   "kind": "video",
-   "title": "Música Electrónica Más Escuchada 🎧",
-   "rawTitle": "Música Electrónica Más Escuchada 🎧 | Las Mejores Canciones de NCS Mix (Sin Copyright)",
-   "artist": "DJ Sebas",
-   "album": "Ritmo",
-   "genre": "Electrónica",
-   "moods": [],
-   "dur": 1168,
-   "views": 10,
-   "thumb": "https://i.ytimg.com/vi/DAW1bjoVOBA/hqdefault.jpg",
+   "dur": 847,
+   "views": 58,
+   "thumb": "https://i.ytimg.com/vi/78p4bNM_B94/hqdefault.jpg",
    "external": true
   },
   {
