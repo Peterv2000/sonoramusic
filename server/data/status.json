@@ -1,11 +1,11 @@
 {
- "updatedAt": 1795765637615,
+ "updatedAt": 1795813217247,
  "runs": 1,
- "durationMs": 219382,
+ "durationMs": 218245,
  "counts": {
-  "catalog": 597,
-  "charts": 398,
+  "catalog": 590,
+  "charts": 394,
   "warm": 13
  },
- "nextRunAt": 1795766237615
+ "nextRunAt": 1795813817247
 }
